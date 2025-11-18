@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ReportData {
   name: string;
@@ -9,6 +10,7 @@ interface ReportData {
 }
 
 const Hisobotlar = () => {
+  const { t } = useLanguage();
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
 
@@ -68,21 +70,21 @@ const Hisobotlar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Hisobotlar</h2>
-        <p className="text-muted-foreground">Tushum va xarajatlar statistikasi</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
+        <p className="text-muted-foreground">{t("reports.subtitle")}</p>
       </div>
 
       <Card className="p-6">
         <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-            <TabsTrigger value="daily">Kunlik</TabsTrigger>
-            <TabsTrigger value="weekly">Haftalik</TabsTrigger>
-            <TabsTrigger value="monthly">Oylik</TabsTrigger>
+            <TabsTrigger value="daily">{t("reports.daily")}</TabsTrigger>
+            <TabsTrigger value="weekly">{t("reports.weekly")}</TabsTrigger>
+            <TabsTrigger value="monthly">{t("reports.monthly")}</TabsTrigger>
           </TabsList>
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground mb-1">Jami tushum</p>
-            <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} so'm</p>
+            <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
+            <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.sum")}</p>
           </div>
 
           <TabsContent value="daily" className="space-y-4">
@@ -93,11 +95,11 @@ const Hisobotlar = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} so'm`}
+                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name="Tushum" />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -111,11 +113,11 @@ const Hisobotlar = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} so'm`}
+                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name="Tushum" />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -129,11 +131,11 @@ const Hisobotlar = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} so'm`}
+                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name="Tushum" />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

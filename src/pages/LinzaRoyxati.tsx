@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface LinzaRoyxat {
   id: string;
@@ -17,6 +18,7 @@ interface LinzaRoyxat {
 }
 
 const LinzaRoyxati = () => {
+  const { t } = useLanguage();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
@@ -58,12 +60,12 @@ const LinzaRoyxati = () => {
       linzaTuri: "",
     });
 
-    toast.success("Ro'yxatga qo'shildi!");
+    toast.success(t("lens.addSuccess"));
   };
 
   const handleDelete = (id: string) => {
     saveRoyxatlar(royxatlar.filter((r) => r.id !== id));
-    toast.success("O'chirildi");
+    toast.success(t("lens.deleteSuccess"));
   };
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
@@ -78,8 +80,8 @@ const LinzaRoyxati = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Linza ro'yxatlari</h2>
-        <p className="text-muted-foreground">Linza buyurtmalari ro'yxati</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("lens.title")}</h2>
+        <p className="text-muted-foreground">{t("lens.subtitle")}</p>
       </div>
 
       <Card className="p-6">
@@ -140,7 +142,7 @@ const LinzaRoyxati = () => {
 
           <div className="flex justify-end pt-4 border-t border-border">
             <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Qo'shish
+              {t("lens.add")}
             </Button>
           </div>
         </form>
@@ -148,11 +150,11 @@ const LinzaRoyxati = () => {
 
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h3 className="text-lg font-semibold">Ro'yxatlar</h3>
+          <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Qidirish..."
+              placeholder={t("lens.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
