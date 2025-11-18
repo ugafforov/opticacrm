@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface TayyorKozoynak {
@@ -24,6 +24,7 @@ interface TayyorKozoynak {
 
 const TayyorKozoynaklar = () => {
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     kliyent: "",
     kozoynakTuri: "",
@@ -69,6 +70,14 @@ const TayyorKozoynaklar = () => {
     saveKozoynaklar(kozoynaklar.filter((k) => k.id !== id));
     toast.success("O'chirildi");
   };
+
+  const filteredKozoynaklar = kozoynaklar.filter((k) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      k.kliyent.toLowerCase().includes(query) ||
+      k.sana.includes(query)
+    );
+  });
 
   const totalSum = kozoynaklar.reduce((sum, k) => sum + k.summa, 0);
 
@@ -128,10 +137,21 @@ const TayyorKozoynaklar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Ko'zoynaklar ro'yxati</h3>
-          <div className="text-lg font-bold text-primary">
-            Jami: {totalSum.toLocaleString()} so'm
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h3 className="text-lg font-semibold">Ko'zoynaklar ro'yxati</h3>
+            <div className="text-lg font-bold text-primary">
+              Jami: {totalSum.toLocaleString()} so'm
+            </div>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -147,7 +167,7 @@ const TayyorKozoynaklar = () => {
               </tr>
             </thead>
             <tbody>
-              {kozoynaklar.map((k) => (
+              {filteredKozoynaklar.map((k) => (
                 <tr key={k.id} className="border-b border-border">
                   <td className="px-4 py-2">{k.tartibRaqam}</td>
                   <td className="px-4 py-2">{k.sana}</td>

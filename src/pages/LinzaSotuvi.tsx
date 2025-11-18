@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface LinzaSotish {
@@ -23,6 +23,7 @@ interface LinzaSotish {
 
 const LinzaSotuvi = () => {
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     kliyent: "",
     linzaTuri: "",
@@ -67,6 +68,14 @@ const LinzaSotuvi = () => {
     saveSotuvlar(sotuvlar.filter((s) => s.id !== id));
     toast.success("O'chirildi");
   };
+
+  const filteredSotuvlar = sotuvlar.filter((s) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      s.kliyent.toLowerCase().includes(query) ||
+      s.sana.includes(query)
+    );
+  });
 
   const totalSum = sotuvlar.reduce((sum, s) => sum + s.summa, 0);
 
@@ -129,10 +138,21 @@ const LinzaSotuvi = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Sotuvlar ro'yxati</h3>
-          <div className="text-lg font-bold text-primary">
-            Jami: {totalSum.toLocaleString()} so'm
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h3 className="text-lg font-semibold">Sotuvlar ro'yxati</h3>
+            <div className="text-lg font-bold text-primary">
+              Jami: {totalSum.toLocaleString()} so'm
+            </div>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -147,7 +167,7 @@ const LinzaSotuvi = () => {
               </tr>
             </thead>
             <tbody>
-              {sotuvlar.map((s) => (
+              {filteredSotuvlar.map((s) => (
                 <tr key={s.id} className="border-b border-border">
                   <td className="px-4 py-2">{s.sana}</td>
                   <td className="px-4 py-2">{s.kliyent}</td>
