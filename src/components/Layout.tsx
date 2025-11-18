@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Eye, ShoppingCart, ClipboardList, Glasses, Contact } from "lucide-react";
+import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3 } from "lucide-react";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
@@ -11,6 +11,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { to: "/tekshiruv", label: "Tekshiruv", icon: Eye },
     { to: "/tayyor-kozoynaklar", label: "Tayyor ko'zoynaklar", icon: Glasses },
     { to: "/linza-sotuvi", label: "Linza sotuvi", icon: ClipboardList },
+    { to: "/hisobotlar", label: "Hisobotlar", icon: BarChart3 },
   ];
 
   return (

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface LinzaRoyxat {
@@ -18,6 +18,7 @@ interface LinzaRoyxat {
 
 const LinzaRoyxati = () => {
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -64,6 +65,15 @@ const LinzaRoyxati = () => {
     saveRoyxatlar(royxatlar.filter((r) => r.id !== id));
     toast.success("O'chirildi");
   };
+
+  const filteredRoyxatlar = royxatlar.filter((r) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      r.mijoz.toLowerCase().includes(query) ||
+      r.telefon.includes(query) ||
+      r.sana.includes(query)
+    );
+  });
 
   return (
     <div className="space-y-6">
@@ -137,7 +147,18 @@ const LinzaRoyxati = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <h3 className="text-lg font-semibold mb-4">Ro'yxatlar</h3>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <h3 className="text-lg font-semibold">Ro'yxatlar</h3>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
@@ -151,7 +172,7 @@ const LinzaRoyxati = () => {
               </tr>
             </thead>
             <tbody>
-              {royxatlar.map((r) => (
+              {filteredRoyxatlar.map((r) => (
                 <tr key={r.id} className="border-b border-border">
                   <td className="px-4 py-2">{r.sana}</td>
                   <td className="px-4 py-2">{r.mijoz}</td>

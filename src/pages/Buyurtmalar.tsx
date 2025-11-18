@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2 } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface Buyurtma {
@@ -28,6 +28,7 @@ interface Buyurtma {
 
 const Buyurtmalar = () => {
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -87,6 +88,14 @@ const Buyurtmalar = () => {
     saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== id));
     toast.success("Buyurtma o'chirildi");
   };
+
+  const filteredBuyurtmalar = buyurtmalar.filter((b) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      b.mijoz.toLowerCase().includes(query) ||
+      b.sana.includes(query)
+    );
+  });
 
   const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
 
@@ -195,10 +204,21 @@ const Buyurtmalar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Buyurtmalar ro'yxati</h3>
-          <div className="text-lg font-bold text-primary">
-            Jami: {totalSum.toLocaleString()} so'm
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h3 className="text-lg font-semibold">Buyurtmalar ro'yxati</h3>
+            <div className="text-lg font-bold text-primary">
+              Jami: {totalSum.toLocaleString()} so'm
+            </div>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Qidirish..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -215,7 +235,7 @@ const Buyurtmalar = () => {
               </tr>
             </thead>
             <tbody>
-              {buyurtmalar.map((b) => (
+              {filteredBuyurtmalar.map((b) => (
                 <tr key={b.id} className="border-b border-border">
                   <td className="px-4 py-2">{b.sana}</td>
                   <td className="px-4 py-2">{b.mijoz}</td>

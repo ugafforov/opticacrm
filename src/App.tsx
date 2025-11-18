@@ -9,6 +9,7 @@ import LinzaRoyxati from "./pages/LinzaRoyxati";
 import Tekshiruv from "./pages/Tekshiruv";
 import TayyorKozoynaklar from "./pages/TayyorKozoynaklar";
 import LinzaSotuvi from "./pages/LinzaSotuvi";
+import Hisobotlar from "./pages/Hisobotlar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/tekshiruv" element={<Layout><Tekshiruv /></Layout>} />
           <Route path="/tayyor-kozoynaklar" element={<Layout><TayyorKozoynaklar /></Layout>} />
           <Route path="/linza-sotuvi" element={<Layout><LinzaSotuvi /></Layout>} />
+          <Route path="/hisobotlar" element={<Layout><Hisobotlar /></Layout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
