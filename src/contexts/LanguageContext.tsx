@@ -132,9 +132,23 @@ const translations = {
     "form.leftEye": "ЧК (чап кўз)",
     "form.lensType": "Ойна тури",
     "form.lensPrice": "Ойна нархи (сўм)",
-    "form.frameType": "Оправа тури",
+    "form.frameType": "Оправа (рамка) тури",
     "form.framePrice": "Оправа нархи (сўм)",
     "form.phone": "Телефон рақами",
+    "form.select": "Танланг",
+    
+    // Lens types
+    "lens.3b1Brown": "3Б1 жигарранг",
+    "lens.3b1Black": "3Б1 қора",
+    "lens.4b1": "4Б1",
+    "lens.420": "420",
+    "lens.sr": "СР",
+    
+    // Frame types
+    "frame.round": "Думалоқ",
+    "frame.fabritsio": "Фабрицио",
+    "frame.alaniye": "Аланийе",
+    "frame.titanik": "Титаник",
     
     // Form labels - Lens Registry
     "form.lensTypeRegistry": "Линза тури",
@@ -182,6 +196,10 @@ const translations = {
     "reports.dateRange": "Сана оралиғи",
     "reports.apply": "Қўллаш",
     "reports.reset": "Тозалаш",
+    "reports.export": "Экспорт",
+    "reports.exportExcel": "Excel форматида экспорт",
+    "reports.exportPDF": "PDF форматида экспорт",
+    "reports.bySection": "Бўлимлар бўйича",
   },
   latin: {
     // Navigation
@@ -285,12 +303,95 @@ const translations = {
     "reports.monthly": "Oylik",
     "reports.totalIncome": "Jami tushum",
     "reports.income": "Tushum",
+    "reports.export": "Export",
+    "reports.exportExcel": "Excel formatida export",
+    "reports.exportPDF": "PDF formatida export",
+    "reports.bySection": "Bo'limlar bo'yicha",
     
     // Common
     "common.sum": "so'm",
     "common.date": "Sana",
     "common.total": "Jami",
     "common.delete": "O'chirish",
+    "common.actions": "Amallar",
+    "common.yes": "Ha",
+    "common.no": "Yo'q",
+    "common.edit": "Tahrirlash",
+    "common.save": "Saqlash",
+    "common.cancel": "Bekor qilish",
+    "common.from": "dan",
+    "common.to": "gacha",
+    
+    // Form labels - Orders
+    "form.clientName": "Mijoz familiyasi va ismi",
+    "form.rightEye": "OK (o'ng ko'z)",
+    "form.leftEye": "ChK (chap ko'z)",
+    "form.lensType": "Oyna turi",
+    "form.lensPrice": "Oyna narxi (so'm)",
+    "form.frameType": "Oprava (ramka) turi",
+    "form.framePrice": "Oprava narxi (so'm)",
+    "form.phone": "Telefon raqami",
+    "form.select": "Tanlang",
+    
+    // Lens types
+    "lens.3b1Brown": "3B1 jigarrang",
+    "lens.3b1Black": "3B1 qora",
+    "lens.4b1": "4B1",
+    "lens.420": "420",
+    "lens.sr": "SR",
+    
+    // Frame types
+    "frame.round": "Dumaloq",
+    "frame.fabritsio": "Fabritsio",
+    "frame.alaniye": "Alaniye",
+    "frame.titanik": "Titanik",
+    
+    // Form labels - Lens Registry
+    "form.lensTypeRegistry": "Linza turi",
+    
+    // Form labels - Examination
+    "form.patientName": "Mijoz",
+    
+    // Form labels - Ready Glasses
+    "form.glassesType": "Ko'zoynak turi",
+    "form.amount": "Summa (so'm)",
+    
+    // Form labels - Lens Sale
+    "form.clientNameSale": "Kliyent",
+    "form.lensTypeSale": "Linza turi",
+    
+    // Trash
+    "trash.title": "Chiqindilar",
+    "trash.subtitle": "O'chirilgan ma'lumotlarni boshqarish",
+    "trash.empty": "Chiqindilar bo'sh",
+    "trash.restore": "Tiklash",
+    "trash.deletePermanent": "Butunlay o'chirish",
+    "trash.restored": "Tiklandi!",
+    "trash.permanentDeleted": "Butunlay o'chirildi!",
+    "trash.deletedAt": "O'chirilgan vaqti",
+    "trash.noName": "Nomsiz",
+    "trash.orders": "Buyurtma",
+    "trash.examinations": "Tekshiruv",
+    "trash.readyGlasses": "Tayyor ko'zoynak",
+    "trash.lensSales": "Linza sotuvi",
+    "trash.lensLists": "Linza ro'yxati",
+    "trash.confirmDelete": "Butunlay o'chirish",
+    "trash.confirmDeleteDesc": "Bu ma'lumot butunlay o'chiriladi va uni qayta tiklab bo'lmaydi.",
+    "trash.confirmRestore": "Tiklash",
+    "trash.confirmRestoreDesc": "Bu ma'lumotni tiklmoqchimisiz?",
+    
+    // Delete confirmation
+    "delete.confirm": "O'chirishni tasdiqlash",
+    "delete.confirmDesc": "Bu ma'lumotni chiqindilarga o'tkazmoqchimisiz?",
+    
+    // Edit dialog
+    "edit.title": "Tahrirlash",
+    "edit.success": "Saqlandi!",
+    
+    // Reports
+    "reports.dateRange": "Sana oraliği",
+    "reports.apply": "Qo'llash",
+    "reports.reset": "Tozalash",
   },
 };
 
