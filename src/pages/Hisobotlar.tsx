@@ -6,6 +6,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FileDown } from "lucide-react";
+import { toast } from "sonner";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface ReportData {
   name: string;
@@ -101,6 +106,135 @@ const Hisobotlar = () => {
   };
 
   const totalTushum = reportData.reduce((sum, item) => sum + item.tushum, 0);
+
+  const exportToExcel = (type: "period" | "section" | "detailed") => {
+    const buyurtmalar = JSON.parse(localStorage.getItem("buyurtmalar") || "[]");
+    const tekshiruvlar = JSON.parse(localStorage.getItem("tekshiruvlar") || "[]");
+    const tayyorKozoynaklar = JSON.parse(localStorage.getItem("tayyorKozoynaklar") || "[]");
+    const linzaSotuvlari = JSON.parse(localStorage.getItem("linzaSotuvlari") || "[]");
+
+    let data: any[] = [];
+    let sheetName = "";
+
+    if (type === "period") {
+      data = reportData.map(item => ({
+        [t("common.date")]: item.name,
+        [t("reports.income")]: item.tushum,
+      }));
+      sheetName = `${t("reports.title")} - ${period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}`;
+    } else if (type === "section") {
+      const sections = [
+        { name: t("nav.orders"), data: buyurtmalar, key: "jamiSumma" },
+        { name: t("nav.examination"), data: tekshiruvlar, key: "jamiSumma" },
+        { name: t("nav.readyGlasses"), data: tayyorKozoynaklar, key: "summa" },
+        { name: t("nav.lensSales"), data: linzaSotuvlari, key: "summa" },
+      ];
+      
+      data = sections.map(section => ({
+        [t("reports.bySection")]: section.name,
+        [t("reports.income")]: section.data.reduce((sum: number, item: any) => sum + (item[section.key] || 0), 0),
+      }));
+      sheetName = `${t("reports.title")} - ${t("reports.bySection")}`;
+    } else {
+      const allData = [
+        ...buyurtmalar.map((b: any) => ({ 
+          [t("reports.bySection")]: t("nav.orders"),
+          [t("common.date")]: b.sana, 
+          [t("orders.client")]: b.mijoz, 
+          [t("reports.income")]: b.jamiSumma 
+        })),
+        ...tekshiruvlar.map((tek: any) => ({ 
+          [t("reports.bySection")]: t("nav.examination"),
+          [t("common.date")]: tek.sana, 
+          [t("exam.patient")]: tek.mijoz, 
+          [t("reports.income")]: tek.jamiSumma 
+        })),
+        ...tayyorKozoynaklar.map((k: any) => ({ 
+          [t("reports.bySection")]: t("nav.readyGlasses"),
+          [t("common.date")]: k.sana, 
+          [t("orders.client")]: k.mijoz, 
+          [t("reports.income")]: k.summa 
+        })),
+        ...linzaSotuvlari.map((l: any) => ({ 
+          [t("reports.bySection")]: t("nav.lensSales"),
+          [t("common.date")]: l.sana, 
+          [t("orders.client")]: l.mijoz, 
+          [t("reports.income")]: l.summa 
+        })),
+      ];
+      
+      data = allData.filter(item => {
+        if (!startDate && !endDate) return true;
+        return isDateInRange(item[t("common.date")]);
+      });
+      sheetName = `${t("reports.title")} - ${t("common.total")}`;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    XLSX.writeFile(wb, `${sheetName}.xlsx`);
+    toast.success(t("reports.exportExcel"));
+  };
+
+  const exportToPDF = (type: "period" | "section" | "detailed") => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(t("reports.title"), 14, 15);
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`${t("common.date")}: ${new Date().toLocaleDateString("uz-UZ")}`, 14, 22);
+
+    const buyurtmalar = JSON.parse(localStorage.getItem("buyurtmalar") || "[]");
+    const tekshiruvlar = JSON.parse(localStorage.getItem("tekshiruvlar") || "[]");
+    const tayyorKozoynaklar = JSON.parse(localStorage.getItem("tayyorKozoynaklar") || "[]");
+    const linzaSotuvlari = JSON.parse(localStorage.getItem("linzaSotuvlari") || "[]");
+
+    if (type === "period") {
+      const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
+      autoTable(doc, {
+        startY: 30,
+        head: [[t("common.date"), t("reports.income")]],
+        body: tableData,
+        foot: [[t("common.total"), totalTushum.toLocaleString()]],
+      });
+    } else if (type === "section") {
+      const sections = [
+        [t("nav.orders"), buyurtmalar.reduce((sum: number, b: any) => sum + b.jamiSumma, 0)],
+        [t("nav.examination"), tekshiruvlar.reduce((sum: number, t: any) => sum + t.jamiSumma, 0)],
+        [t("nav.readyGlasses"), tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
+        [t("nav.lensSales"), linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)],
+      ];
+      const tableData = sections.map(s => [s[0], s[1].toLocaleString()]);
+      const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);
+      
+      autoTable(doc, {
+        startY: 30,
+        head: [[t("reports.bySection"), t("reports.income")]],
+        body: tableData,
+        foot: [[t("common.total"), total.toLocaleString()]],
+      });
+    } else {
+      const allData = [
+        ...buyurtmalar.map((b: any) => [t("nav.orders"), b.sana, b.mijoz, b.jamiSumma.toLocaleString()]),
+        ...tekshiruvlar.map((tek: any) => [t("nav.examination"), tek.sana, tek.mijoz, tek.jamiSumma.toLocaleString()]),
+        ...tayyorKozoynaklar.map((k: any) => [t("nav.readyGlasses"), k.sana, k.mijoz, k.summa.toLocaleString()]),
+        ...linzaSotuvlari.map((l: any) => [t("nav.lensSales"), l.sana, l.mijoz, l.summa.toLocaleString()]),
+      ];
+      
+      autoTable(doc, {
+        startY: 30,
+        head: [[t("reports.bySection"), t("common.date"), t("orders.client"), t("reports.income")]],
+        body: allData,
+      });
+    }
+
+    doc.save(`${t("reports.title")}.pdf`);
+    toast.success(t("reports.exportPDF"));
+  };
 
   return (
     <div className="space-y-6">

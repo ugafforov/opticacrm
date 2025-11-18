@@ -143,8 +143,8 @@ const Buyurtmalar = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="mijoz">{t("orders.client")}</Label>
+            <div className="md:col-span-2">
+              <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
@@ -153,43 +153,41 @@ const Buyurtmalar = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="od">OD (o'ng)</Label>
-                <Input
-                  id="od"
-                  value={form.od}
-                  onChange={(e) => setForm({ ...form, od: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="os">OS (chap)</Label>
-                <Input
-                  id="os"
-                  value={form.os}
-                  onChange={(e) => setForm({ ...form, os: e.target.value })}
-                />
-              </div>
+            <div>
+              <Label htmlFor="od">{t("form.rightEye")}</Label>
+              <Input
+                id="od"
+                value={form.od}
+                onChange={(e) => setForm({ ...form, od: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="os">{t("form.leftEye")}</Label>
+              <Input
+                id="os"
+                value={form.os}
+                onChange={(e) => setForm({ ...form, os: e.target.value })}
+              />
             </div>
 
             <div>
-              <Label htmlFor="oynaTuri">Oyna turi</Label>
+              <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
               <Select value={form.oynaTuri} onValueChange={(value) => setForm({ ...form, oynaTuri: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tanlang" />
+                  <SelectValue placeholder={t("form.select")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="3B1 jigarrang">3B1 jigarrang</SelectItem>
-                  <SelectItem value="3B1 qora">3B1 qora</SelectItem>
-                  <SelectItem value="4B1">4B1</SelectItem>
-                  <SelectItem value="420">420</SelectItem>
-                  <SelectItem value="SR">SR</SelectItem>
+                  <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
+                  <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
+                  <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
+                  <SelectItem value="420">{t("lens.420")}</SelectItem>
+                  <SelectItem value="SR">{t("lens.sr")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="oynaNarxi">Oyna narxi (so'm)</Label>
+              <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
               <Input
                 id="oynaNarxi"
                 type="number"
@@ -200,22 +198,22 @@ const Buyurtmalar = () => {
             </div>
 
             <div>
-              <Label htmlFor="opravaTuri">Oprava (ramka) turi</Label>
+              <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
               <Select value={form.opravaTuri} onValueChange={(value) => setForm({ ...form, opravaTuri: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tanlang" />
+                  <SelectValue placeholder={t("form.select")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="dumaloq">Dumaloq</SelectItem>
-                  <SelectItem value="fabritsio">Fabritsio</SelectItem>
-                  <SelectItem value="alaniye">Alaniye</SelectItem>
-                  <SelectItem value="titanik">Titanik</SelectItem>
+                  <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
+                  <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
+                  <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
+                  <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="opravaNarxi">Oprava narxi (so'm)</Label>
+              <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
               <Input
                 id="opravaNarxi"
                 type="number"
@@ -238,14 +236,14 @@ const Buyurtmalar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("orders.list")}</h3>
             <div className="text-lg font-bold text-primary">
               {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               placeholder={t("orders.search")}
@@ -255,35 +253,35 @@ const Buyurtmalar = () => {
             />
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+          <table className="w-full min-w-[640px]">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
-                <th className="px-4 py-2 text-left">{t("common.date")}</th>
-                <th className="px-4 py-2 text-left">{t("orders.client")}</th>
-                <th className="px-4 py-2 text-left">OD/OS</th>
-                <th className="px-4 py-2 text-left">Oyna</th>
-                <th className="px-4 py-2 text-left">Oprava</th>
-                <th className="px-4 py-2 text-right">Summa</th>
-                <th className="px-4 py-2"></th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">ЎК/ЧК</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
+                <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>
+                <th className="px-2 sm:px-4 py-2"></th>
               </tr>
             </thead>
             <tbody>
               {filteredBuyurtmalar.map((b) => (
-                <tr key={b.id} className="border-b border-border">
-                  <td className="px-4 py-2">{b.sana}</td>
-                  <td className="px-4 py-2">{b.mijoz}</td>
-                  <td className="px-4 py-2">{b.od} / {b.os}</td>
-                  <td className="px-4 py-2">{b.oynaTuri}</td>
-                  <td className="px-4 py-2">{b.opravaTuri}</td>
-                  <td className="px-4 py-2 text-right font-semibold">{b.jamiSumma.toLocaleString()}</td>
-                  <td className="px-4 py-2">
-                    <div className="flex gap-2">
+                <tr key={b.id} className="border-b border-border hover:bg-muted/50">
+                  <td className="px-2 sm:px-4 py-2 text-sm">{b.sana}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
+                  <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
+                  <td className="px-2 sm:px-4 py-2">
+                    <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(b)}
-                        className="hover:bg-secondary"
+                        className="hover:bg-secondary h-8 w-8 p-0"
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -291,7 +289,7 @@ const Buyurtmalar = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => setDeleteId(b.id)}
-                        className="text-destructive hover:text-destructive/90"
+                        className="text-destructive hover:text-destructive/90 h-8 w-8 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
