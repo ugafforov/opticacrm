@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditDialog } from "@/components/EditDialog";
 
 interface LinzaRoyxat {
   id: string;
@@ -21,6 +23,8 @@ const LinzaRoyxati = () => {
   const { t } = useLanguage();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingItem, setEditingItem] = useState<LinzaRoyxat | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, itemId: "" });
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -64,8 +68,37 @@ const LinzaRoyxati = () => {
   };
 
   const handleDelete = (id: string) => {
+    const itemToDelete = royxatlar.find((r) => r.id === id);
+    if (!itemToDelete) return;
+
+    const trash = JSON.parse(localStorage.getItem("trash") || "[]");
+    trash.push({
+      id: Date.now().toString(),
+      type: "linzaRoyxatlari",
+      data: itemToDelete,
+      deletedAt: new Date().toISOString(),
+    });
+    localStorage.setItem("trash", JSON.stringify(trash));
+
     saveRoyxatlar(royxatlar.filter((r) => r.id !== id));
     toast.success(t("lens.deleteSuccess"));
+    setConfirmDialog({ open: false, itemId: "" });
+  };
+
+  const handleEdit = (item: LinzaRoyxat) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const updatedRoyxatlar = royxatlar.map((r) =>
+      r.id === editingItem.id ? { ...editingItem } : r
+    );
+    saveRoyxatlar(updatedRoyxatlar);
+    setEditingItem(null);
+    toast.success(t("edit.success"));
   };
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
@@ -88,7 +121,7 @@ const LinzaRoyxati = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="mijoz">Mijoz familiya va ismi</Label>
+              <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
@@ -99,7 +132,7 @@ const LinzaRoyxati = () => {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="od">OD (o'ng)</Label>
+                <Label htmlFor="od">{t("form.rightEye")}</Label>
                 <Input
                   id="od"
                   value={form.od}
@@ -108,7 +141,7 @@ const LinzaRoyxati = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="os">OS (chap)</Label>
+                <Label htmlFor="os">{t("form.leftEye")}</Label>
                 <Input
                   id="os"
                   value={form.os}
@@ -119,18 +152,29 @@ const LinzaRoyxati = () => {
             </div>
 
             <div>
-              <Label htmlFor="telefon">Telefon raqami</Label>
-              <Input
-                id="telefon"
-                value={form.telefon}
-                onChange={(e) => setForm({ ...form, telefon: e.target.value })}
-                placeholder="+998 90 123 45 67"
-                required
-              />
+              <Label htmlFor="telefon">{t("form.phone")}</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  +998
+                </span>
+                <Input
+                  id="telefon"
+                  value={form.telefon}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^\d]/g, "");
+                    if (value.length <= 9) {
+                      setForm({ ...form, telefon: value });
+                    }
+                  }}
+                  placeholder="90 123 45 67"
+                  className="pl-14"
+                  required
+                />
+              </div>
             </div>
 
             <div>
-              <Label htmlFor="linzaTuri">Linza turi</Label>
+              <Label htmlFor="linzaTuri">{t("form.lensTypeRegistry")}</Label>
               <Input
                 id="linzaTuri"
                 value={form.linzaTuri}
@@ -179,17 +223,27 @@ const LinzaRoyxati = () => {
                   <td className="px-4 py-2">{r.sana}</td>
                   <td className="px-4 py-2">{r.mijoz}</td>
                   <td className="px-4 py-2">{r.od} / {r.os}</td>
-                  <td className="px-4 py-2">{r.telefon}</td>
+                  <td className="px-4 py-2">+998 {r.telefon}</td>
                   <td className="px-4 py-2">{r.linzaTuri}</td>
                   <td className="px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(r.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(r)}
+                        className="text-primary hover:text-primary/90"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirmDialog({ open: true, itemId: r.id })}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -197,6 +251,104 @@ const LinzaRoyxati = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+        onConfirm={() => handleDelete(confirmDialog.itemId)}
+        title={t("delete.confirm")}
+        description={t("delete.confirmDesc")}
+        confirmText={t("common.yes")}
+        cancelText={t("common.no")}
+      />
+
+      <EditDialog
+        open={editingItem !== null}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("edit.title")}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-mijoz">{t("form.clientName")}</Label>
+            <Input
+              id="edit-mijoz"
+              value={editingItem?.mijoz || ""}
+              onChange={(e) =>
+                setEditingItem(editingItem ? { ...editingItem, mijoz: e.target.value } : null)
+              }
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="edit-od">{t("form.rightEye")}</Label>
+              <Input
+                id="edit-od"
+                value={editingItem?.od || ""}
+                onChange={(e) =>
+                  setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
+                }
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-os">{t("form.leftEye")}</Label>
+              <Input
+                id="edit-os"
+                value={editingItem?.os || ""}
+                onChange={(e) =>
+                  setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
+                }
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                +998
+              </span>
+              <Input
+                id="edit-telefon"
+                value={editingItem?.telefon || ""}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^\d]/g, "");
+                  if (value.length <= 9 && editingItem) {
+                    setEditingItem({ ...editingItem, telefon: value });
+                  }
+                }}
+                placeholder="90 123 45 67"
+                className="pl-14"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-linzaTuri">{t("form.lensTypeRegistry")}</Label>
+            <Input
+              id="edit-linzaTuri"
+              value={editingItem?.linzaTuri || ""}
+              onChange={(e) =>
+                setEditingItem(editingItem ? { ...editingItem, linzaTuri: e.target.value } : null)
+              }
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
+            <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" className="bg-primary hover:bg-primary/90">
+              {t("common.save")}
+            </Button>
+          </div>
+        </form>
+      </EditDialog>
     </div>
   );
 };
