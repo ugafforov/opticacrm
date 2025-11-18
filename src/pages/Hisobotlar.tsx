@@ -3,6 +3,9 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ReportData {
   name: string;
@@ -13,10 +16,37 @@ const Hisobotlar = () => {
   const { t } = useLanguage();
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     loadReportData();
-  }, [period]);
+  }, [period, startDate, endDate]);
+
+  const parseDate = (dateString: string) => {
+    const parts = dateString.split(/[./]/);
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+    }
+    return new Date();
+  };
+
+  const isDateInRange = (dateString: string) => {
+    if (!startDate && !endDate) return true;
+    
+    const date = parseDate(dateString);
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
+
+    if (start && end) {
+      return date >= start && date <= end;
+    } else if (start) {
+      return date >= start;
+    } else if (end) {
+      return date <= end;
+    }
+    return true;
+  };
 
   const loadReportData = () => {
     // Load all data from localStorage
@@ -25,12 +55,17 @@ const Hisobotlar = () => {
     const tayyorKozoynaklar = JSON.parse(localStorage.getItem("tayyorKozoynaklar") || "[]");
     const linzaSotuvlari = JSON.parse(localStorage.getItem("linzaSotuvlari") || "[]");
 
-    const allData = [
+    let allData = [
       ...buyurtmalar.map((b: any) => ({ sana: b.sana, summa: b.jamiSumma, tur: "Buyurtmalar" })),
       ...tekshiruvlar.map((t: any) => ({ sana: t.sana, summa: t.jamiSumma, tur: "Tekshiruv" })),
       ...tayyorKozoynaklar.map((k: any) => ({ sana: k.sana, summa: k.summa, tur: "Tayyor ko'zoynaklar" })),
       ...linzaSotuvlari.map((l: any) => ({ sana: l.sana, summa: l.summa, tur: "Linza sotuvi" })),
     ];
+
+    // Filter by date range
+    if (startDate || endDate) {
+      allData = allData.filter((item) => isDateInRange(item.sana));
+    }
 
     const groupedData = groupByPeriod(allData);
     setReportData(groupedData);
@@ -75,6 +110,41 @@ const Hisobotlar = () => {
       </div>
 
       <Card className="p-6">
+        <div className="mb-6 space-y-4">
+          <h3 className="text-lg font-semibold">{t("reports.dateRange")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="startDate">{t("common.from")}</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="endDate">{t("common.to")}</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              >
+                {t("reports.reset")}
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
             <TabsTrigger value="daily">{t("reports.daily")}</TabsTrigger>

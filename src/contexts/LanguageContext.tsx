@@ -17,6 +17,7 @@ const translations = {
     "nav.readyGlasses": "Тайёр кўзойнаклар",
     "nav.lensSales": "Линза сотуви",
     "nav.reports": "Ҳисоботлар",
+    "nav.trash": "Чиқиндилар",
     "app.title": "Оптика CRM",
     
     // Orders page
@@ -116,6 +117,71 @@ const translations = {
     "common.date": "Сана",
     "common.total": "Жами",
     "common.delete": "Ўчириш",
+    "common.actions": "Амаллар",
+    "common.yes": "Ҳа",
+    "common.no": "Йўқ",
+    "common.edit": "Таҳрирлаш",
+    "common.save": "Сақлаш",
+    "common.cancel": "Бекор қилиш",
+    "common.from": "дан",
+    "common.to": "гача",
+    
+    // Form labels - Orders
+    "form.clientName": "Мижоз фамилияси ва исми",
+    "form.rightEye": "ЎК (ўнг кўз)",
+    "form.leftEye": "ЧК (чап кўз)",
+    "form.lensType": "Ойна тури",
+    "form.lensPrice": "Ойна нархи (сўм)",
+    "form.frameType": "Оправа тури",
+    "form.framePrice": "Оправа нархи (сўм)",
+    "form.phone": "Телефон рақами",
+    
+    // Form labels - Lens Registry
+    "form.lensTypeRegistry": "Линза тури",
+    
+    // Form labels - Examination
+    "form.patientName": "Мижоз",
+    
+    // Form labels - Ready Glasses
+    "form.glassesType": "Кўзойнак тури",
+    "form.amount": "Сумма (сўм)",
+    
+    // Form labels - Lens Sale
+    "form.clientNameSale": "Клиент",
+    "form.lensTypeSale": "Линза тури",
+    
+    // Trash
+    "trash.title": "Чиқиндилар",
+    "trash.subtitle": "Ўчирилган маълумотларни бошқариш",
+    "trash.empty": "Чиқиндилар бўш",
+    "trash.restore": "Тиклаш",
+    "trash.deletePermanent": "Бутунлай ўчириш",
+    "trash.restored": "Тикланди!",
+    "trash.permanentDeleted": "Бутунлай ўчирилди!",
+    "trash.deletedAt": "Ўчирилган вақти",
+    "trash.noName": "Номсиз",
+    "trash.orders": "Буюртма",
+    "trash.examinations": "Текширув",
+    "trash.readyGlasses": "Тайёр кўзойнак",
+    "trash.lensSales": "Линза сотуви",
+    "trash.lensLists": "Линза рўйхати",
+    "trash.confirmDelete": "Бутунлай ўчириш",
+    "trash.confirmDeleteDesc": "Бу маълумот бутунлай ўчирилади ва уни қайта тиклаб бўлмайди.",
+    "trash.confirmRestore": "Тиклаш",
+    "trash.confirmRestoreDesc": "Бу маълумотни тикламоқчимисиз?",
+    
+    // Delete confirmation
+    "delete.confirm": "Ўчиришни тасдиқлаш",
+    "delete.confirmDesc": "Бу маълумотни чиқиндиларга ўтказмоқчимисиз?",
+    
+    // Edit dialog
+    "edit.title": "Таҳрирлаш",
+    "edit.success": "Сақланди!",
+    
+    // Reports
+    "reports.dateRange": "Сана оралиғи",
+    "reports.apply": "Қўллаш",
+    "reports.reset": "Тозалаш",
   },
   latin: {
     // Navigation
@@ -125,6 +191,7 @@ const translations = {
     "nav.readyGlasses": "Tayyor ko'zoynaklar",
     "nav.lensSales": "Linza sotuvi",
     "nav.reports": "Hisobotlar",
+    "nav.trash": "Chiqindilar",
     "app.title": "Optika CRM",
     
     // Orders page

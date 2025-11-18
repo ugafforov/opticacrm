@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3 } from "lucide-react";
+import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3, Trash2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -15,6 +15,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { to: "/tayyor-kozoynaklar", label: t("nav.readyGlasses"), icon: Glasses },
     { to: "/linza-sotuvi", label: t("nav.lensSales"), icon: ClipboardList },
     { to: "/hisobotlar", label: t("nav.reports"), icon: BarChart3 },
+    { to: "/chiqindilar", label: t("nav.trash"), icon: Trash2 },
   ];
 
   return (
