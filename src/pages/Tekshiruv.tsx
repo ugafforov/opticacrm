@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Tekshiruv {
   id: string;
@@ -18,6 +19,7 @@ interface Tekshiruv {
 }
 
 const Tekshiruv = () => {
+  const { t } = useLanguage();
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
@@ -63,12 +65,12 @@ const Tekshiruv = () => {
       tanometriya: false,
     });
 
-    toast.success("Tekshiruv qo'shildi!");
+    toast.success(t("exam.addSuccess"));
   };
 
   const handleDelete = (id: string) => {
     saveTekshiruvlar(tekshiruvlar.filter((t) => t.id !== id));
-    toast.success("O'chirildi");
+    toast.success(t("exam.deleteSuccess"));
   };
 
   const filteredTekshiruvlar = tekshiruvlar.filter((t) => {
@@ -84,14 +86,14 @@ const Tekshiruv = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Ko'z tekshiruvi</h2>
-        <p className="text-muted-foreground">Tibbiy ko'z tekshiruvlari</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("exam.title")}</h2>
+        <p className="text-muted-foreground">{t("exam.subtitle")}</p>
       </div>
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="mijoz">Mijoz</Label>
+            <Label htmlFor="mijoz">{t("exam.patient")}</Label>
             <Input
               id="mijoz"
               value={form.mijoz}
@@ -113,7 +115,7 @@ const Tekshiruv = () => {
                 htmlFor="refraksiyametriya"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Refraksiyametriya — 50,000 so'm
+                {t("exam.refractometry")}
               </label>
             </div>
 
@@ -129,19 +131,19 @@ const Tekshiruv = () => {
                 htmlFor="tanometriya"
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Tanometriya — 15,000 so'm
+                {t("exam.tonometry")}
               </label>
             </div>
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t border-border">
             <div className="text-lg font-semibold">
-              Jami summa:{" "}
+              {t("orders.totalAmount")}:{" "}
               {((form.refraksiyametriya ? 50000 : 0) + (form.tanometriya ? 15000 : 0)).toLocaleString()}{" "}
-              so'm
+              {t("common.sum")}
             </div>
             <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Qo'shish
+              {t("exam.add")}
             </Button>
           </div>
         </form>

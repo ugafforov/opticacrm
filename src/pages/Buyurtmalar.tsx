@@ -12,6 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Buyurtma {
   id: string;
@@ -27,6 +28,7 @@ interface Buyurtma {
 }
 
 const Buyurtmalar = () => {
+  const { t } = useLanguage();
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
@@ -81,12 +83,12 @@ const Buyurtmalar = () => {
       opravaTuri: "",
     });
     
-    toast.success("Buyurtma muvaffaqiyatli qo'shildi!");
+    toast.success(t("orders.addSuccess"));
   };
 
   const handleDelete = (id: string) => {
     saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== id));
-    toast.success("Buyurtma o'chirildi");
+    toast.success(t("orders.deleteSuccess"));
   };
 
   const filteredBuyurtmalar = buyurtmalar.filter((b) => {
@@ -102,15 +104,15 @@ const Buyurtmalar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Buyurtmalar (Zakaz)</h2>
-        <p className="text-muted-foreground">Ko'zoynak buyurtmalarini boshqarish</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h2>
+        <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="mijoz">Mijoz</Label>
+              <Label htmlFor="mijoz">{t("orders.client")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
@@ -194,10 +196,10 @@ const Buyurtmalar = () => {
 
           <div className="flex justify-between items-center pt-4 border-t border-border">
             <div className="text-lg font-semibold">
-              Jami summa: {((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0)).toLocaleString()} so'm
+              {t("orders.totalAmount")}: {((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0)).toLocaleString()} {t("common.sum")}
             </div>
             <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Qo'shish
+              {t("orders.add")}
             </Button>
           </div>
         </form>
@@ -206,15 +208,15 @@ const Buyurtmalar = () => {
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <h3 className="text-lg font-semibold">Buyurtmalar ro'yxati</h3>
+            <h3 className="text-lg font-semibold">{t("orders.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              Jami: {totalSum.toLocaleString()} so'm
+              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Qidirish..."
+              placeholder={t("orders.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -225,8 +227,8 @@ const Buyurtmalar = () => {
           <table className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
-                <th className="px-4 py-2 text-left">Sana</th>
-                <th className="px-4 py-2 text-left">Mijoz</th>
+                <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                <th className="px-4 py-2 text-left">{t("orders.client")}</th>
                 <th className="px-4 py-2 text-left">OD/OS</th>
                 <th className="px-4 py-2 text-left">Oyna</th>
                 <th className="px-4 py-2 text-left">Oprava</th>

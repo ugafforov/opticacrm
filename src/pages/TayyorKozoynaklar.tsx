@@ -12,6 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface TayyorKozoynak {
   id: string;
@@ -23,6 +24,7 @@ interface TayyorKozoynak {
 }
 
 const TayyorKozoynaklar = () => {
+  const { t } = useLanguage();
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [form, setForm] = useState({
@@ -63,12 +65,12 @@ const TayyorKozoynaklar = () => {
       summa: "",
     });
 
-    toast.success("Ko'zoynak qo'shildi!");
+    toast.success(t("ready.addSuccess"));
   };
 
   const handleDelete = (id: string) => {
     saveKozoynaklar(kozoynaklar.filter((k) => k.id !== id));
-    toast.success("O'chirildi");
+    toast.success(t("ready.deleteSuccess"));
   };
 
   const filteredKozoynaklar = kozoynaklar.filter((k) => {
@@ -84,15 +86,15 @@ const TayyorKozoynaklar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Tayyor ko'zoynaklar</h2>
-        <p className="text-muted-foreground">Tayyor ko'zoynaklar sotuvi</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">{t("ready.title")}</h2>
+        <p className="text-muted-foreground">{t("ready.subtitle")}</p>
       </div>
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="kliyent">Kliyent</Label>
+              <Label htmlFor="kliyent">{t("ready.client")}</Label>
               <Input
                 id="kliyent"
                 value={form.kliyent}
@@ -102,22 +104,22 @@ const TayyorKozoynaklar = () => {
             </div>
 
             <div>
-              <Label htmlFor="kozoynakTuri">Ko'zoynak turi</Label>
+              <Label htmlFor="kozoynakTuri">{t("ready.type")}</Label>
               <Select value={form.kozoynakTuri} onValueChange={(value) => setForm({ ...form, kozoynakTuri: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Tanlang" />
+                  <SelectValue placeholder={t("lensSale.select")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="quyoshdan-himoya">Quyoshdan himoya</SelectItem>
-                  <SelectItem value="kompyuter-hameleon">Kompyuter-hameleon</SelectItem>
-                  <SelectItem value="kompyuter">Kompyuter</SelectItem>
-                  <SelectItem value="zreniya">Zreniya</SelectItem>
+                  <SelectItem value="quyoshdan-himoya">{t("ready.sunProtection")}</SelectItem>
+                  <SelectItem value="kompyuter-hameleon">{t("ready.computerChameleon")}</SelectItem>
+                  <SelectItem value="kompyuter">{t("ready.computer")}</SelectItem>
+                  <SelectItem value="zreniya">{t("ready.vision")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="summa">Summa (so'm)</Label>
+              <Label htmlFor="summa">{t("ready.amount")} ({t("common.sum")})</Label>
               <Input
                 id="summa"
                 type="number"
@@ -130,7 +132,7 @@ const TayyorKozoynaklar = () => {
 
           <div className="flex justify-end pt-4 border-t border-border">
             <Button type="submit" className="bg-primary hover:bg-primary/90">
-              Qo'shish
+              {t("ready.add")}
             </Button>
           </div>
         </form>
@@ -139,15 +141,15 @@ const TayyorKozoynaklar = () => {
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <h3 className="text-lg font-semibold">Ko'zoynaklar ro'yxati</h3>
+            <h3 className="text-lg font-semibold">{t("ready.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              Jami: {totalSum.toLocaleString()} so'm
+              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Qidirish..."
+              placeholder={t("ready.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -158,10 +160,10 @@ const TayyorKozoynaklar = () => {
           <table className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
-                <th className="px-4 py-2 text-left">№</th>
-                <th className="px-4 py-2 text-left">Sana</th>
-                <th className="px-4 py-2 text-left">Kliyent</th>
-                <th className="px-4 py-2 text-left">Ko'zoynak turi</th>
+                <th className="px-4 py-2 text-left">{t("orders.number")}</th>
+                <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                <th className="px-4 py-2 text-left">{t("ready.client")}</th>
+                <th className="px-4 py-2 text-left">{t("ready.type")}</th>
                 <th className="px-4 py-2 text-right">Summa</th>
                 <th className="px-4 py-2"></th>
               </tr>

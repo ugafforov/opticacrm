@@ -1,17 +1,20 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3 } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
+  const { t } = useLanguage();
 
   const navItems = [
-    { to: "/", label: "Buyurtmalar", icon: ShoppingCart },
-    { to: "/linza-royxati", label: "Linza ro'yxatlari", icon: Contact },
-    { to: "/tekshiruv", label: "Tekshiruv", icon: Eye },
-    { to: "/tayyor-kozoynaklar", label: "Tayyor ko'zoynaklar", icon: Glasses },
-    { to: "/linza-sotuvi", label: "Linza sotuvi", icon: ClipboardList },
-    { to: "/hisobotlar", label: "Hisobotlar", icon: BarChart3 },
+    { to: "/", label: t("nav.orders"), icon: ShoppingCart },
+    { to: "/linza-royxati", label: t("nav.lensLists"), icon: Contact },
+    { to: "/tekshiruv", label: t("nav.examination"), icon: Eye },
+    { to: "/tayyor-kozoynaklar", label: t("nav.readyGlasses"), icon: Glasses },
+    { to: "/linza-sotuvi", label: t("nav.lensSales"), icon: ClipboardList },
+    { to: "/hisobotlar", label: t("nav.reports"), icon: BarChart3 },
   ];
 
   return (
@@ -21,8 +24,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
               <Eye className="w-7 h-7" />
-              Optika CRM
+              {t("app.title")}
             </h1>
+            <LanguageSwitcher />
           </div>
           <nav className="flex gap-2 overflow-x-auto pb-2">
             {navItems.map((item) => {
