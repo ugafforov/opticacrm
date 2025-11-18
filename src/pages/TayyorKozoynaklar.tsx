@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditDialog } from "@/components/EditDialog";
 
 interface TayyorKozoynak {
   id: string;
@@ -32,6 +34,8 @@ const TayyorKozoynaklar = () => {
     kozoynakTuri: "",
     summa: "",
   });
+  const [editingItem, setEditingItem] = useState<TayyorKozoynak | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("tayyorKozoynaklar");
@@ -68,9 +72,37 @@ const TayyorKozoynaklar = () => {
     toast.success(t("ready.addSuccess"));
   };
 
-  const handleDelete = (id: string) => {
-    saveKozoynaklar(kozoynaklar.filter((k) => k.id !== id));
+  const handleDelete = () => {
+    if (!deleteId) return;
+    
+    const itemToDelete = kozoynaklar.find((k) => k.id === deleteId);
+    if (!itemToDelete) return;
+
+    // Move to trash
+    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
+    trash.push({ ...itemToDelete, type: "tayyor-kozoynak", deletedAt: new Date().toISOString() });
+    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+
+    // Remove from main list
+    saveKozoynaklar(kozoynaklar.filter((k) => k.id !== deleteId));
+    setDeleteId(null);
     toast.success(t("ready.deleteSuccess"));
+  };
+
+  const handleEdit = (item: TayyorKozoynak) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const updated = kozoynaklar.map((k) =>
+      k.id === editingItem.id ? editingItem : k
+    );
+    saveKozoynaklar(updated);
+    setEditingItem(null);
+    toast.success(t("common.updateSuccess"));
   };
 
   const filteredKozoynaklar = kozoynaklar.filter((k) => {
@@ -179,14 +211,24 @@ const TayyorKozoynaklar = () => {
                     {k.summa.toLocaleString()}
                   </td>
                   <td className="px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(k.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(k)}
+                        className="hover:bg-secondary"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(k.id)}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -194,6 +236,86 @@ const TayyorKozoynaklar = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title={t("common.confirmDelete")}
+        description={t("common.confirmDeleteDesc")}
+      />
+
+      <EditDialog
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("common.edit")}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-kliyent">{t("ready.client")}</Label>
+            <Input
+              id="edit-kliyent"
+              value={editingItem?.kliyent || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, kliyent: e.target.value } : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-kozoynakTuri">{t("ready.type")}</Label>
+            <Select
+              value={editingItem?.kozoynakTuri || ""}
+              onValueChange={(value) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, kozoynakTuri: value } : null
+                )
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="quyoshdan-himoya">{t("ready.sunProtection")}</SelectItem>
+                <SelectItem value="kompyuter-hameleon">{t("ready.computerChameleon")}</SelectItem>
+                <SelectItem value="kompyuter">{t("ready.computer")}</SelectItem>
+                <SelectItem value="zreniya">{t("ready.vision")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-summa">{t("ready.amount")} ({t("common.sum")})</Label>
+            <Input
+              id="edit-summa"
+              type="number"
+              value={editingItem?.summa || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem
+                    ? { ...editingItem, summa: parseFloat(e.target.value) }
+                    : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit">{t("common.save")}</Button>
+          </div>
+        </form>
+      </EditDialog>
     </div>
   );
 };

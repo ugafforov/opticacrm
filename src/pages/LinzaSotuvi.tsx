@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditDialog } from "@/components/EditDialog";
 
 interface LinzaSotish {
   id: string;
@@ -31,6 +33,8 @@ const LinzaSotuvi = () => {
     linzaTuri: "",
     summa: "",
   });
+  const [editingItem, setEditingItem] = useState<LinzaSotish | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("linzaSotuvlari");
@@ -66,9 +70,37 @@ const LinzaSotuvi = () => {
     toast.success(t("lensSale.addSuccess"));
   };
 
-  const handleDelete = (id: string) => {
-    saveSotuvlar(sotuvlar.filter((s) => s.id !== id));
+  const handleDelete = () => {
+    if (!deleteId) return;
+    
+    const itemToDelete = sotuvlar.find((s) => s.id === deleteId);
+    if (!itemToDelete) return;
+
+    // Move to trash
+    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
+    trash.push({ ...itemToDelete, type: "linza-sotuvi", deletedAt: new Date().toISOString() });
+    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+
+    // Remove from main list
+    saveSotuvlar(sotuvlar.filter((s) => s.id !== deleteId));
+    setDeleteId(null);
     toast.success(t("lensSale.deleteSuccess"));
+  };
+
+  const handleEdit = (item: LinzaSotish) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const updated = sotuvlar.map((s) =>
+      s.id === editingItem.id ? editingItem : s
+    );
+    saveSotuvlar(updated);
+    setEditingItem(null);
+    toast.success(t("common.updateSuccess"));
   };
 
   const filteredSotuvlar = sotuvlar.filter((s) => {
@@ -178,14 +210,24 @@ const LinzaSotuvi = () => {
                     {s.summa.toLocaleString()}
                   </td>
                   <td className="px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(s.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(s)}
+                        className="hover:bg-secondary"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(s.id)}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -193,6 +235,89 @@ const LinzaSotuvi = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title={t("common.confirmDelete")}
+        description={t("common.confirmDeleteDesc")}
+      />
+
+      <EditDialog
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("common.edit")}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-kliyent">{t("lensSale.client")}</Label>
+            <Input
+              id="edit-kliyent"
+              value={editingItem?.kliyent || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, kliyent: e.target.value } : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-linzaTuri">{t("lensSale.type")}</Label>
+            <Select
+              value={editingItem?.linzaTuri || ""}
+              onValueChange={(value) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, linzaTuri: value } : null
+                )
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="amerikanskiy">{t("lensSale.american")}</SelectItem>
+                <SelectItem value="koreyskiy">{t("lensSale.korean")}</SelectItem>
+                <SelectItem value="astigmatik">{t("lensSale.astigmatic")}</SelectItem>
+                <SelectItem value="rangli-zreniya">{t("lensSale.coloredVision")}</SelectItem>
+                <SelectItem value="chiroy-uchun">{t("lensSale.beauty")}</SelectItem>
+                <SelectItem value="linza-suvi">{t("lensSale.solution")}</SelectItem>
+                <SelectItem value="linza-konteyneri">{t("lensSale.container")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-summa">{t("lensSale.amount")} ({t("common.sum")})</Label>
+            <Input
+              id="edit-summa"
+              type="number"
+              value={editingItem?.summa || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem
+                    ? { ...editingItem, summa: parseFloat(e.target.value) }
+                    : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit">{t("common.save")}</Button>
+          </div>
+        </form>
+      </EditDialog>
     </div>
   );
 };
