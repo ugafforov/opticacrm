@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditDialog } from "@/components/EditDialog";
 
 interface Buyurtma {
   id: string;
@@ -40,6 +42,8 @@ const Buyurtmalar = () => {
     opravaNarxi: "",
     opravaTuri: "",
   });
+  const [editingItem, setEditingItem] = useState<Buyurtma | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("buyurtmalar");
@@ -86,9 +90,37 @@ const Buyurtmalar = () => {
     toast.success(t("orders.addSuccess"));
   };
 
-  const handleDelete = (id: string) => {
-    saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== id));
+  const handleDelete = () => {
+    if (!deleteId) return;
+    
+    const itemToDelete = buyurtmalar.find((b) => b.id === deleteId);
+    if (!itemToDelete) return;
+
+    // Move to trash
+    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
+    trash.push({ ...itemToDelete, type: "buyurtma", deletedAt: new Date().toISOString() });
+    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+
+    // Remove from main list
+    saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== deleteId));
+    setDeleteId(null);
     toast.success(t("orders.deleteSuccess"));
+  };
+
+  const handleEdit = (item: Buyurtma) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    const updated = buyurtmalar.map((b) =>
+      b.id === editingItem.id ? editingItem : b
+    );
+    saveBuyurtmalar(updated);
+    setEditingItem(null);
+    toast.success(t("common.updateSuccess"));
   };
 
   const filteredBuyurtmalar = buyurtmalar.filter((b) => {
@@ -246,14 +278,24 @@ const Buyurtmalar = () => {
                   <td className="px-4 py-2">{b.opravaTuri}</td>
                   <td className="px-4 py-2 text-right font-semibold">{b.jamiSumma.toLocaleString()}</td>
                   <td className="px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(b.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(b)}
+                        className="hover:bg-secondary"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(b.id)}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -261,6 +303,143 @@ const Buyurtmalar = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title={t("common.confirmDelete")}
+        description={t("common.confirmDeleteDesc")}
+      />
+
+      <EditDialog
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("common.edit")}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-mijoz">{t("orders.client")}</Label>
+            <Input
+              id="edit-mijoz"
+              value={editingItem?.mijoz || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, mijoz: e.target.value } : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label htmlFor="edit-od">OD (o'ng)</Label>
+              <Input
+                id="edit-od"
+                value={editingItem?.od || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, od: e.target.value } : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-os">OS (chap)</Label>
+              <Input
+                id="edit-os"
+                value={editingItem?.os || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, os: e.target.value } : null
+                  )
+                }
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-oynaTuri">{t("orders.lensType")}</Label>
+            <Select
+              value={editingItem?.oynaTuri || ""}
+              onValueChange={(value) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, oynaTuri: value } : null
+                )
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="zreniya">{t("orders.vision")}</SelectItem>
+                <SelectItem value="quyoshdan-himoya">{t("orders.sunProtection")}</SelectItem>
+                <SelectItem value="hameleon">{t("orders.chameleon")}</SelectItem>
+                <SelectItem value="kompyuter">{t("orders.computer")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="edit-oynaNarxi">{t("orders.lensPrice")} ({t("common.sum")})</Label>
+            <Input
+              id="edit-oynaNarxi"
+              type="number"
+              value={editingItem?.oynaNarxi || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem
+                    ? { ...editingItem, oynaNarxi: parseFloat(e.target.value), jamiSumma: parseFloat(e.target.value) + (editingItem.opravaNarxi || 0) }
+                    : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-opravaTuri">{t("orders.frameType")}</Label>
+            <Input
+              id="edit-opravaTuri"
+              value={editingItem?.opravaTuri || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, opravaTuri: e.target.value } : null
+                )
+              }
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-opravaNarxi">{t("orders.framePrice")} ({t("common.sum")})</Label>
+            <Input
+              id="edit-opravaNarxi"
+              type="number"
+              value={editingItem?.opravaNarxi || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem
+                    ? { ...editingItem, opravaNarxi: parseFloat(e.target.value), jamiSumma: (editingItem.oynaNarxi || 0) + parseFloat(e.target.value) }
+                    : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit">{t("common.save")}</Button>
+          </div>
+        </form>
+      </EditDialog>
     </div>
   );
 };

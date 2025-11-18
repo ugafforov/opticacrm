@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditDialog } from "@/components/EditDialog";
 
 interface Tekshiruv {
   id: string;
@@ -27,6 +29,8 @@ const Tekshiruv = () => {
     refraksiyametriya: false,
     tanometriya: false,
   });
+  const [editingItem, setEditingItem] = useState<Tekshiruv | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("tekshiruvlar");
@@ -68,9 +72,42 @@ const Tekshiruv = () => {
     toast.success(t("exam.addSuccess"));
   };
 
-  const handleDelete = (id: string) => {
-    saveTekshiruvlar(tekshiruvlar.filter((t) => t.id !== id));
+  const handleDelete = () => {
+    if (!deleteId) return;
+    
+    const itemToDelete = tekshiruvlar.find((t) => t.id === deleteId);
+    if (!itemToDelete) return;
+
+    // Move to trash
+    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
+    trash.push({ ...itemToDelete, type: "tekshiruv", deletedAt: new Date().toISOString() });
+    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+
+    // Remove from main list
+    saveTekshiruvlar(tekshiruvlar.filter((t) => t.id !== deleteId));
+    setDeleteId(null);
     toast.success(t("exam.deleteSuccess"));
+  };
+
+  const handleEdit = (item: Tekshiruv) => {
+    setEditingItem(item);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    // Recalculate sum based on selected services
+    let summa = 0;
+    if (editingItem.refraksiyametriya) summa += 50000;
+    if (editingItem.tanometriya) summa += 15000;
+
+    const updated = tekshiruvlar.map((t) =>
+      t.id === editingItem.id ? { ...editingItem, jamiSumma: summa } : t
+    );
+    saveTekshiruvlar(updated);
+    setEditingItem(null);
+    toast.success(t("common.updateSuccess"));
   };
 
   const filteredTekshiruvlar = tekshiruvlar.filter((t) => {
@@ -194,14 +231,24 @@ const Tekshiruv = () => {
                     {t.jamiSumma.toLocaleString()}
                   </td>
                   <td className="px-4 py-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(t.id)}
-                      className="text-destructive hover:text-destructive/90"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(t)}
+                        className="hover:bg-secondary"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(t.id)}
+                        className="text-destructive hover:text-destructive/90"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -209,6 +256,89 @@ const Tekshiruv = () => {
           </table>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={handleDelete}
+        title={t("common.confirmDelete")}
+        description={t("common.confirmDeleteDesc")}
+      />
+
+      <EditDialog
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("common.edit")}
+      >
+        <form onSubmit={handleUpdate} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-mijoz">{t("exam.patient")}</Label>
+            <Input
+              id="edit-mijoz"
+              value={editingItem?.mijoz || ""}
+              onChange={(e) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, mijoz: e.target.value } : null
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="space-y-3 border border-border rounded-lg p-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit-refraksiyametriya"
+                checked={editingItem?.refraksiyametriya || false}
+                onCheckedChange={(checked) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, refraksiyametriya: checked as boolean }
+                      : null
+                  )
+                }
+              />
+              <label
+                htmlFor="edit-refraksiyametriya"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {t("exam.refractometry")}
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="edit-tanometriya"
+                checked={editingItem?.tanometriya || false}
+                onCheckedChange={(checked) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, tanometriya: checked as boolean }
+                      : null
+                  )
+                }
+              />
+              <label
+                htmlFor="edit-tanometriya"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {t("exam.tonometry")}
+              </label>
+            </div>
+          </div>
+
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit">{t("common.save")}</Button>
+          </div>
+        </form>
+      </EditDialog>
     </div>
   );
 };
