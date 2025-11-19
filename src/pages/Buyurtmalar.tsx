@@ -260,7 +260,7 @@ const Buyurtmalar = () => {
               <tr>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">ЎК/ЧК</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
                 <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>

@@ -111,6 +111,8 @@ const translations = {
     "reports.monthly": "Ойлик",
     "reports.totalIncome": "Жами тушум",
     "reports.income": "Тушум",
+    "reports.bySection": "Бўлимлар бўйича тушум",
+    "reports.recordCount": "та ёзув",
     
     // Common
     "common.sum": "сўм",
@@ -128,8 +130,8 @@ const translations = {
     
     // Form labels - Orders
     "form.clientName": "Мижоз фамилияси ва исми",
-    "form.rightEye": "ЎК (ўнг кўз)",
-    "form.leftEye": "ЧК (чап кўз)",
+    "form.rightEye": "OD (ўнг кўз)",
+    "form.leftEye": "OS (чап кўз)",
     "form.lensType": "Ойна тури",
     "form.lensPrice": "Ойна нархи (сўм)",
     "form.frameType": "Оправа (рамка) тури",
@@ -192,14 +194,13 @@ const translations = {
     "edit.title": "Таҳрирлаш",
     "edit.success": "Сақланди!",
     
-    // Reports
+    // Reports (additional)
     "reports.dateRange": "Сана оралиғи",
     "reports.apply": "Қўллаш",
     "reports.reset": "Тозалаш",
     "reports.export": "Экспорт",
     "reports.exportExcel": "Excel форматида экспорт",
     "reports.exportPDF": "PDF форматида экспорт",
-    "reports.bySection": "Бўлимлар бўйича",
   },
   latin: {
     // Navigation
@@ -303,10 +304,11 @@ const translations = {
     "reports.monthly": "Oylik",
     "reports.totalIncome": "Jami tushum",
     "reports.income": "Tushum",
+    "reports.bySection": "Bo'limlar bo'yicha tushum",
+    "reports.recordCount": "ta yozuv",
     "reports.export": "Export",
     "reports.exportExcel": "Excel formatida export",
     "reports.exportPDF": "PDF formatida export",
-    "reports.bySection": "Bo'limlar bo'yicha",
     
     // Common
     "common.sum": "so'm",

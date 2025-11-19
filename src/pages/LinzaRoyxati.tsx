@@ -72,14 +72,9 @@ const LinzaRoyxati = () => {
     const itemToDelete = royxatlar.find((r) => r.id === id);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("trash") || "[]");
-    trash.push({
-      id: Date.now().toString(),
-      type: "linzaRoyxatlari",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("trash", JSON.stringify(trash));
+    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
+    trash.push({ ...itemToDelete, type: "linza-royxati", deletedAt: getUzbekistanISOString() });
+    localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
     saveRoyxatlar(royxatlar.filter((r) => r.id !== id));
     toast.success(t("lens.deleteSuccess"));
