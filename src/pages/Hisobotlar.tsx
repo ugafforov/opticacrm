@@ -340,7 +340,7 @@ const Hisobotlar = () => {
       </Card>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Бўлимлар бўйича тушум</h3>
+        <h3 className="text-lg font-semibold mb-4">Bo'limlar bo'yicha tushum  </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[{
           name: "Buyurtmalar",
