@@ -28,34 +28,46 @@ const Hisobotlar = () => {
     loadReportData();
   }, [period, startDate, endDate]);
 
-  const parseDate = (dateString: string) => {
+  const parseDate = (dateString: string): Date => {
+    // Parse dd.MM.yyyy or dd/MM/yyyy format
     const parts = dateString.split(/[./]/);
     if (parts.length === 3) {
-      // Parse date in Uzbekistan timezone
-      const dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T00:00:00`;
-      const date = new Date(dateStr);
-      // Convert to Uzbekistan timezone
-      const uzDate = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
-      return uzDate;
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const year = parseInt(parts[2], 10);
+      
+      // Create date at midnight (start of day)
+      return new Date(year, month, day, 0, 0, 0, 0);
     }
-    // Fallback to Uzbekistan current date
-    const now = new Date();
-    return new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
+    return new Date();
   };
 
   const isDateInRange = (dateString: string) => {
     if (!startDate && !endDate) return true;
     
-    const date = parseDate(dateString);
-    const start = startDate ? new Date(startDate + "T00:00:00") : null;
-    const end = endDate ? new Date(endDate + "T23:59:59") : null;
+    const itemDate = parseDate(dateString);
+    // Reset time to compare only dates
+    itemDate.setHours(0, 0, 0, 0);
+    
+    let start: Date | null = null;
+    let end: Date | null = null;
+    
+    if (startDate) {
+      start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+    }
+    
+    if (endDate) {
+      end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+    }
 
     if (start && end) {
-      return date >= start && date <= end;
+      return itemDate >= start && itemDate <= end;
     } else if (start) {
-      return date >= start;
+      return itemDate >= start;
     } else if (end) {
-      return date <= end;
+      return itemDate <= end;
     }
     return true;
   };
