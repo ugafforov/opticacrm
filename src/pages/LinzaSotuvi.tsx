@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 
 interface LinzaSotish {
   id: string;
@@ -53,7 +54,7 @@ const LinzaSotuvi = () => {
 
     const newSotuv: LinzaSotish = {
       id: Date.now().toString(),
-      sana: new Date().toLocaleDateString("uz-UZ"),
+      sana: formatUzbekistanDate(),
       kliyent: form.kliyent,
       linzaTuri: form.linzaTuri,
       summa: parseFloat(form.summa),
@@ -78,7 +79,7 @@ const LinzaSotuvi = () => {
 
     // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "linza-sotuvi", deletedAt: new Date().toISOString() });
+    trash.push({ ...itemToDelete, type: "linza-sotuvi", deletedAt: getUzbekistanISOString() });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
     // Remove from main list

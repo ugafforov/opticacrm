@@ -80,7 +80,7 @@ const Chiqindilar = () => {
                 <div>
                   <p className="font-semibold">{getItemLabel(item.type)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {t("trash.deletedAt")}: {new Date(item.deletedAt).toLocaleString("uz-UZ")}
+                    {t("trash.deletedAt")}: {new Date(item.deletedAt).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {item.data.mijoz || item.data.kliyent || t("trash.noName")}

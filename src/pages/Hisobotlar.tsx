@@ -31,17 +31,24 @@ const Hisobotlar = () => {
   const parseDate = (dateString: string) => {
     const parts = dateString.split(/[./]/);
     if (parts.length === 3) {
-      return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+      // Parse date in Uzbekistan timezone
+      const dateStr = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T00:00:00`;
+      const date = new Date(dateStr);
+      // Convert to Uzbekistan timezone
+      const uzDate = new Date(date.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
+      return uzDate;
     }
-    return new Date();
+    // Fallback to Uzbekistan current date
+    const now = new Date();
+    return new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tashkent" }));
   };
 
   const isDateInRange = (dateString: string) => {
     if (!startDate && !endDate) return true;
     
     const date = parseDate(dateString);
-    const start = startDate ? new Date(startDate) : null;
-    const end = endDate ? new Date(endDate) : null;
+    const start = startDate ? new Date(startDate + "T00:00:00") : null;
+    const end = endDate ? new Date(endDate + "T23:59:59") : null;
 
     if (start && end) {
       return date >= start && date <= end;
@@ -186,7 +193,7 @@ const Hisobotlar = () => {
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text(`${t("common.date")}: ${new Date().toLocaleDateString("uz-UZ")}`, 14, 22);
+    doc.text(`${t("common.date")}: ${new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" })}`, 14, 22);
 
     const buyurtmalar = JSON.parse(localStorage.getItem("buyurtmalar") || "[]");
     const tekshiruvlar = JSON.parse(localStorage.getItem("tekshiruvlar") || "[]");

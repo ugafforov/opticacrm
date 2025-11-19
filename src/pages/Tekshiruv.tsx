@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 
 interface Tekshiruv {
   id: string;
@@ -53,7 +54,7 @@ const Tekshiruv = () => {
 
     const newTekshiruv: Tekshiruv = {
       id: Date.now().toString(),
-      sana: new Date().toLocaleDateString("uz-UZ"),
+      sana: formatUzbekistanDate(),
       tartibRaqam: tekshiruvlar.length + 1,
       mijoz: form.mijoz,
       refraksiyametriya: form.refraksiyametriya,
@@ -80,7 +81,7 @@ const Tekshiruv = () => {
 
     // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "tekshiruv", deletedAt: new Date().toISOString() });
+    trash.push({ ...itemToDelete, type: "tekshiruv", deletedAt: getUzbekistanISOString() });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
     // Remove from main list
