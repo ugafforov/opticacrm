@@ -27,46 +27,49 @@ const Hisobotlar = () => {
     loadReportData();
   }, [period, startDate, endDate]);
   const parseDate = (dateString: string): Date => {
-    // Support formats: dd.MM.yyyy, dd/MM/yyyy, yyyy-MM-dd
     if (!dateString) return new Date();
 
-    // ISO-like format: 2025-11-18
+    // ISO-like format: yyyy-MM-dd (from input type="date")
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       const [year, month, day] = dateString.split("-").map(p => parseInt(p, 10));
-      return new Date(year, month - 1, day, 0, 0, 0, 0);
+      // Create date in Uzbekistan timezone
+      const date = new Date(Date.UTC(year, month - 1, day));
+      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
+      return date;
     }
 
-    // uz-UZ format: 18.11.2025 or 18/11/2025
-    const parts = dateString.split(/[./]/);
+    // dd.MM.yyyy format (stored format)
+    const parts = dateString.split(".");
     if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
+      const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
-      return new Date(year, month, day, 0, 0, 0, 0);
+      const date = new Date(Date.UTC(year, month, day));
+      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
+      return date;
     }
     return new Date(dateString);
   };
   const isDateInRange = (dateString: string) => {
     if (!startDate && !endDate) return true;
+    
     const itemDate = parseDate(dateString);
-    // Reset time to compare only dates
-    itemDate.setHours(0, 0, 0, 0);
-    let start: Date | null = null;
-    let end: Date | null = null;
-    if (startDate) {
-      start = new Date(startDate);
-      start.setHours(0, 0, 0, 0);
-    }
-    if (endDate) {
-      end = new Date(endDate);
-      end.setHours(23, 59, 59, 999);
-    }
-    if (start && end) {
-      return itemDate >= start && itemDate <= end;
-    } else if (start) {
-      return itemDate >= start;
-    } else if (end) {
-      return itemDate <= end;
+    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+
+    if (startDate && endDate) {
+      const start = parseDate(startDate);
+      const end = parseDate(endDate);
+      const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      return itemDateOnly >= startDateOnly && itemDateOnly <= endDateOnly;
+    } else if (startDate) {
+      const start = parseDate(startDate);
+      const startDateOnly = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      return itemDateOnly >= startDateOnly;
+    } else if (endDate) {
+      const end = parseDate(endDate);
+      const endDateOnly = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      return itemDateOnly <= endDateOnly;
     }
     return true;
   };
