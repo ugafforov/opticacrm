@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 
 interface TayyorKozoynak {
   id: string;
@@ -54,7 +55,7 @@ const TayyorKozoynaklar = () => {
 
     const newKozoynak: TayyorKozoynak = {
       id: Date.now().toString(),
-      sana: new Date().toLocaleDateString("uz-UZ"),
+      sana: formatUzbekistanDate(),
       tartibRaqam: kozoynaklar.length + 1,
       kliyent: form.kliyent,
       kozoynakTuri: form.kozoynakTuri,
@@ -80,7 +81,7 @@ const TayyorKozoynaklar = () => {
 
     // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "tayyor-kozoynak", deletedAt: new Date().toISOString() });
+    trash.push({ ...itemToDelete, type: "tayyor-kozoynak", deletedAt: getUzbekistanISOString() });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
     // Remove from main list

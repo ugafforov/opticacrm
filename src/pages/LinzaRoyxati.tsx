@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 
 interface LinzaRoyxat {
   id: string;
@@ -50,7 +51,7 @@ const LinzaRoyxati = () => {
 
     const newRoyxat: LinzaRoyxat = {
       id: Date.now().toString(),
-      sana: new Date().toLocaleDateString("uz-UZ"),
+      sana: formatUzbekistanDate(),
       ...form,
     };
 
@@ -76,7 +77,7 @@ const LinzaRoyxati = () => {
       id: Date.now().toString(),
       type: "linzaRoyxatlari",
       data: itemToDelete,
-      deletedAt: new Date().toISOString(),
+      deletedAt: getUzbekistanISOString(),
     });
     localStorage.setItem("trash", JSON.stringify(trash));
 

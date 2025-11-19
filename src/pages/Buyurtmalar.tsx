@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 
 interface Buyurtma {
   id: string;
@@ -64,7 +65,7 @@ const Buyurtmalar = () => {
     
     const newBuyurtma: Buyurtma = {
       id: Date.now().toString(),
-      sana: new Date().toLocaleDateString("uz-UZ"),
+      sana: formatUzbekistanDate(),
       mijoz: form.mijoz,
       od: form.od,
       os: form.os,
@@ -98,7 +99,7 @@ const Buyurtmalar = () => {
 
     // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "buyurtma", deletedAt: new Date().toISOString() });
+    trash.push({ ...itemToDelete, type: "buyurtma", deletedAt: getUzbekistanISOString() });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
     // Remove from main list
