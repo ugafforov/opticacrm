@@ -29,17 +29,25 @@ const Hisobotlar = () => {
   }, [period, startDate, endDate]);
 
   const parseDate = (dateString: string): Date => {
-    // Parse dd.MM.yyyy or dd/MM/yyyy format
+    // Support formats: dd.MM.yyyy, dd/MM/yyyy, yyyy-MM-dd
+    if (!dateString) return new Date();
+
+    // ISO-like format: 2025-11-18
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      const [year, month, day] = dateString.split("-").map((p) => parseInt(p, 10));
+      return new Date(year, month - 1, day, 0, 0, 0, 0);
+    }
+
+    // uz-UZ format: 18.11.2025 or 18/11/2025
     const parts = dateString.split(/[./]/);
     if (parts.length === 3) {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed
       const year = parseInt(parts[2], 10);
-      
-      // Create date at midnight (start of day)
       return new Date(year, month, day, 0, 0, 0, 0);
     }
-    return new Date();
+
+    return new Date(dateString);
   };
 
   const isDateInRange = (dateString: string) => {
