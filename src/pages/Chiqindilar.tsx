@@ -40,15 +40,14 @@ const Chiqindilar = () => {
     setTrashItems(items);
   };
 
-  const handleRestore = (item: TrashItem) => {
-    const data =
-      (item as any).data !== undefined
-        ? (item as any).data
-        : (() => {
-            const { id, type, deletedAt, ...rest } = item;
-            return rest;
-          })();
+  const getItemData = (item: TrashItem) => {
+    if (item.data) return item.data;
+    const { id, type, deletedAt, ...rest } = item;
+    return rest;
+  };
 
+  const handleRestore = (item: TrashItem) => {
+    const data = getItemData(item);
     const existingData = JSON.parse(localStorage.getItem(item.type) || "[]");
     existingData.push(data);
     localStorage.setItem(item.type, JSON.stringify(existingData));
