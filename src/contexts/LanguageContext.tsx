@@ -201,6 +201,21 @@ const translations = {
     "reports.export": "Экспорт",
     "reports.exportExcel": "Excel форматида экспорт",
     "reports.exportPDF": "PDF форматида экспорт",
+    
+    // Auth
+    "auth.login": "Кириш",
+    "auth.signup": "Рўйхатдан ўтиш",
+    "auth.email": "Электрон почта",
+    "auth.password": "Парол",
+    "auth.confirmPassword": "Паролни тасдиқлаш",
+    "auth.loading": "Юкланмоқда...",
+    "auth.loginSuccess": "Муваффақиятли кирилди!",
+    "auth.signupSuccess": "Рўйхатдан ўтилди!",
+    "auth.error": "Хатолик юз берди",
+    "auth.passwordMismatch": "Паролар мос келмади",
+    "auth.noAccount": "Ҳисобингиз йўқми? Рўйхатдан ўтинг",
+    "auth.haveAccount": "Ҳисобингиз борми? Киринг",
+    "auth.logout": "Чиқиш",
   },
   latin: {
     // Navigation
@@ -385,15 +400,29 @@ const translations = {
     // Delete confirmation
     "delete.confirm": "O'chirishni tasdiqlash",
     "delete.confirmDesc": "Bu ma'lumotni chiqindilarga o'tkazmoqchimisiz?",
-    
     // Edit dialog
     "edit.title": "Tahrirlash",
     "edit.success": "Saqlandi!",
     
-    // Reports
+    // Reports (additional keys)
     "reports.dateRange": "Sana oraliği",
     "reports.apply": "Qo'llash",
     "reports.reset": "Tozalash",
+    
+    // Auth
+    "auth.login": "Kirish",
+    "auth.signup": "Ro'yxatdan o'tish",
+    "auth.email": "Elektron pochta",
+    "auth.password": "Parol",
+    "auth.confirmPassword": "Parolni tasdiqlash",
+    "auth.loading": "Yuklanmoqda...",
+    "auth.loginSuccess": "Muvaffaqiyatli kirildi!",
+    "auth.signupSuccess": "Ro'yxatdan o'tildi!",
+    "auth.error": "Xatolik yuz berdi",
+    "auth.passwordMismatch": "Parollar mos kelmadi",
+    "auth.noAccount": "Hisobingiz yo'qmi? Ro'yxatdan o'ting",
+    "auth.haveAccount": "Hisobingiz bormi? Kiring",
+    "auth.logout": "Chiqish",
   },
 };
 
