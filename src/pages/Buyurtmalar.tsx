@@ -97,12 +97,15 @@ const Buyurtmalar = () => {
     const itemToDelete = buyurtmalar.find((b) => b.id === deleteId);
     if (!itemToDelete) return;
 
-    // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "buyurtma", deletedAt: getUzbekistanISOString() });
+    trash.push({
+      id: itemToDelete.id,
+      type: "buyurtmalar",
+      data: itemToDelete,
+      deletedAt: getUzbekistanISOString(),
+    });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
-    // Remove from main list
     saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== deleteId));
     setDeleteId(null);
     toast.success(t("orders.deleteSuccess"));

@@ -9,8 +9,9 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 interface TrashItem {
   id: string;
   type: string;
-  data: any;
+  data?: any;
   deletedAt: string;
+  [key: string]: any;
 }
 
 const Chiqindilar = () => {
@@ -23,20 +24,33 @@ const Chiqindilar = () => {
   }>({ open: false, itemId: "", action: "delete" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("trash");
+    const saved = localStorage.getItem("chiqindilar");
     if (saved) {
-      setTrashItems(JSON.parse(saved));
+      try {
+        const parsed: TrashItem[] = JSON.parse(saved);
+        setTrashItems(parsed);
+      } catch (error) {
+        console.error("Failed to parse trash data", error);
+      }
     }
   }, []);
 
   const saveTrash = (items: TrashItem[]) => {
-    localStorage.setItem("trash", JSON.stringify(items));
+    localStorage.setItem("chiqindilar", JSON.stringify(items));
     setTrashItems(items);
   };
 
   const handleRestore = (item: TrashItem) => {
+    const data =
+      (item as any).data !== undefined
+        ? (item as any).data
+        : (() => {
+            const { id, type, deletedAt, ...rest } = item;
+            return rest;
+          })();
+
     const existingData = JSON.parse(localStorage.getItem(item.type) || "[]");
-    existingData.push(item.data);
+    existingData.push(data);
     localStorage.setItem(item.type, JSON.stringify(existingData));
     
     saveTrash(trashItems.filter((t) => t.id !== item.id));

@@ -79,12 +79,15 @@ const TayyorKozoynaklar = () => {
     const itemToDelete = kozoynaklar.find((k) => k.id === deleteId);
     if (!itemToDelete) return;
 
-    // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "tayyor-kozoynak", deletedAt: getUzbekistanISOString() });
+    trash.push({
+      id: itemToDelete.id,
+      type: "tayyorKozoynaklar",
+      data: itemToDelete,
+      deletedAt: getUzbekistanISOString(),
+    });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
-    // Remove from main list
     saveKozoynaklar(kozoynaklar.filter((k) => k.id !== deleteId));
     setDeleteId(null);
     toast.success(t("ready.deleteSuccess"));
