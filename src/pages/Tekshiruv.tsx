@@ -79,12 +79,15 @@ const Tekshiruv = () => {
     const itemToDelete = tekshiruvlar.find((t) => t.id === deleteId);
     if (!itemToDelete) return;
 
-    // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "tekshiruv", deletedAt: getUzbekistanISOString() });
+    trash.push({
+      id: itemToDelete.id,
+      type: "tekshiruvlar",
+      data: itemToDelete,
+      deletedAt: getUzbekistanISOString(),
+    });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
-    // Remove from main list
     saveTekshiruvlar(tekshiruvlar.filter((t) => t.id !== deleteId));
     setDeleteId(null);
     toast.success(t("exam.deleteSuccess"));

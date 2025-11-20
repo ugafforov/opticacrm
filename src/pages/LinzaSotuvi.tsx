@@ -77,12 +77,15 @@ const LinzaSotuvi = () => {
     const itemToDelete = sotuvlar.find((s) => s.id === deleteId);
     if (!itemToDelete) return;
 
-    // Move to trash
     const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({ ...itemToDelete, type: "linza-sotuvi", deletedAt: getUzbekistanISOString() });
+    trash.push({
+      id: itemToDelete.id,
+      type: "linzaSotuvlari",
+      data: itemToDelete,
+      deletedAt: getUzbekistanISOString(),
+    });
     localStorage.setItem("chiqindilar", JSON.stringify(trash));
 
-    // Remove from main list
     saveSotuvlar(sotuvlar.filter((s) => s.id !== deleteId));
     setDeleteId(null);
     toast.success(t("lensSale.deleteSuccess"));
