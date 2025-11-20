@@ -87,18 +87,21 @@ const Chiqindilar = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {trashItems.map((item) => (
-            <Card key={item.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">{getItemLabel(item.type)}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {t("trash.deletedAt")}: {new Date(item.deletedAt).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {item.data.mijoz || item.data.kliyent || t("trash.noName")}
-                  </p>
-                </div>
+          {trashItems.map((item) => {
+            const data = getItemData(item);
+
+            return (
+              <Card key={item.id} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold">{getItemLabel(item.type)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("trash.deletedAt")}: {new Date(item.deletedAt).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {(data && (data.mijoz || data.kliyent)) || t("trash.noName")}
+                    </p>
+                  </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
