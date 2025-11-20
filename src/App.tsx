@@ -12,6 +12,7 @@ import LinzaSotuvi from "./pages/LinzaSotuvi";
 import Hisobotlar from "./pages/Hisobotlar";
 import Chiqindilar from "./pages/Chiqindilar";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
       <Sonner />
   <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Layout><Buyurtmalar /></Layout>} />
           <Route path="/linza-royxati" element={<Layout><LinzaRoyxati /></Layout>} />
           <Route path="/tekshiruv" element={<Layout><Tekshiruv /></Layout>} />

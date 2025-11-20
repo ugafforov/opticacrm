@@ -14,7 +14,192 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      buyurtmalar: {
+        Row: {
+          created_at: string
+          id: string
+          jami_summa: number
+          mijoz: string
+          od: string
+          oprava_narxi: number
+          oprava_turi: string
+          os: string
+          oyna_narxi: number
+          oyna_tури: string
+          sana: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jami_summa?: number
+          mijoz: string
+          od: string
+          oprava_narxi?: number
+          oprava_turi: string
+          os: string
+          oyna_narxi?: number
+          oyna_tури: string
+          sana: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jami_summa?: number
+          mijoz?: string
+          od?: string
+          oprava_narxi?: number
+          oprava_turi?: string
+          os?: string
+          oyna_narxi?: number
+          oyna_tури?: string
+          sana?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      chiqindilar: {
+        Row: {
+          created_at: string
+          data: Json
+          deleted_at: string
+          id: string
+          item_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          deleted_at: string
+          id?: string
+          item_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          deleted_at?: string
+          id?: string
+          item_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      linza_sotuvlari: {
+        Row: {
+          created_at: string
+          id: string
+          kliyent: string
+          linza_turi: string
+          sana: string
+          summa: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kliyent: string
+          linza_turi: string
+          sana: string
+          summa?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kliyent?: string
+          linza_turi?: string
+          sana?: string
+          summa?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tayyor_kozoynaklar: {
+        Row: {
+          created_at: string
+          id: string
+          kliyent: string
+          kozoynak_turi: string
+          sana: string
+          summa: number
+          tartib_raqam: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kliyent: string
+          kozoynak_turi: string
+          sana: string
+          summa?: number
+          tartib_raqam: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kliyent?: string
+          kozoynak_turi?: string
+          sana?: string
+          summa?: number
+          tartib_raqam?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tekshiruvlar: {
+        Row: {
+          created_at: string
+          id: string
+          jami_summa: number
+          mijoz: string
+          refraksiyametriya: boolean
+          sana: string
+          tanometriya: boolean
+          tartib_raqam: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jami_summa?: number
+          mijoz: string
+          refraksiyametriya?: boolean
+          sana: string
+          tanometriya?: boolean
+          tartib_raqam: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jami_summa?: number
+          mijoz?: string
+          refraksiyametriya?: boolean
+          sana?: string
+          tanometriya?: boolean
+          tartib_raqam?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
