@@ -44,6 +44,10 @@ const AdminUsers = () => {
 
   const loadUsers = async () => {
     try {
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+
+      if (authError) throw authError;
+
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*");
@@ -56,16 +60,17 @@ const AdminUsers = () => {
 
       if (rolesError) throw rolesError;
 
-      const usersWithRoles: UserWithRole[] = profiles?.map((profile: any) => {
-        const userRole = roles?.find((r: any) => r.user_id === profile.id);
+      const usersWithRoles: UserWithRole[] = authUsers.users.map((authUser: any) => {
+        const profile = profiles?.find((p: any) => p.id === authUser.id);
+        const userRole = roles?.find((r: any) => r.user_id === authUser.id);
         return {
-          id: profile.id,
-          email: profile.id,
-          full_name: profile.full_name,
+          id: authUser.id,
+          email: authUser.email,
+          full_name: profile?.full_name || null,
           role: userRole?.role || "user",
-          created_at: profile.created_at,
+          created_at: authUser.created_at,
         };
-      }) || [];
+      });
 
       setUsers(usersWithRoles);
     } catch (error: any) {
