@@ -5,6 +5,8 @@ import { RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TrashItem {
   id: string;
@@ -16,7 +18,9 @@ interface TrashItem {
 
 const Chiqindilar = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [trashItems, setTrashItems] = useState<TrashItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     itemId: string;
@@ -24,20 +28,36 @@ const Chiqindilar = () => {
   }>({ open: false, itemId: "", action: "delete" });
 
   useEffect(() => {
-    const saved = localStorage.getItem("chiqindilar");
-    if (saved) {
-      try {
-        const parsed: TrashItem[] = JSON.parse(saved);
-        setTrashItems(parsed);
-      } catch (error) {
-        console.error("Failed to parse trash data", error);
-      }
+    if (user) {
+      loadTrashItems();
     }
-  }, []);
+  }, [user]);
 
-  const saveTrash = (items: TrashItem[]) => {
-    localStorage.setItem("chiqindilar", JSON.stringify(items));
-    setTrashItems(items);
+  const loadTrashItems = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("chiqindilar")
+        .select("*")
+        .order("deleted_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        type: item.type,
+        data: item.data,
+        deletedAt: item.deleted_at,
+        itemId: item.item_id,
+      })) || [];
+
+      setTrashItems(mapped);
+    } catch (error: any) {
+      console.error("Error loading trash:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getItemData = (item: TrashItem) => {
@@ -46,21 +66,67 @@ const Chiqindilar = () => {
     return rest;
   };
 
-  const handleRestore = (item: TrashItem) => {
-    const data = getItemData(item);
-    const existingData = JSON.parse(localStorage.getItem(item.type) || "[]");
-    existingData.push(data);
-    localStorage.setItem(item.type, JSON.stringify(existingData));
-    
-    saveTrash(trashItems.filter((t) => t.id !== item.id));
-    toast.success(t("trash.restored"));
-    setConfirmDialog({ open: false, itemId: "", action: "delete" });
+  const handleRestore = async (item: TrashItem) => {
+    if (!user) return;
+
+    try {
+      const data = getItemData(item);
+      
+      // Map type to correct table name
+      const tableMap: Record<string, string> = {
+        buyurtmalar: "buyurtmalar",
+        tekshiruvlar: "tekshiruvlar",
+        tayyorKozoynaklar: "tayyor_kozoynaklar",
+        linzaSotuvlari: "linza_sotuvlari",
+        linzaRoyxatlari: "linza_royxatlari",
+      };
+
+      const tableName = tableMap[item.type];
+      if (!tableName) {
+        toast.error("Noto'g'ri ma'lumot turi");
+        return;
+      }
+
+      // Restore to original table
+      const { error: restoreError } = await supabase
+        .from(tableName as any)
+        .insert(data);
+
+      if (restoreError) throw restoreError;
+
+      // Delete from trash
+      const { error: deleteError } = await supabase
+        .from("chiqindilar")
+        .delete()
+        .eq("id", item.id);
+
+      if (deleteError) throw deleteError;
+
+      await loadTrashItems();
+      toast.success(t("trash.restored"));
+      setConfirmDialog({ open: false, itemId: "", action: "delete" });
+    } catch (error: any) {
+      console.error("Error restoring item:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handlePermanentDelete = (id: string) => {
-    saveTrash(trashItems.filter((t) => t.id !== id));
-    toast.success(t("trash.permanentDeleted"));
-    setConfirmDialog({ open: false, itemId: "", action: "delete" });
+  const handlePermanentDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from("chiqindilar")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      await loadTrashItems();
+      toast.success(t("trash.permanentDeleted"));
+      setConfirmDialog({ open: false, itemId: "", action: "delete" });
+    } catch (error: any) {
+      console.error("Error deleting permanently:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const getItemLabel = (type: string) => {

@@ -10,6 +10,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Tekshiruv {
   id: string;
@@ -23,8 +25,10 @@ interface Tekshiruv {
 
 const Tekshiruv = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     mijoz: "",
     refraksiyametriya: false,
@@ -34,84 +38,146 @@ const Tekshiruv = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("tekshiruvlar");
-    if (saved) {
-      setTekshiruvlar(JSON.parse(saved));
+    if (user) {
+      loadTekshiruvlar();
     }
-  }, []);
+  }, [user]);
 
-  const saveTekshiruvlar = (data: Tekshiruv[]) => {
-    localStorage.setItem("tekshiruvlar", JSON.stringify(data));
-    setTekshiruvlar(data);
+  const loadTekshiruvlar = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("tekshiruvlar")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        tartibRaqam: item.tartib_raqam,
+        mijoz: item.mijoz,
+        refraksiyametriya: item.refraksiyametriya,
+        tanometriya: item.tanometriya,
+        jamiSumma: item.jami_summa,
+      })) || [];
+
+      setTekshiruvlar(mapped);
+    } catch (error: any) {
+      console.error("Error loading tekshiruvlar:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) {
+      toast.error("Iltimos, tizimga kiring");
+      return;
+    }
 
     let summa = 0;
     if (form.refraksiyametriya) summa += 50000;
     if (form.tanometriya) summa += 15000;
 
-    const newTekshiruv: Tekshiruv = {
-      id: Date.now().toString(),
-      sana: formatUzbekistanDate(),
-      tartibRaqam: tekshiruvlar.length + 1,
-      mijoz: form.mijoz,
-      refraksiyametriya: form.refraksiyametriya,
-      tanometriya: form.tanometriya,
-      jamiSumma: summa,
-    };
+    try {
+      const { error } = await supabase
+        .from("tekshiruvlar")
+        .insert({
+          user_id: user.id,
+          sana: formatUzbekistanDate(),
+          tartib_raqam: tekshiruvlar.length + 1,
+          mijoz: form.mijoz,
+          refraksiyametriya: form.refraksiyametriya,
+          tanometriya: form.tanometriya,
+          jami_summa: summa,
+        });
 
-    saveTekshiruvlar([...tekshiruvlar, newTekshiruv]);
+      if (error) throw error;
 
-    setForm({
-      mijoz: "",
-      refraksiyametriya: false,
-      tanometriya: false,
-    });
+      await loadTekshiruvlar();
 
-    toast.success(t("exam.addSuccess"));
+      setForm({
+        mijoz: "",
+        refraksiyametriya: false,
+        tanometriya: false,
+      });
+
+      toast.success(t("exam.addSuccess"));
+    } catch (error: any) {
+      console.error("Error adding tekshiruv:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = async () => {
+    if (!deleteId || !user) return;
     
     const itemToDelete = tekshiruvlar.find((t) => t.id === deleteId);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({
-      id: itemToDelete.id,
-      type: "tekshiruvlar",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+    try {
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+        user_id: user.id,
+        item_id: deleteId,
+        type: "tekshiruvlar",
+        data: itemToDelete as any,
+        deleted_at: getUzbekistanISOString(),
+      }]);
 
-    saveTekshiruvlar(tekshiruvlar.filter((t) => t.id !== deleteId));
-    setDeleteId(null);
-    toast.success(t("exam.deleteSuccess"));
+      const { error } = await supabase
+        .from("tekshiruvlar")
+        .delete()
+        .eq("id", deleteId);
+
+      if (error) throw error;
+
+      await loadTekshiruvlar();
+      setDeleteId(null);
+      toast.success(t("exam.deleteSuccess"));
+    } catch (error: any) {
+      console.error("Error deleting tekshiruv:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const handleEdit = (item: Tekshiruv) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !user) return;
 
     // Recalculate sum based on selected services
     let summa = 0;
     if (editingItem.refraksiyametriya) summa += 50000;
     if (editingItem.tanometriya) summa += 15000;
 
-    const updated = tekshiruvlar.map((t) =>
-      t.id === editingItem.id ? { ...editingItem, jamiSumma: summa } : t
-    );
-    saveTekshiruvlar(updated);
-    setEditingItem(null);
-    toast.success(t("common.updateSuccess"));
+    try {
+      const { error } = await supabase
+        .from("tekshiruvlar")
+        .update({
+          mijoz: editingItem.mijoz,
+          refraksiyametriya: editingItem.refraksiyametriya,
+          tanometriya: editingItem.tanometriya,
+          jami_summa: summa,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      await loadTekshiruvlar();
+      setEditingItem(null);
+      toast.success(t("common.updateSuccess"));
+    } catch (error: any) {
+      console.error("Error updating tekshiruv:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const filteredTekshiruvlar = tekshiruvlar.filter((t) => {

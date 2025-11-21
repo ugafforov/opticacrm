@@ -16,6 +16,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TayyorKozoynak {
   id: string;
@@ -28,8 +30,10 @@ interface TayyorKozoynak {
 
 const TayyorKozoynaklar = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     kliyent: "",
     kozoynakTuri: "",
@@ -39,74 +43,134 @@ const TayyorKozoynaklar = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("tayyorKozoynaklar");
-    if (saved) {
-      setKozoynaklar(JSON.parse(saved));
+    if (user) {
+      loadKozoynaklar();
     }
-  }, []);
+  }, [user]);
 
-  const saveKozoynaklar = (data: TayyorKozoynak[]) => {
-    localStorage.setItem("tayyorKozoynaklar", JSON.stringify(data));
-    setKozoynaklar(data);
+  const loadKozoynaklar = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("tayyor_kozoynaklar")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        tartibRaqam: item.tartib_raqam,
+        kliyent: item.kliyent,
+        kozoynakTuri: item.kozoynak_turi,
+        summa: item.summa,
+      })) || [];
+
+      setKozoynaklar(mapped);
+    } catch (error: any) {
+      console.error("Error loading tayyor kozoynaklar:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newKozoynak: TayyorKozoynak = {
-      id: Date.now().toString(),
-      sana: formatUzbekistanDate(),
-      tartibRaqam: kozoynaklar.length + 1,
-      kliyent: form.kliyent,
-      kozoynakTuri: form.kozoynakTuri,
-      summa: parseFloat(form.summa),
-    };
+    if (!user) {
+      toast.error("Iltimos, tizimga kiring");
+      return;
+    }
 
-    saveKozoynaklar([...kozoynaklar, newKozoynak]);
+    try {
+      const { error } = await supabase
+        .from("tayyor_kozoynaklar")
+        .insert({
+          user_id: user.id,
+          sana: formatUzbekistanDate(),
+          tartib_raqam: kozoynaklar.length + 1,
+          kliyent: form.kliyent,
+          kozoynak_turi: form.kozoynakTuri,
+          summa: parseFloat(form.summa),
+        });
 
-    setForm({
-      kliyent: "",
-      kozoynakTuri: "",
-      summa: "",
-    });
+      if (error) throw error;
 
-    toast.success(t("ready.addSuccess"));
+      await loadKozoynaklar();
+
+      setForm({
+        kliyent: "",
+        kozoynakTuri: "",
+        summa: "",
+      });
+
+      toast.success(t("ready.addSuccess"));
+    } catch (error: any) {
+      console.error("Error adding tayyor kozoynak:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = async () => {
+    if (!deleteId || !user) return;
     
     const itemToDelete = kozoynaklar.find((k) => k.id === deleteId);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({
-      id: itemToDelete.id,
-      type: "tayyorKozoynaklar",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+    try {
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+        user_id: user.id,
+        item_id: deleteId,
+        type: "tayyorKozoynaklar",
+        data: itemToDelete as any,
+        deleted_at: getUzbekistanISOString(),
+      }]);
 
-    saveKozoynaklar(kozoynaklar.filter((k) => k.id !== deleteId));
-    setDeleteId(null);
-    toast.success(t("ready.deleteSuccess"));
+      const { error } = await supabase
+        .from("tayyor_kozoynaklar")
+        .delete()
+        .eq("id", deleteId);
+
+      if (error) throw error;
+
+      await loadKozoynaklar();
+      setDeleteId(null);
+      toast.success(t("ready.deleteSuccess"));
+    } catch (error: any) {
+      console.error("Error deleting tayyor kozoynak:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const handleEdit = (item: TayyorKozoynak) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !user) return;
 
-    const updated = kozoynaklar.map((k) =>
-      k.id === editingItem.id ? editingItem : k
-    );
-    saveKozoynaklar(updated);
-    setEditingItem(null);
-    toast.success(t("common.updateSuccess"));
+    try {
+      const { error } = await supabase
+        .from("tayyor_kozoynaklar")
+        .update({
+          kliyent: editingItem.kliyent,
+          kozoynak_turi: editingItem.kozoynakTuri,
+          summa: editingItem.summa,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      await loadKozoynaklar();
+      setEditingItem(null);
+      toast.success(t("common.updateSuccess"));
+    } catch (error: any) {
+      console.error("Error updating tayyor kozoynak:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const filteredKozoynaklar = kozoynaklar.filter((k) => {

@@ -16,6 +16,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LinzaSotish {
   id: string;
@@ -27,8 +29,10 @@ interface LinzaSotish {
 
 const LinzaSotuvi = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     kliyent: "",
     linzaTuri: "",
@@ -38,73 +42,132 @@ const LinzaSotuvi = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("linzaSotuvlari");
-    if (saved) {
-      setSotuvlar(JSON.parse(saved));
+    if (user) {
+      loadSotuvlar();
     }
-  }, []);
+  }, [user]);
 
-  const saveSotuvlar = (data: LinzaSotish[]) => {
-    localStorage.setItem("linzaSotuvlari", JSON.stringify(data));
-    setSotuvlar(data);
+  const loadSotuvlar = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("linza_sotuvlari")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        kliyent: item.kliyent,
+        linzaTuri: item.linza_turi,
+        summa: item.summa,
+      })) || [];
+
+      setSotuvlar(mapped);
+    } catch (error: any) {
+      console.error("Error loading linza sotuvlari:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newSotuv: LinzaSotish = {
-      id: Date.now().toString(),
-      sana: formatUzbekistanDate(),
-      kliyent: form.kliyent,
-      linzaTuri: form.linzaTuri,
-      summa: parseFloat(form.summa),
-    };
+    if (!user) {
+      toast.error("Iltimos, tizimga kiring");
+      return;
+    }
 
-    saveSotuvlar([...sotuvlar, newSotuv]);
+    try {
+      const { error } = await supabase
+        .from("linza_sotuvlari")
+        .insert({
+          user_id: user.id,
+          sana: formatUzbekistanDate(),
+          kliyent: form.kliyent,
+          linza_turi: form.linzaTuri,
+          summa: parseFloat(form.summa),
+        });
 
-    setForm({
-      kliyent: "",
-      linzaTuri: "",
-      summa: "",
-    });
+      if (error) throw error;
 
-    toast.success(t("lensSale.addSuccess"));
+      await loadSotuvlar();
+
+      setForm({
+        kliyent: "",
+        linzaTuri: "",
+        summa: "",
+      });
+
+      toast.success(t("lensSale.addSuccess"));
+    } catch (error: any) {
+      console.error("Error adding linza sotuvi:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = async () => {
+    if (!deleteId || !user) return;
     
     const itemToDelete = sotuvlar.find((s) => s.id === deleteId);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({
-      id: itemToDelete.id,
-      type: "linzaSotuvlari",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+    try {
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+        user_id: user.id,
+        item_id: deleteId,
+        type: "linzaSotuvlari",
+        data: itemToDelete as any,
+        deleted_at: getUzbekistanISOString(),
+      }]);
 
-    saveSotuvlar(sotuvlar.filter((s) => s.id !== deleteId));
-    setDeleteId(null);
-    toast.success(t("lensSale.deleteSuccess"));
+      const { error } = await supabase
+        .from("linza_sotuvlari")
+        .delete()
+        .eq("id", deleteId);
+
+      if (error) throw error;
+
+      await loadSotuvlar();
+      setDeleteId(null);
+      toast.success(t("lensSale.deleteSuccess"));
+    } catch (error: any) {
+      console.error("Error deleting linza sotuvi:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const handleEdit = (item: LinzaSotish) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !user) return;
 
-    const updated = sotuvlar.map((s) =>
-      s.id === editingItem.id ? editingItem : s
-    );
-    saveSotuvlar(updated);
-    setEditingItem(null);
-    toast.success(t("common.updateSuccess"));
+    try {
+      const { error } = await supabase
+        .from("linza_sotuvlari")
+        .update({
+          kliyent: editingItem.kliyent,
+          linza_turi: editingItem.linzaTuri,
+          summa: editingItem.summa,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      await loadSotuvlar();
+      setEditingItem(null);
+      toast.success(t("common.updateSuccess"));
+    } catch (error: any) {
+      console.error("Error updating linza sotuvi:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const filteredSotuvlar = sotuvlar.filter((s) => {
