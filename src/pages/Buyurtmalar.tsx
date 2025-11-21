@@ -16,6 +16,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Buyurtma {
   id: string;
@@ -32,8 +34,10 @@ interface Buyurtma {
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -47,84 +51,155 @@ const Buyurtmalar = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("buyurtmalar");
-    if (saved) {
-      setBuyurtmalar(JSON.parse(saved));
+    if (user) {
+      loadBuyurtmalar();
     }
-  }, []);
+  }, [user]);
 
-  const saveBuyurtmalar = (data: Buyurtma[]) => {
-    localStorage.setItem("buyurtmalar", JSON.stringify(data));
-    setBuyurtmalar(data);
+  const loadBuyurtmalar = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("buyurtmalar")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        mijoz: item.mijoz,
+        od: item.od,
+        os: item.os,
+        oynaTuri: item.oyna_tури,
+        oynaNarxi: item.oyna_narxi,
+        opravaNarxi: item.oprava_narxi,
+        opravaTuri: item.oprava_turi,
+        jamiSumma: item.jami_summa,
+      })) || [];
+
+      setBuyurtmalar(mapped);
+    } catch (error: any) {
+      console.error("Error loading buyurtmalar:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast.error("Iltimos, tizimga kiring");
+      return;
+    }
     
     const jamiSumma = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
     
-    const newBuyurtma: Buyurtma = {
-      id: Date.now().toString(),
-      sana: formatUzbekistanDate(),
-      mijoz: form.mijoz,
-      od: form.od,
-      os: form.os,
-      oynaTuri: form.oynaTuri,
-      oynaNarxi: parseFloat(form.oynaNarxi) || 0,
-      opravaNarxi: parseFloat(form.opravaNarxi) || 0,
-      opravaTuri: form.opravaTuri,
-      jamiSumma,
-    };
+    try {
+      const { error } = await supabase
+        .from("buyurtmalar")
+        .insert({
+          user_id: user.id,
+          sana: formatUzbekistanDate(),
+          mijoz: form.mijoz,
+          od: form.od,
+          os: form.os,
+          oyna_tури: form.oynaTuri,
+          oyna_narxi: parseFloat(form.oynaNarxi) || 0,
+          oprava_narxi: parseFloat(form.opravaNarxi) || 0,
+          oprava_turi: form.opravaTuri,
+          jami_summa: jamiSumma,
+        });
 
-    saveBuyurtmalar([...buyurtmalar, newBuyurtma]);
-    
-    setForm({
-      mijoz: "",
-      od: "",
-      os: "",
-      oynaTuri: "",
-      oynaNarxi: "",
-      opravaNarxi: "",
-      opravaTuri: "",
-    });
-    
-    toast.success(t("orders.addSuccess"));
+      if (error) throw error;
+
+      await loadBuyurtmalar();
+      
+      setForm({
+        mijoz: "",
+        od: "",
+        os: "",
+        oynaTuri: "",
+        oynaNarxi: "",
+        opravaNarxi: "",
+        opravaTuri: "",
+      });
+      
+      toast.success(t("orders.addSuccess"));
+    } catch (error: any) {
+      console.error("Error adding buyurtma:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = async () => {
+    if (!deleteId || !user) return;
     
     const itemToDelete = buyurtmalar.find((b) => b.id === deleteId);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({
-      id: itemToDelete.id,
-      type: "buyurtmalar",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+    try {
+      // Save to chiqindilar before deleting
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+        user_id: user.id,
+        item_id: deleteId,
+        type: "buyurtmalar",
+        data: itemToDelete as any,
+        deleted_at: getUzbekistanISOString(),
+      }]);
 
-    saveBuyurtmalar(buyurtmalar.filter((b) => b.id !== deleteId));
-    setDeleteId(null);
-    toast.success(t("orders.deleteSuccess"));
+      // Delete the buyurtma
+      const { error } = await supabase
+        .from("buyurtmalar")
+        .delete()
+        .eq("id", deleteId);
+
+      if (error) throw error;
+
+      await loadBuyurtmalar();
+      setDeleteId(null);
+      toast.success(t("orders.deleteSuccess"));
+    } catch (error: any) {
+      console.error("Error deleting buyurtma:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const handleEdit = (item: Buyurtma) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !user) return;
 
-    const updated = buyurtmalar.map((b) =>
-      b.id === editingItem.id ? editingItem : b
-    );
-    saveBuyurtmalar(updated);
-    setEditingItem(null);
-    toast.success(t("common.updateSuccess"));
+    try {
+      const { error } = await supabase
+        .from("buyurtmalar")
+        .update({
+          mijoz: editingItem.mijoz,
+          od: editingItem.od,
+          os: editingItem.os,
+          oyna_tури: editingItem.oynaTuri,
+          oyna_narxi: editingItem.oynaNarxi,
+          oprava_narxi: editingItem.opravaNarxi,
+          oprava_turi: editingItem.opravaTuri,
+          jami_summa: editingItem.jamiSumma,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      await loadBuyurtmalar();
+      setEditingItem(null);
+      toast.success(t("common.updateSuccess"));
+    } catch (error: any) {
+      console.error("Error updating buyurtma:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const filteredBuyurtmalar = buyurtmalar.filter((b) => {
