@@ -1,12 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3, Trash2 } from "lucide-react";
+import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3, Trash2, Users, LogOut } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { Button } from "./ui/button";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { t } = useLanguage();
+  const { isAdmin, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: t("nav.orders"), icon: ShoppingCart },
@@ -18,6 +21,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { to: "/chiqindilar", label: t("nav.trash"), icon: Trash2 },
   ];
 
+  if (isAdmin) {
+    navItems.push({ to: "/admin/users", label: "Foydalanuvchilar", icon: Users });
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card sticky top-0 z-50">
@@ -27,7 +34,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Eye className="w-7 h-7" />
               {t("app.title")}
             </h1>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button variant="outline" size="sm" onClick={signOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Chiqish
+              </Button>
+            </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto pb-2">
             {navItems.map((item) => {
