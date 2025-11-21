@@ -92,6 +92,45 @@ export type Database = {
         }
         Relationships: []
       }
+      linza_royxatlari: {
+        Row: {
+          created_at: string
+          id: string
+          linza_turi: string
+          mijoz: string
+          od: string
+          os: string
+          sana: string
+          telefon: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          linza_turi: string
+          mijoz: string
+          od: string
+          os: string
+          sana: string
+          telefon: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          linza_turi?: string
+          mijoz?: string
+          od?: string
+          os?: string
+          sana?: string
+          telefon?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linza_sotuvlari: {
         Row: {
           created_at: string

@@ -9,6 +9,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LinzaRoyxat {
   id: string;
@@ -22,8 +24,10 @@ interface LinzaRoyxat {
 
 const LinzaRoyxati = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<LinzaRoyxat | null>(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, itemId: "" });
   const [form, setForm] = useState({
@@ -35,71 +39,140 @@ const LinzaRoyxati = () => {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem("linzaRoyxatlari");
-    if (saved) {
-      setRoyxatlar(JSON.parse(saved));
+    if (user) {
+      loadRoyxatlar();
     }
-  }, []);
+  }, [user]);
 
-  const saveRoyxatlar = (data: LinzaRoyxat[]) => {
-    localStorage.setItem("linzaRoyxatlari", JSON.stringify(data));
-    setRoyxatlar(data);
+  const loadRoyxatlar = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("linza_royxatlari")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        mijoz: item.mijoz,
+        od: item.od,
+        os: item.os,
+        telefon: item.telefon,
+        linzaTuri: item.linza_turi,
+      })) || [];
+
+      setRoyxatlar(mapped);
+    } catch (error: any) {
+      console.error("Error loading linza royxatlari:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newRoyxat: LinzaRoyxat = {
-      id: Date.now().toString(),
-      sana: formatUzbekistanDate(),
-      ...form,
-    };
+    if (!user) {
+      toast.error("Iltimos, tizimga kiring");
+      return;
+    }
 
-    saveRoyxatlar([...royxatlar, newRoyxat]);
+    try {
+      const { error } = await supabase
+        .from("linza_royxatlari")
+        .insert({
+          user_id: user.id,
+          sana: formatUzbekistanDate(),
+          mijoz: form.mijoz,
+          od: form.od,
+          os: form.os,
+          telefon: form.telefon,
+          linza_turi: form.linzaTuri,
+        });
 
-    setForm({
-      mijoz: "",
-      od: "",
-      os: "",
-      telefon: "",
-      linzaTuri: "",
-    });
+      if (error) throw error;
 
-    toast.success(t("lens.addSuccess"));
+      await loadRoyxatlar();
+
+      setForm({
+        mijoz: "",
+        od: "",
+        os: "",
+        telefon: "",
+        linzaTuri: "",
+      });
+
+      toast.success(t("lens.addSuccess"));
+    } catch (error: any) {
+      console.error("Error adding linza royxat:", error);
+      toast.error(t("common.error"));
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!user) return;
+
     const itemToDelete = royxatlar.find((r) => r.id === id);
     if (!itemToDelete) return;
 
-    const trash = JSON.parse(localStorage.getItem("chiqindilar") || "[]");
-    trash.push({
-      id: itemToDelete.id,
-      type: "linzaRoyxatlari",
-      data: itemToDelete,
-      deletedAt: getUzbekistanISOString(),
-    });
-    localStorage.setItem("chiqindilar", JSON.stringify(trash));
+    try {
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+        user_id: user.id,
+        item_id: id,
+        type: "linzaRoyxatlari",
+        data: itemToDelete as any,
+        deleted_at: getUzbekistanISOString(),
+      }]);
 
-    saveRoyxatlar(royxatlar.filter((r) => r.id !== id));
-    toast.success(t("lens.deleteSuccess"));
-    setConfirmDialog({ open: false, itemId: "" });
+      const { error } = await supabase
+        .from("linza_royxatlari")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      await loadRoyxatlar();
+      toast.success(t("lens.deleteSuccess"));
+      setConfirmDialog({ open: false, itemId: "" });
+    } catch (error: any) {
+      console.error("Error deleting linza royxat:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const handleEdit = (item: LinzaRoyxat) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !user) return;
 
-    const updatedRoyxatlar = royxatlar.map((r) =>
-      r.id === editingItem.id ? { ...editingItem } : r
-    );
-    saveRoyxatlar(updatedRoyxatlar);
-    setEditingItem(null);
-    toast.success(t("edit.success"));
+    try {
+      const { error } = await supabase
+        .from("linza_royxatlari")
+        .update({
+          mijoz: editingItem.mijoz,
+          od: editingItem.od,
+          os: editingItem.os,
+          telefon: editingItem.telefon,
+          linza_turi: editingItem.linzaTuri,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      await loadRoyxatlar();
+      setEditingItem(null);
+      toast.success(t("edit.success"));
+    } catch (error: any) {
+      console.error("Error updating linza royxat:", error);
+      toast.error(t("common.error"));
+    }
   };
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
