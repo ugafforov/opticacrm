@@ -31,6 +31,32 @@ SET row_security = off;
 
 
 --
+-- Name: app_role; Type: TYPE; Schema: public; Owner: -
+--
+
+CREATE TYPE public.app_role AS ENUM (
+    'admin',
+    'user'
+);
+
+
+--
+-- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.handle_new_user() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name)
+  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name');
+  RETURN NEW;
+END;
+$$;
+
+
+--
 -- Name: handle_updated_at(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -42,6 +68,35 @@ BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
+$$;
+
+
+--
+-- Name: has_role(uuid, public.app_role); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.has_role(_user_id uuid, _role public.app_role) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = _user_id
+      AND role = _role
+  )
+$$;
+
+
+--
+-- Name: is_admin(uuid); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.is_admin(_user_id uuid) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  SELECT public.has_role(_user_id, 'admin')
 $$;
 
 
@@ -100,6 +155,18 @@ CREATE TABLE public.linza_sotuvlari (
 
 
 --
+-- Name: profiles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.profiles (
+    id uuid NOT NULL,
+    full_name text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now()
+);
+
+
+--
 -- Name: tayyor_kozoynaklar; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -135,6 +202,18 @@ CREATE TABLE public.tekshiruvlar (
 
 
 --
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_roles (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    role public.app_role NOT NULL,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+--
 -- Name: buyurtmalar buyurtmalar_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -159,6 +238,14 @@ ALTER TABLE ONLY public.linza_sotuvlari
 
 
 --
+-- Name: profiles profiles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profiles
+    ADD CONSTRAINT profiles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tayyor_kozoynaklar tayyor_kozoynaklar_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -175,6 +262,22 @@ ALTER TABLE ONLY public.tekshiruvlar
 
 
 --
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_roles user_roles_user_id_role_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_user_id_role_key UNIQUE (user_id, role);
+
+
+--
 -- Name: buyurtmalar update_buyurtmalar_updated_at; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -186,6 +289,13 @@ CREATE TRIGGER update_buyurtmalar_updated_at BEFORE UPDATE ON public.buyurtmalar
 --
 
 CREATE TRIGGER update_linza_sotuvlari_updated_at BEFORE UPDATE ON public.linza_sotuvlari FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+
+--
+-- Name: profiles update_profiles_updated_at; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 
 --
@@ -227,6 +337,14 @@ ALTER TABLE ONLY public.linza_sotuvlari
 
 
 --
+-- Name: profiles profiles_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.profiles
+    ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: tayyor_kozoynaklar tayyor_kozoynaklar_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -240,6 +358,56 @@ ALTER TABLE ONLY public.tayyor_kozoynaklar
 
 ALTER TABLE ONLY public.tekshiruvlar
     ADD CONSTRAINT tekshiruvlar_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles Admins can delete user roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can delete user roles" ON public.user_roles FOR DELETE TO authenticated USING (public.is_admin(auth.uid()));
+
+
+--
+-- Name: profiles Admins can insert profiles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can insert profiles" ON public.profiles FOR INSERT TO authenticated WITH CHECK (public.is_admin(auth.uid()));
+
+
+--
+-- Name: user_roles Admins can insert user roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can insert user roles" ON public.user_roles FOR INSERT TO authenticated WITH CHECK (public.is_admin(auth.uid()));
+
+
+--
+-- Name: profiles Admins can update all profiles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can update all profiles" ON public.profiles FOR UPDATE TO authenticated USING (public.is_admin(auth.uid()));
+
+
+--
+-- Name: profiles Admins can view all profiles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can view all profiles" ON public.profiles FOR SELECT TO authenticated USING (public.is_admin(auth.uid()));
+
+
+--
+-- Name: user_roles Admins can view all user roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Admins can view all user roles" ON public.user_roles FOR SELECT TO authenticated USING (public.is_admin(auth.uid()));
 
 
 --
@@ -327,6 +495,13 @@ CREATE POLICY "Users can update their own linza_sotuvlari" ON public.linza_sotuv
 
 
 --
+-- Name: profiles Users can update their own profile; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own profile" ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id));
+
+
+--
 -- Name: tayyor_kozoynaklar Users can update their own tayyor_kozoynaklar; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -362,6 +537,20 @@ CREATE POLICY "Users can view their own linza_sotuvlari" ON public.linza_sotuvla
 
 
 --
+-- Name: profiles Users can view their own profile; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT TO authenticated USING ((auth.uid() = id));
+
+
+--
+-- Name: user_roles Users can view their own roles; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own roles" ON public.user_roles FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+
+
+--
 -- Name: tayyor_kozoynaklar Users can view their own tayyor_kozoynaklar; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -394,6 +583,12 @@ ALTER TABLE public.chiqindilar ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.linza_sotuvlari ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: profiles; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: tayyor_kozoynaklar; Type: ROW SECURITY; Schema: public; Owner: -
 --
 
@@ -404,6 +599,12 @@ ALTER TABLE public.tayyor_kozoynaklar ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.tekshiruvlar ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_roles; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 --
 -- PostgreSQL database dump complete
