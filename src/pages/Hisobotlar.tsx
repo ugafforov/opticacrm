@@ -152,7 +152,7 @@ const Hisobotlar = () => {
           name: t("nav.orders"),
           total: currentBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0),
           count: currentBuyurtmalar.length,
-          color: "hsl(var(--primary))",
+          color: "hsl(var(--chart-1))",
           previousTotal: showComparison ? previousBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0) : undefined,
         },
         {
