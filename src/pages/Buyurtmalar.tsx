@@ -12,7 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -368,6 +368,47 @@ const Buyurtmalar = () => {
     toast.success("PDF fayl yuklab olindi");
   };
 
+  const handlePrint = () => {
+    const printContent = document.getElementById('printable-table');
+    if (!printContent) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print - Buyurtmalar ro'yxati</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .print-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+            .print-date { color: #666; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <h1>Buyurtmalar ro'yxati</h1>
+            <span class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</span>
+          </div>
+          ${printContent.outerHTML}
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -556,11 +597,20 @@ const Buyurtmalar = () => {
                 <Download className="w-4 h-4" />
                 PDF
               </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                Print
+              </Button>
             </div>
           </div>
         </div>
         <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <table className="w-full min-w-[640px]">
+          <table id="printable-table" className="w-full min-w-[640px]">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
