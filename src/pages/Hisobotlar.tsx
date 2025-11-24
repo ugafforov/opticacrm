@@ -383,9 +383,16 @@ const Hisobotlar = () => {
   };
 
   const exportToPDF = async (type: "period" | "section" | "detailed") => {
-    if (!user) return;
+    console.log("PDF eksport boshlandi, type:", type, "user:", user?.id);
+    
+    if (!user) {
+      console.log("User topilmadi");
+      toast.error("Foydalanuvchi autentifikatsiya qilinmagan");
+      return;
+    }
 
     try {
+      console.log("Ma'lumotlarni yuklash boshlandi");
       const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes] = await Promise.all([
         supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
         supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
@@ -397,8 +404,11 @@ const Hisobotlar = () => {
       const tekshiruvlar = tekshiruvlarRes.data || [];
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
+      
+      console.log("Ma'lumotlar yuklandi:", { buyurtmalar: buyurtmalar.length, tekshiruvlar: tekshiruvlar.length });
 
       const doc = setupPdfDoc();
+      console.log("PDF document yaratildi");
       
       doc.setFontSize(16);
       doc.text("Hisobotlar", 14, 15);
@@ -507,13 +517,16 @@ const Hisobotlar = () => {
         });
       }
 
+      console.log("PDF saqlash boshlandi");
       doc.save(`Hisobotlar_${currentDate}.pdf`);
+      console.log("PDF saqlandi");
       toast.success("PDF fayl yuklab olindi");
     } catch (error: any) {
       console.error("PDF eksport xatosi:", error);
-      toast.error("Eksport qilishda xatolik yuz berdi");
+      toast.error("Eksport qilishda xatolik yuz berdi: " + error.message);
     }
   };
+
 
   return (
     <div className="space-y-6">
