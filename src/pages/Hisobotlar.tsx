@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, FileDown } from "lucide-react";
+import { CalendarIcon, FileDown, Printer } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -653,6 +653,76 @@ const Hisobotlar = () => {
     }
   };
 
+  const handlePrint = () => {
+    const printContent = document.getElementById('printable-report');
+    if (!printContent) {
+      toast.error("Chop etish uchun hisobot topilmadi");
+      return;
+    }
+    
+    // Yashirin iframe yaratish
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      toast.error("Chop etishda xatolik yuz berdi");
+      document.body.removeChild(iframe);
+      return;
+    }
+    
+    const dateRange = startDate && endDate 
+      ? `${format(startDate, "dd.MM.yyyy")} - ${format(endDate, "dd.MM.yyyy")}`
+      : "Barcha ma'lumotlar";
+    
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <title>Hisobotlar</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
+            .print-date { text-align: center; color: #666; margin-bottom: 20px; font-size: 14px; }
+            .section { margin-bottom: 30px; page-break-inside: avoid; }
+            .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; padding: 10px; background: #f0f0f0; border-radius: 5px; }
+            .section-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+            .stat-card { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+            .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
+            .stat-value { font-size: 16px; font-weight: bold; }
+            .total-income { text-align: center; margin-bottom: 20px; padding: 15px; background: #e8f4fd; border-radius: 8px; }
+            .total-income .label { font-size: 14px; color: #666; margin-bottom: 5px; }
+            .total-income .value { font-size: 24px; font-weight: bold; color: #0066cc; }
+            @media print {
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              .section { page-break-inside: avoid; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Hisobotlar</h1>
+          <p class="print-date">Davr: ${dateRange}</p>
+          <p class="print-date">Chop etilgan: ${formatDisplayDate(formatUzbekistanDateTime().split(' ')[0])}</p>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    doc.close();
+    
+    // Print dialogni ochish
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    
+    // Iframeni o'chirish
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -756,8 +826,8 @@ const Hisobotlar = () => {
           </div>
 
           <div className="mt-6 border-t pt-4">
-            <h3 className="text-sm font-semibold mb-3 text-foreground">Eksport qilish</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <h3 className="text-sm font-semibold mb-3 text-foreground">Eksport qilish va chop etish</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground font-medium">Excel format</p>
                 <div className="flex flex-wrap gap-2">
@@ -822,10 +892,23 @@ const Hisobotlar = () => {
                   </Button>
                 </div>
               </div>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">Chop etish</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePrint}
+                  className="flex items-center gap-2 w-full"
+                >
+                  <Printer className="h-4 w-4" />
+                  Hisobotni chop etish
+                </Button>
+              </div>
             </div>
           </div>
         </div>
 
+        <div id="printable-report">
         <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
           <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
             <TabsTrigger value="daily">{t("reports.daily")}</TabsTrigger>
@@ -910,6 +993,7 @@ const Hisobotlar = () => {
             </div>
           </TabsContent>
         </Tabs>
+        </div>
       </Card>
 
       <Card className="p-6">
@@ -961,7 +1045,7 @@ const Hisobotlar = () => {
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Ma'lumotlarni eksport qilish</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <Button onClick={() => exportToExcel("period")} variant="outline" className="w-full">
             <FileDown className="w-4 h-4 mr-2" />
             Excel - {period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}
@@ -973,6 +1057,10 @@ const Hisobotlar = () => {
           <Button onClick={() => exportToExcel("detailed")} variant="outline" className="w-full">
             <FileDown className="w-4 h-4 mr-2" />
             Excel - Batafsil
+          </Button>
+          <Button onClick={handlePrint} variant="outline" className="w-full">
+            <Printer className="w-4 h-4 mr-2" />
+            Chop etish
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
