@@ -292,20 +292,20 @@ const Buyurtmalar = () => {
       head: [['Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
       body: tableData,
       styles: { 
-        font: 'DejaVuSans', 
+        font: 'helvetica', 
         fontSize: 8,
         cellPadding: 2,
       },
       headStyles: { 
         fillColor: [66, 66, 66],
         textColor: 255,
-        fontStyle: 'normal',
+        fontStyle: 'bold',
       },
       alternateRowStyles: { 
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        6: { halign: 'right' }, // Summa column right-aligned
+        6: { halign: 'right' },
       },
     });
 

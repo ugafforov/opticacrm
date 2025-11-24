@@ -1,8 +1,8 @@
 import jsPDF from "jspdf";
-import { DejaVuSans } from "@/assets/fonts/DejaVuSans-normal";
 
 /**
- * Creates a new jsPDF document with DejaVuSans font for Cyrillic support
+ * Creates a new jsPDF document configured for Cyrillic text
+ * Uses default fonts with Unicode support
  * @param orientation - 'portrait' or 'landscape' (default: 'portrait')
  * @returns Configured jsPDF instance
  */
@@ -13,10 +13,8 @@ export const setupPdfDoc = (orientation: 'portrait' | 'landscape' = 'portrait') 
     format: "a4",
   });
 
-  // Register DejaVuSans font for Cyrillic support
-  doc.addFileToVFS("DejaVuSans.ttf", DejaVuSans);
-  doc.addFont("DejaVuSans.ttf", "DejaVuSans", "normal");
-  doc.setFont("DejaVuSans", "normal");
+  // Use default helvetica font which has broader Unicode support
+  doc.setFont("helvetica", "normal");
 
   return doc;
 };

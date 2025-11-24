@@ -254,14 +254,14 @@ const LinzaRoyxati = () => {
       head: [['Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
       body: tableData,
       styles: { 
-        font: 'DejaVuSans', 
+        font: 'helvetica', 
         fontSize: 9,
         cellPadding: 2,
       },
       headStyles: { 
         fillColor: [66, 66, 66],
         textColor: 255,
-        fontStyle: 'normal',
+        fontStyle: 'bold',
       },
       alternateRowStyles: { 
         fillColor: [245, 245, 245] 

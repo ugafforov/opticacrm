@@ -254,20 +254,20 @@ const Tekshiruv = () => {
       head: [['№', 'Sana', 'Mijoz', 'Tekshiruvlar', 'Summa']],
       body: tableData,
       styles: { 
-        font: 'DejaVuSans', 
+        font: 'helvetica', 
         fontSize: 9,
         cellPadding: 2,
       },
       headStyles: { 
         fillColor: [66, 66, 66],
         textColor: 255,
-        fontStyle: 'normal',
+        fontStyle: 'bold',
       },
       alternateRowStyles: { 
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        4: { halign: 'right' }, // Summa column right-aligned
+        4: { halign: 'right' },
       },
     });
 
