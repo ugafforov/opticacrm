@@ -321,7 +321,7 @@ const TayyorKozoynaklar = () => {
               {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
-          <div className="flex flex-col xs:flex-row gap-2 xs:items-center">
+          <div className="flex flex-row gap-2 items-center flex-wrap">
             <div className="relative w-full xs:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
@@ -331,26 +331,24 @@ const TayyorKozoynaklar = () => {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToExcel}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Excel
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToPDF}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                PDF
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToExcel}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Excel
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToPDF}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </Button>
           </div>
         </div>
         <div className="overflow-x-auto">
