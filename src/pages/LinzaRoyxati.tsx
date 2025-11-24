@@ -201,10 +201,13 @@ const LinzaRoyxati = () => {
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
     const query = searchQuery.toLowerCase();
+    const searchDigits = searchQuery.replace(/\D/g, "");
+    const phoneDigits = r.telefon.replace(/\D/g, "");
+    
     return (
       r.mijoz.toLowerCase().includes(query) ||
-      r.telefon.includes(query) ||
-      r.sana.includes(query)
+      r.sana.includes(query) ||
+      (searchDigits && phoneDigits.includes(searchDigits))
     );
   });
 

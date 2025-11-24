@@ -230,10 +230,13 @@ const Buyurtmalar = () => {
 
   const filteredBuyurtmalar = buyurtmalar.filter((b) => {
     const query = searchQuery.toLowerCase();
+    const searchDigits = searchQuery.replace(/\D/g, "");
+    const phoneDigits = b.telefon ? b.telefon.replace(/\D/g, "") : "";
+    
     return (
       b.mijoz.toLowerCase().includes(query) ||
       b.sana.includes(query) ||
-      (b.telefon && b.telefon.toLowerCase().includes(query))
+      (searchDigits && phoneDigits.includes(searchDigits))
     );
   });
 
