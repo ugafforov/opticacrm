@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -266,13 +266,7 @@ const Buyurtmalar = () => {
                 type="tel"
                 value={form.telefon}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  // Ensure +998 stays at the beginning
-                  if (!value.startsWith("+998 ")) {
-                    setForm({ ...form, telefon: "+998 " });
-                  } else {
-                    setForm({ ...form, telefon: value });
-                  }
+                  setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
                 }}
                 placeholder="+998 90 123 45 67"
               />
@@ -464,16 +458,9 @@ const Buyurtmalar = () => {
               type="tel"
               value={editingItem?.telefon || "+998 "}
               onChange={(e) => {
-                const value = e.target.value;
-                if (!value.startsWith("+998 ")) {
-                  setEditingItem(
-                    editingItem ? { ...editingItem, telefon: "+998 " } : null
-                  );
-                } else {
-                  setEditingItem(
-                    editingItem ? { ...editingItem, telefon: value } : null
-                  );
-                }
+                setEditingItem(
+                  editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null
+                );
               }}
               placeholder="+998 90 123 45 67"
             />
