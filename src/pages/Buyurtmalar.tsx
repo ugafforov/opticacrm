@@ -416,15 +416,15 @@ const Buyurtmalar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("orders.list")}</h3>
             <div className="text-lg font-bold text-primary">
               {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <div className="relative flex-1 sm:max-w-64">
+          <div className="flex flex-col xs:flex-row gap-2 xs:items-center">
+            <div className="relative w-full xs:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder={t("orders.search")}
