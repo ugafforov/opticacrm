@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { setupPdfDoc } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
@@ -397,21 +398,45 @@ const Hisobotlar = () => {
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
 
-      const doc = new jsPDF();
-      doc.setFont("helvetica", "bold");
+      const doc = setupPdfDoc();
+      
       doc.setFontSize(16);
       doc.text(t("reports.title"), 14, 15);
-      doc.setFont("helvetica", "normal");
+      
       doc.setFontSize(10);
       doc.text(`${t("common.date")}: ${new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" })}`, 14, 22);
 
       if (type === "period") {
+        doc.text(`Davr: ${period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}`, 14, 28);
+        
         const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
         autoTable(doc, {
-          startY: 30,
+          startY: 35,
           head: [[t("common.date"), t("reports.income")]],
           body: tableData,
-          foot: [[t("common.total"), totalTushum.toLocaleString()]]
+          foot: [[t("common.total"), totalTushum.toLocaleString()]],
+          styles: { 
+            font: 'DejaVuSans', 
+            fontSize: 9,
+            cellPadding: 3,
+          },
+          headStyles: { 
+            fillColor: [66, 66, 66],
+            textColor: 255,
+            fontStyle: 'normal',
+          },
+          footStyles: {
+            fillColor: [66, 66, 66],
+            textColor: 255,
+            fontStyle: 'normal',
+            fontSize: 10,
+          },
+          alternateRowStyles: { 
+            fillColor: [245, 245, 245] 
+          },
+          columnStyles: {
+            1: { halign: 'right' },
+          },
         });
       } else if (type === "section") {
         const sections = [
@@ -426,7 +451,29 @@ const Hisobotlar = () => {
           startY: 30,
           head: [[t("reports.bySection"), t("reports.income")]],
           body: tableData,
-          foot: [[t("common.total"), total.toLocaleString()]]
+          foot: [[t("common.total"), total.toLocaleString()]],
+          styles: { 
+            font: 'DejaVuSans', 
+            fontSize: 10,
+            cellPadding: 3,
+          },
+          headStyles: { 
+            fillColor: [66, 66, 66],
+            textColor: 255,
+            fontStyle: 'normal',
+          },
+          footStyles: {
+            fillColor: [66, 66, 66],
+            textColor: 255,
+            fontStyle: 'normal',
+            fontSize: 11,
+          },
+          alternateRowStyles: { 
+            fillColor: [245, 245, 245] 
+          },
+          columnStyles: {
+            1: { halign: 'right' },
+          },
         });
       } else {
         const allData = [
@@ -438,7 +485,23 @@ const Hisobotlar = () => {
         autoTable(doc, {
           startY: 30,
           head: [[t("reports.bySection"), t("common.date"), t("orders.client"), t("reports.income")]],
-          body: allData
+          body: allData,
+          styles: { 
+            font: 'DejaVuSans', 
+            fontSize: 8,
+            cellPadding: 2,
+          },
+          headStyles: { 
+            fillColor: [66, 66, 66],
+            textColor: 255,
+            fontStyle: 'normal',
+          },
+          alternateRowStyles: { 
+            fillColor: [245, 245, 245] 
+          },
+          columnStyles: {
+            3: { halign: 'right' },
+          },
         });
       }
 
