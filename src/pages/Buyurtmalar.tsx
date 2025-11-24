@@ -56,6 +56,30 @@ const Buyurtmalar = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('buyurtmalar-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'buyurtmalar',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadBuyurtmalar();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadBuyurtmalar = async () => {
     try {
       setLoading(true);

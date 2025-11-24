@@ -48,6 +48,30 @@ const TayyorKozoynaklar = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('tayyor-kozoynaklar-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tayyor_kozoynaklar',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadKozoynaklar();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadKozoynaklar = async () => {
     try {
       setLoading(true);
