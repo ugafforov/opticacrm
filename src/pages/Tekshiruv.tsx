@@ -89,8 +89,7 @@ const Tekshiruv = () => {
 
       setTekshiruvlar(mapped);
     } catch (error: any) {
-      console.error("Error loading tekshiruvlar:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -133,8 +132,7 @@ const Tekshiruv = () => {
 
       toast.success(t("exam.addSuccess"));
     } catch (error: any) {
-      console.error("Error adding tekshiruv:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni saqlashda xatolik yuz berdi");
     }
   };
 
@@ -164,8 +162,7 @@ const Tekshiruv = () => {
       setDeleteId(null);
       toast.success(t("exam.deleteSuccess"));
     } catch (error: any) {
-      console.error("Error deleting tekshiruv:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -199,8 +196,7 @@ const Tekshiruv = () => {
       setEditingItem(null);
       toast.success(t("common.updateSuccess"));
     } catch (error: any) {
-      console.error("Error updating tekshiruv:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni yangilashda xatolik yuz berdi");
     }
   };
 
