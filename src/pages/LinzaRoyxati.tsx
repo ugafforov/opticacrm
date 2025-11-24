@@ -2,11 +2,18 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Trash2, Search, Edit, Download, CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -36,6 +43,7 @@ const LinzaRoyxati = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dateFilter, setDateFilter] = useState<string>("all");
   const [editingItem, setEditingItem] = useState<LinzaRoyxat | null>(null);
   const [confirmDialog, setConfirmDialog] = useState({ open: false, itemId: "" });
   const [form, setForm] = useState({
@@ -213,11 +221,45 @@ const LinzaRoyxati = () => {
     const searchDigits = searchQuery.replace(/\D/g, "");
     const phoneDigits = r.telefon.replace(/\D/g, "");
     
-    return (
+    const matchesSearch = (
       r.mijoz.toLowerCase().includes(query) ||
       r.sana.includes(query) ||
       (searchDigits && phoneDigits.includes(searchDigits))
     );
+
+    if (!matchesSearch) return false;
+
+    if (dateFilter === "all") return true;
+
+    const itemDate = new Date(r.sana.split('-').reverse().join('-'));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (dateFilter) {
+      case "today":
+        return itemDate.toDateString() === today.toDateString();
+      case "yesterday":
+        const yesterday = subDays(today, 1);
+        return itemDate.toDateString() === yesterday.toDateString();
+      case "thisWeek":
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return itemDate >= weekStart && itemDate <= weekEnd;
+      case "lastWeek":
+        const lastWeekStart = startOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
+        const lastWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
+        return itemDate >= lastWeekStart && itemDate <= lastWeekEnd;
+      case "thisMonth":
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return itemDate >= monthStart && itemDate <= monthEnd;
+      case "lastMonth":
+        const lastMonthStart = startOfMonth(subMonths(today, 1));
+        const lastMonthEnd = endOfMonth(subMonths(today, 1));
+        return itemDate >= lastMonthStart && itemDate <= lastMonthEnd;
+      default:
+        return true;
+    }
   });
 
   const exportToExcel = () => {
@@ -390,6 +432,20 @@ const LinzaRoyxati = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Sana filtri" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barchasi</SelectItem>
+                <SelectItem value="today">Bugun</SelectItem>
+                <SelectItem value="yesterday">Kecha</SelectItem>
+                <SelectItem value="thisWeek">Hozirgi hafta</SelectItem>
+                <SelectItem value="lastWeek">O'tgan hafta</SelectItem>
+                <SelectItem value="thisMonth">Hozirgi oy</SelectItem>
+                <SelectItem value="lastMonth">O'tgan oy</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
