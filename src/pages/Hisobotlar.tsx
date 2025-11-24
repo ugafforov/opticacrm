@@ -401,34 +401,36 @@ const Hisobotlar = () => {
       const doc = setupPdfDoc();
       
       doc.setFontSize(16);
-      doc.text(t("reports.title"), 14, 15);
+      doc.text("Hisobotlar", 14, 15);
       
       doc.setFontSize(10);
-      doc.text(`${t("common.date")}: ${new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" })}`, 14, 22);
+      const currentDate = new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" });
+      doc.text(`Sana: ${currentDate}`, 14, 22);
 
       if (type === "period") {
-        doc.text(`Davr: ${period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}`, 14, 28);
+        const periodText = period === "daily" ? "Kunlik" : period === "weekly" ? "Haftalik" : "Oylik";
+        doc.text(`Davr: ${periodText}`, 14, 28);
         
         const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
         autoTable(doc, {
           startY: 35,
-          head: [[t("common.date"), t("reports.income")]],
+          head: [['Sana', 'Tushum']],
           body: tableData,
-          foot: [[t("common.total"), totalTushum.toLocaleString()]],
+          foot: [['Jami', totalTushum.toLocaleString()]],
           styles: { 
-            font: 'DejaVuSans', 
+            font: 'helvetica', 
             fontSize: 9,
             cellPadding: 3,
           },
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'normal',
+            fontStyle: 'bold',
           },
           footStyles: {
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'normal',
+            fontStyle: 'bold',
             fontSize: 10,
           },
           alternateRowStyles: { 
@@ -440,32 +442,32 @@ const Hisobotlar = () => {
         });
       } else if (type === "section") {
         const sections = [
-          [t("nav.orders"), buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
-          [t("nav.examination"), tekshiruvlar.reduce((sum: number, t: any) => sum + t.jami_summa, 0)],
-          [t("nav.readyGlasses"), tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
-          [t("nav.lensSales"), linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
+          ["Buyurtmalar", buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
+          ["Tekshiruvlar", tekshiruvlar.reduce((sum: number, t: any) => sum + t.jami_summa, 0)],
+          ["Tayyor ko'zoynaklar", tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
+          ["Linza sotuvi", linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
         ];
         const tableData = sections.map(s => [s[0], s[1].toLocaleString()]);
         const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);
         autoTable(doc, {
           startY: 30,
-          head: [[t("reports.bySection"), t("reports.income")]],
+          head: [["Bo'lim", "Tushum"]],
           body: tableData,
-          foot: [[t("common.total"), total.toLocaleString()]],
+          foot: [['Jami', total.toLocaleString()]],
           styles: { 
-            font: 'DejaVuSans', 
+            font: 'helvetica', 
             fontSize: 10,
             cellPadding: 3,
           },
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'normal',
+            fontStyle: 'bold',
           },
           footStyles: {
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'normal',
+            fontStyle: 'bold',
             fontSize: 11,
           },
           alternateRowStyles: { 
@@ -477,24 +479,24 @@ const Hisobotlar = () => {
         });
       } else {
         const allData = [
-          ...buyurtmalar.map((b: any) => [t("nav.orders"), b.sana, b.mijoz, b.jami_summa.toLocaleString()]),
-          ...tekshiruvlar.map((tek: any) => [t("nav.examination"), tek.sana, tek.mijoz, tek.jami_summa.toLocaleString()]),
-          ...tayyorKozoynaklar.map((k: any) => [t("nav.readyGlasses"), k.sana, k.kliyent, k.summa.toLocaleString()]),
-          ...linzaSotuvlari.map((l: any) => [t("nav.lensSales"), l.sana, l.kliyent, l.summa.toLocaleString()])
+          ...buyurtmalar.map((b: any) => ["Buyurtmalar", b.sana, b.mijoz, b.jami_summa.toLocaleString()]),
+          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", tek.sana, tek.mijoz, tek.jami_summa.toLocaleString()]),
+          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", k.sana, k.kliyent, k.summa.toLocaleString()]),
+          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", l.sana, l.kliyent, l.summa.toLocaleString()])
         ];
         autoTable(doc, {
           startY: 30,
-          head: [[t("reports.bySection"), t("common.date"), t("orders.client"), t("reports.income")]],
+          head: [["Bo'lim", "Sana", "Mijoz", "Summa"]],
           body: allData,
           styles: { 
-            font: 'DejaVuSans', 
+            font: 'helvetica', 
             fontSize: 8,
             cellPadding: 2,
           },
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'normal',
+            fontStyle: 'bold',
           },
           alternateRowStyles: { 
             fillColor: [245, 245, 245] 
@@ -505,9 +507,10 @@ const Hisobotlar = () => {
         });
       }
 
-      doc.save(`${t("reports.title")}.pdf`);
-      toast.success(t("reports.exportPDF"));
+      doc.save(`Hisobotlar_${currentDate}.pdf`);
+      toast.success("PDF fayl yuklab olindi");
     } catch (error: any) {
+      console.error("PDF eksport xatosi:", error);
       toast.error("Eksport qilishda xatolik yuz berdi");
     }
   };
