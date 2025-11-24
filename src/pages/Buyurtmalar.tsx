@@ -10,7 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search, Pencil } from "lucide-react";
+import { Trash2, Search, Pencil, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -242,6 +245,61 @@ const Buyurtmalar = () => {
 
   const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
 
+  const exportToExcel = () => {
+    const data = filteredBuyurtmalar.map((b) => ({
+      Sana: b.sana,
+      Mijoz: b.mijoz,
+      Telefon: b.telefon || "-",
+      "OD (o'ng)": b.od,
+      "OS (chap)": b.os,
+      "Oyna turi": b.oynaTuri,
+      "Oyna narxi": b.oynaNarxi,
+      "Oprava turi": b.opravaTuri,
+      "Oprava narxi": b.opravaNarxi,
+      "Jami summa": b.jamiSumma,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Buyurtmalar");
+    XLSX.writeFile(wb, `Buyurtmalar_${formatUzbekistanDate()}.xlsx`);
+    toast.success("Excel fayl yuklab olindi");
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Buyurtmalar ro'yxati", 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
+    doc.text(`Jami summa: ${totalSum.toLocaleString()} so'm`, 14, 28);
+
+    const tableData = filteredBuyurtmalar.map((b) => [
+      b.sana,
+      b.mijoz,
+      b.telefon || "-",
+      `${b.od} / ${b.os}`,
+      b.oynaTuri,
+      b.opravaTuri,
+      b.jamiSumma.toLocaleString(),
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
+      body: tableData,
+      styles: { font: 'helvetica', fontSize: 8 },
+      headStyles: { fillColor: [66, 66, 66] },
+    });
+
+    doc.save(`Buyurtmalar_${formatUzbekistanDate()}.pdf`);
+    toast.success("PDF fayl yuklab olindi");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -365,14 +423,36 @@ const Buyurtmalar = () => {
               {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder={t("orders.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative flex-1 sm:max-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder={t("orders.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto -mx-4 sm:mx-0">
