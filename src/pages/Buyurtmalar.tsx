@@ -13,7 +13,7 @@ import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Trash2, Search, Pencil, Download, CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -47,6 +47,7 @@ const Buyurtmalar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dateFilter, setDateFilter] = useState<string>("all");
   const [form, setForm] = useState({
     mijoz: "",
     telefon: "+998 ",
@@ -242,11 +243,46 @@ const Buyurtmalar = () => {
     const searchDigits = searchQuery.replace(/\D/g, "");
     const phoneDigits = b.telefon ? b.telefon.replace(/\D/g, "") : "";
     
-    return (
+    const matchesSearch = (
       b.mijoz.toLowerCase().includes(query) ||
       b.sana.includes(query) ||
       (searchDigits && phoneDigits.includes(searchDigits))
     );
+
+    if (!matchesSearch) return false;
+
+    // Date filter logic
+    if (dateFilter === "all") return true;
+
+    const itemDate = new Date(b.sana.split('-').reverse().join('-')); // Convert DD-MM-YYYY to YYYY-MM-DD
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    switch (dateFilter) {
+      case "today":
+        return itemDate.toDateString() === today.toDateString();
+      case "yesterday":
+        const yesterday = subDays(today, 1);
+        return itemDate.toDateString() === yesterday.toDateString();
+      case "thisWeek":
+        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
+        return itemDate >= weekStart && itemDate <= weekEnd;
+      case "lastWeek":
+        const lastWeekStart = startOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
+        const lastWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
+        return itemDate >= lastWeekStart && itemDate <= lastWeekEnd;
+      case "thisMonth":
+        const monthStart = startOfMonth(today);
+        const monthEnd = endOfMonth(today);
+        return itemDate >= monthStart && itemDate <= monthEnd;
+      case "lastMonth":
+        const lastMonthStart = startOfMonth(subMonths(today, 1));
+        const lastMonthEnd = endOfMonth(subMonths(today, 1));
+        return itemDate >= lastMonthStart && itemDate <= lastMonthEnd;
+      default:
+        return true;
+    }
   });
 
   const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
@@ -478,6 +514,20 @@ const Buyurtmalar = () => {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Sana filtri" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barchasi</SelectItem>
+                <SelectItem value="today">Bugun</SelectItem>
+                <SelectItem value="yesterday">Kecha</SelectItem>
+                <SelectItem value="thisWeek">Hozirgi hafta</SelectItem>
+                <SelectItem value="lastWeek">O'tgan hafta</SelectItem>
+                <SelectItem value="thisMonth">Hozirgi oy</SelectItem>
+                <SelectItem value="lastMonth">O'tgan oy</SelectItem>
+              </SelectContent>
+            </Select>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
