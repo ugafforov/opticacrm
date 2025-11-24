@@ -10,7 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search, Pencil, Download } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Trash2, Search, Pencil, Download, CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -37,6 +40,7 @@ const LinzaSotuvi = () => {
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [form, setForm] = useState({
     kliyent: "",
     linzaTuri: "",
@@ -115,7 +119,7 @@ const LinzaSotuvi = () => {
         .from("linza_sotuvlari")
         .insert({
           user_id: user.id,
-          sana: formatUzbekistanDate(),
+          sana: formatUzbekistanDate(selectedDate),
           kliyent: form.kliyent,
           linza_turi: form.linzaTuri,
           summa: parseFloat(form.summa),
@@ -125,6 +129,7 @@ const LinzaSotuvi = () => {
 
       await loadSotuvlar();
 
+      setSelectedDate(new Date());
       setForm({
         kliyent: "",
         linzaTuri: "",
@@ -290,6 +295,28 @@ const LinzaSotuvi = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="sana">Sana</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {format(selectedDate, "dd-MM-yyyy")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => date && setSelectedDate(date)}
+                    disabled={(date) => date > new Date()}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <div>
               <Label htmlFor="kliyent">{t("lensSale.client")}</Label>
               <Input
