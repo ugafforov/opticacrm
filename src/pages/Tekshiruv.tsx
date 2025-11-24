@@ -43,6 +43,30 @@ const Tekshiruv = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('tekshiruvlar-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tekshiruvlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadTekshiruvlar();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadTekshiruvlar = async () => {
     try {
       setLoading(true);

@@ -44,6 +44,30 @@ const LinzaRoyxati = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('linza-royxatlari-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'linza_royxatlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadRoyxatlar();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadRoyxatlar = async () => {
     try {
       setLoading(true);

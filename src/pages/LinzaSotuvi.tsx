@@ -47,6 +47,30 @@ const LinzaSotuvi = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('linza-sotuvlari-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'linza_sotuvlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadSotuvlar();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadSotuvlar = async () => {
     try {
       setLoading(true);

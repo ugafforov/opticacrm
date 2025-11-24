@@ -33,6 +33,30 @@ const Chiqindilar = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('chiqindilar-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chiqindilar',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          loadTrashItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadTrashItems = async () => {
     try {
       setLoading(true);
