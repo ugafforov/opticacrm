@@ -53,6 +53,7 @@ const Hisobotlar = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [exportFormat, setExportFormat] = useState<"excel" | "pdf">("excel");
 
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -723,6 +724,13 @@ const Hisobotlar = () => {
     }, 1000);
   };
 
+  const handleExport = (type: "period" | "section" | "detailed") => {
+    if (exportFormat === "excel") {
+      exportToExcel(type);
+    } else {
+      exportToPDF(type);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -825,96 +833,49 @@ const Hisobotlar = () => {
             </Select>
           </div>
 
-          <div className="mt-6 border-t pt-4">
-            <h3 className="text-sm font-semibold mb-3 text-foreground">Eksport qilish va chop etish</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">Excel format</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToExcel("period")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Davr bo'yicha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToExcel("section")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Bo'lim bo'yicha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToExcel("detailed")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Batafsil
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">PDF format</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToPDF("period")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Davr bo'yicha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToPDF("section")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Bo'lim bo'yicha
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => exportToPDF("detailed")}
-                    className="flex items-center gap-2"
-                  >
-                    <FileDown className="h-4 w-4" />
-                    Batafsil
-                  </Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground font-medium">Chop etish</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 w-full"
-                >
-                  <Printer className="h-4 w-4" />
-                  Hisobotni chop etish
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div id="printable-report">
         <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-            <TabsTrigger value="daily">{t("reports.daily")}</TabsTrigger>
-            <TabsTrigger value="weekly">{t("reports.weekly")}</TabsTrigger>
-            <TabsTrigger value="monthly">{t("reports.monthly")}</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            {/* Chap tomon - Davr tanlash */}
+            <TabsList className="grid grid-cols-3 w-full md:w-auto">
+              <TabsTrigger value="daily">{t("reports.daily")}</TabsTrigger>
+              <TabsTrigger value="weekly">{t("reports.weekly")}</TabsTrigger>
+              <TabsTrigger value="monthly">{t("reports.monthly")}</TabsTrigger>
+            </TabsList>
+
+            {/* O'ng tomon - Format va eksport tugmalari */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={exportFormat} onValueChange={(value: "excel" | "pdf") => setExportFormat(value)}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="excel">Excel</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button variant="outline" size="sm" onClick={() => handleExport("period")}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Davr bo'yicha
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("section")}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Bo'lim bo'yicha
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => handleExport("detailed")}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Batafsil
+              </Button>
+              
+              <Button variant="outline" size="sm" onClick={handlePrint}>
+                <Printer className="h-4 w-4 mr-2" />
+                Print
+              </Button>
+            </div>
+          </div>
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
             <div className="flex justify-between items-start">
@@ -1040,42 +1001,6 @@ const Hisobotlar = () => {
               <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`} />
             </PieChart>
           </ResponsiveContainer>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Ma'lumotlarni eksport qilish</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <Button onClick={() => exportToExcel("period")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            Excel - {period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}
-          </Button>
-          <Button onClick={() => exportToExcel("section")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            Excel - {t("reports.bySection")}
-          </Button>
-          <Button onClick={() => exportToExcel("detailed")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            Excel - Batafsil
-          </Button>
-          <Button onClick={handlePrint} variant="outline" className="w-full">
-            <Printer className="w-4 h-4 mr-2" />
-            Chop etish
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button onClick={() => exportToPDF("period")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            PDF - {period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}
-          </Button>
-          <Button onClick={() => exportToPDF("section")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            PDF - {t("reports.bySection")}
-          </Button>
-          <Button onClick={() => exportToPDF("detailed")} variant="outline" className="w-full">
-            <FileDown className="w-4 h-4 mr-2" />
-            PDF - Batafsil
-          </Button>
         </div>
       </Card>
     </div>
