@@ -27,6 +27,7 @@ export type Database = {
           oyna_narxi: number
           oyna_tури: string
           sana: string
+          telefon: string | null
           updated_at: string
           user_id: string
         }
@@ -42,6 +43,7 @@ export type Database = {
           oyna_narxi?: number
           oyna_tури: string
           sana: string
+          telefon?: string | null
           updated_at?: string
           user_id: string
         }
@@ -57,6 +59,7 @@ export type Database = {
           oyna_narxi?: number
           oyna_tури?: string
           sana?: string
+          telefon?: string | null
           updated_at?: string
           user_id?: string
         }
