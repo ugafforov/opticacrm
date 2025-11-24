@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -258,7 +258,7 @@ const Buyurtmalar = () => {
     
     // Main data
     const data = filteredBuyurtmalar.map((b) => ({
-      Sana: b.sana,
+      Sana: formatDisplayDate(b.sana),
       Mijoz: b.mijoz,
       Telefon: b.telefon || "-",
       "OD (o'ng)": b.od,
@@ -292,7 +292,7 @@ const Buyurtmalar = () => {
     );
 
     const tableData = filteredBuyurtmalar.map((b) => [
-      b.sana,
+      formatDisplayDate(b.sana),
       b.mijoz,
       b.telefon || "-",
       `${b.od} / ${b.os}`,
@@ -499,7 +499,7 @@ const Buyurtmalar = () => {
             <tbody>
               {filteredBuyurtmalar.map((b) => (
                 <tr key={b.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="px-2 sm:px-4 py-2 text-sm">{b.sana}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>

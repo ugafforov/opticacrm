@@ -16,7 +16,7 @@ import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import { cn, formatUzbekistanDateTime } from "@/lib/utils";
+import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 
 interface ReportData {
   name: string;
@@ -353,25 +353,25 @@ const Hisobotlar = () => {
         const allData = [
           ...buyurtmalar.map((b: any) => ({
             [t("reports.bySection")]: t("nav.orders"),
-            [t("common.date")]: b.sana,
+            [t("common.date")]: formatDisplayDate(b.sana),
             [t("orders.client")]: b.mijoz,
             [t("reports.income")]: b.jami_summa
           })),
           ...tekshiruvlar.map((tek: any) => ({
             [t("reports.bySection")]: t("nav.examination"),
-            [t("common.date")]: tek.sana,
+            [t("common.date")]: formatDisplayDate(tek.sana),
             [t("exam.patient")]: tek.mijoz,
             [t("reports.income")]: tek.jami_summa
           })),
           ...tayyorKozoynaklar.map((k: any) => ({
             [t("reports.bySection")]: t("nav.readyGlasses"),
-            [t("common.date")]: k.sana,
+            [t("common.date")]: formatDisplayDate(k.sana),
             [t("orders.client")]: k.kliyent,
             [t("reports.income")]: k.summa
           })),
           ...linzaSotuvlari.map((l: any) => ({
             [t("reports.bySection")]: t("nav.lensSales"),
-            [t("common.date")]: l.sana,
+            [t("common.date")]: formatDisplayDate(l.sana),
             [t("orders.client")]: l.kliyent,
             [t("reports.income")]: l.summa
           }))
@@ -511,10 +511,10 @@ const Hisobotlar = () => {
         );
         
         const allData = [
-          ...buyurtmalar.map((b: any) => ["Buyurtmalar", b.sana, b.mijoz, b.jami_summa.toLocaleString()]),
-          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", tek.sana, tek.mijoz, tek.jami_summa.toLocaleString()]),
-          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", k.sana, k.kliyent, k.summa.toLocaleString()]),
-          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", l.sana, l.kliyent, l.summa.toLocaleString()])
+          ...buyurtmalar.map((b: any) => ["Buyurtmalar", formatDisplayDate(b.sana), b.mijoz, b.jami_summa.toLocaleString()]),
+          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", formatDisplayDate(tek.sana), tek.mijoz, tek.jami_summa.toLocaleString()]),
+          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", formatDisplayDate(k.sana), k.kliyent, k.summa.toLocaleString()]),
+          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", formatDisplayDate(l.sana), l.kliyent, l.summa.toLocaleString()])
         ];
         autoTable(doc, {
           startY,
