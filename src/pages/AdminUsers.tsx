@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Trash2, UserPlus } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
+import { adminUserSchema } from "@/lib/validation";
 
 interface UserWithRole {
   id: string;
@@ -44,37 +45,24 @@ const AdminUsers = () => {
 
   const loadUsers = async () => {
     try {
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Tizimga kirish talab qilinadi");
+        return;
+      }
 
-      if (authError) throw authError;
-
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("*");
-
-      if (profilesError) throw profilesError;
-
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("*");
-
-      if (rolesError) throw rolesError;
-
-      const usersWithRoles: UserWithRole[] = authUsers.users.map((authUser: any) => {
-        const profile = profiles?.find((p: any) => p.id === authUser.id);
-        const userRole = roles?.find((r: any) => r.user_id === authUser.id);
-        return {
-          id: authUser.id,
-          email: authUser.email,
-          full_name: profile?.full_name || null,
-          role: userRole?.role || "user",
-          created_at: authUser.created_at,
-        };
+      const { data, error } = await supabase.functions.invoke('admin-list-users', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
-      setUsers(usersWithRoles);
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      setUsers(data.users);
     } catch (error: any) {
-      toast.error("Foydalanuvchilarni yuklashda xatolik: " + error.message);
+      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -85,34 +73,36 @@ const AdminUsers = () => {
     setLoading(true);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: formData.fullName,
+      // Validate input
+      const validatedData = adminUserSchema.parse(formData);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Tizimga kirish talab qilinadi");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: validatedData,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (authError) throw authError;
-
-      if (authData.user) {
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .insert([{
-            user_id: authData.user.id,
-            role: formData.role as "admin" | "user",
-          }]);
-
-        if (roleError) throw roleError;
-      }
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
 
       toast.success("Foydalanuvchi muvaffaqiyatli qo'shildi");
       setFormData({ email: "", password: "", fullName: "", role: "user" });
       setShowAddUser(false);
       loadUsers();
     } catch (error: any) {
-      toast.error("Xatolik: " + error.message);
+      if (error.errors) {
+        // Zod validation errors
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error("Foydalanuvchi qo'shishda xatolik yuz berdi");
+      }
     } finally {
       setLoading(false);
     }
@@ -122,14 +112,27 @@ const AdminUsers = () => {
     if (!deleteUserId) return;
 
     try {
-      const { error } = await supabase.auth.admin.deleteUser(deleteUserId);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Tizimga kirish talab qilinadi");
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId: deleteUserId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
       if (error) throw error;
+      if (data.error) throw new Error(data.error);
 
       toast.success("Foydalanuvchi o'chirildi");
       setDeleteUserId(null);
       loadUsers();
     } catch (error: any) {
-      toast.error("Xatolik: " + error.message);
+      toast.error("Foydalanuvchini o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -184,7 +187,7 @@ const AdminUsers = () => {
               </div>
 
               <div>
-                <Label htmlFor="password">Parol</Label>
+                <Label htmlFor="password">Parol (kamida 8 ta belgi)</Label>
                 <Input
                   id="password"
                   type="password"
@@ -193,7 +196,7 @@ const AdminUsers = () => {
                     setFormData({ ...formData, password: e.target.value })
                   }
                   required
-                  minLength={6}
+                  minLength={8}
                 />
               </div>
 

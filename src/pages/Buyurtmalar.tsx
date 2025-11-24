@@ -105,8 +105,7 @@ const Buyurtmalar = () => {
 
       setBuyurtmalar(mapped);
     } catch (error: any) {
-      console.error("Error loading buyurtmalar:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
     } finally {
       setLoading(false);
     }
@@ -154,8 +153,7 @@ const Buyurtmalar = () => {
       
       toast.success(t("orders.addSuccess"));
     } catch (error: any) {
-      console.error("Error adding buyurtma:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni saqlashda xatolik yuz berdi");
     }
   };
 
@@ -187,8 +185,7 @@ const Buyurtmalar = () => {
       setDeleteId(null);
       toast.success(t("orders.deleteSuccess"));
     } catch (error: any) {
-      console.error("Error deleting buyurtma:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni o'chirishda xatolik yuz berdi");
     }
   };
 
@@ -221,8 +218,7 @@ const Buyurtmalar = () => {
       setEditingItem(null);
       toast.success(t("common.updateSuccess"));
     } catch (error: any) {
-      console.error("Error updating buyurtma:", error);
-      toast.error(t("common.error"));
+      toast.error("Ma'lumotni yangilashda xatolik yuz berdi");
     }
   };
 

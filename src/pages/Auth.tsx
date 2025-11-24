@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { authSchema } from "@/lib/validation";
 
 const Auth = () => {
   const { t } = useLanguage();
@@ -22,9 +23,12 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate input
+      const validatedData = authSchema.parse(formData);
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
+        email: validatedData.email,
+        password: validatedData.password,
       });
 
       if (error) throw error;
@@ -32,7 +36,12 @@ const Auth = () => {
       toast.success(t("auth.loginSuccess"));
       navigate("/");
     } catch (error: any) {
-      toast.error(error.message || t("auth.error"));
+      if (error.errors) {
+        // Zod validation errors
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error("Tizimga kirishda xatolik yuz berdi");
+      }
     } finally {
       setLoading(false);
     }
@@ -60,7 +69,7 @@ const Auth = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">{t("auth.password")}</Label>
+            <Label htmlFor="password">{t("auth.password")} (kamida 8 ta belgi)</Label>
             <Input
               id="password"
               type="password"
@@ -69,7 +78,7 @@ const Auth = () => {
                 setFormData({ ...formData, password: e.target.value })
               }
               required
-              minLength={6}
+              minLength={8}
             />
           </div>
 
