@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
@@ -43,12 +44,13 @@ const Hisobotlar = () => {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [showComparison, setShowComparison] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedType, setSelectedType] = useState<string>("all");
 
   useEffect(() => {
     if (user) {
       loadReportData();
     }
-  }, [user, period, startDate, endDate, showComparison]);
+  }, [user, period, startDate, endDate, showComparison, selectedType]);
 
   const parseDate = (dateString: string): Date => {
     if (!dateString) return new Date();
@@ -187,56 +189,78 @@ const Hisobotlar = () => {
 
       setSectionData(sections);
 
-      // Combine all data for time-based report
-      let allData = [
-        ...currentBuyurtmalar.map((b: any) => ({
+      // Combine all data for time-based report with filter
+      let allData = [];
+      
+      if (selectedType === "all" || selectedType === "buyurtmalar") {
+        allData.push(...currentBuyurtmalar.map((b: any) => ({
           sana: b.sana,
           summa: b.jami_summa,
           tur: "Buyurtmalar"
-        })),
-        ...currentTekshiruvlar.map((t: any) => ({
+        })));
+      }
+      
+      if (selectedType === "all" || selectedType === "tekshiruvlar") {
+        allData.push(...currentTekshiruvlar.map((t: any) => ({
           sana: t.sana,
           summa: t.jami_summa,
           tur: "Tekshiruv"
-        })),
-        ...currentTayyorKozoynaklar.map((k: any) => ({
+        })));
+      }
+      
+      if (selectedType === "all" || selectedType === "tayyor_kozoynaklar") {
+        allData.push(...currentTayyorKozoynaklar.map((k: any) => ({
           sana: k.sana,
           summa: k.summa,
           tur: "Tayyor ko'zoynaklar"
-        })),
-        ...currentLinzaSotuvlari.map((l: any) => ({
+        })));
+      }
+      
+      if (selectedType === "all" || selectedType === "linza_sotuvlari") {
+        allData.push(...currentLinzaSotuvlari.map((l: any) => ({
           sana: l.sana,
           summa: l.summa,
           tur: "Linza sotuvi"
-        }))
-      ];
+        })));
+      }
 
       const groupedData = groupByPeriod(allData);
 
-      // Add previous period data if comparison is enabled
+      // Add previous period data if comparison is enabled with filter
       if (showComparison && (startDate || endDate)) {
-        const previousData = [
-          ...previousBuyurtmalar.map((b: any) => ({
+        let previousData = [];
+        
+        if (selectedType === "all" || selectedType === "buyurtmalar") {
+          previousData.push(...previousBuyurtmalar.map((b: any) => ({
             sana: b.sana,
             summa: b.jami_summa,
             tur: "Buyurtmalar"
-          })),
-          ...previousTekshiruvlar.map((t: any) => ({
+          })));
+        }
+        
+        if (selectedType === "all" || selectedType === "tekshiruvlar") {
+          previousData.push(...previousTekshiruvlar.map((t: any) => ({
             sana: t.sana,
             summa: t.jami_summa,
             tur: "Tekshiruv"
-          })),
-          ...previousTayyorKozoynaklar.map((k: any) => ({
+          })));
+        }
+        
+        if (selectedType === "all" || selectedType === "tayyor_kozoynaklar") {
+          previousData.push(...previousTayyorKozoynaklar.map((k: any) => ({
             sana: k.sana,
             summa: k.summa,
             tur: "Tayyor ko'zoynaklar"
-          })),
-          ...previousLinzaSotuvlari.map((l: any) => ({
+          })));
+        }
+        
+        if (selectedType === "all" || selectedType === "linza_sotuvlari") {
+          previousData.push(...previousLinzaSotuvlari.map((l: any) => ({
             sana: l.sana,
             summa: l.summa,
             tur: "Linza sotuvi"
-          }))
-        ];
+          })));
+        }
 
         const groupedPreviousData = groupByPeriod(previousData);
         
@@ -673,6 +697,22 @@ const Hisobotlar = () => {
                 Taqqoslash
               </Button>
             </div>
+          </div>
+          
+          <div className="mt-4">
+            <Label>Mahsulot/Xizmat turi</Label>
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full md:w-[300px]">
+                <SelectValue placeholder="Turni tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Barchasi</SelectItem>
+                <SelectItem value="buyurtmalar">{t("nav.orders")}</SelectItem>
+                <SelectItem value="tekshiruvlar">{t("nav.examination")}</SelectItem>
+                <SelectItem value="tayyor_kozoynaklar">{t("nav.readyGlasses")}</SelectItem>
+                <SelectItem value="linza_sotuvlari">{t("nav.lensSales")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
