@@ -139,6 +139,24 @@ CREATE TABLE public.chiqindilar (
 
 
 --
+-- Name: linza_royxatlari; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.linza_royxatlari (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    sana text NOT NULL,
+    mijoz text NOT NULL,
+    od text NOT NULL,
+    os text NOT NULL,
+    telefon text NOT NULL,
+    linza_turi text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
 -- Name: linza_sotuvlari; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -227,6 +245,14 @@ ALTER TABLE ONLY public.buyurtmalar
 
 ALTER TABLE ONLY public.chiqindilar
     ADD CONSTRAINT chiqindilar_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: linza_royxatlari linza_royxatlari_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.linza_royxatlari
+    ADD CONSTRAINT linza_royxatlari_pkey PRIMARY KEY (id);
 
 
 --
@@ -425,6 +451,13 @@ CREATE POLICY "Users can delete their own chiqindilar" ON public.chiqindilar FOR
 
 
 --
+-- Name: linza_royxatlari Users can delete their own linza_royxatlari; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can delete their own linza_royxatlari" ON public.linza_royxatlari FOR DELETE USING ((auth.uid() = user_id));
+
+
+--
 -- Name: linza_sotuvlari Users can delete their own linza_sotuvlari; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -460,6 +493,13 @@ CREATE POLICY "Users can insert their own chiqindilar" ON public.chiqindilar FOR
 
 
 --
+-- Name: linza_royxatlari Users can insert their own linza_royxatlari; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can insert their own linza_royxatlari" ON public.linza_royxatlari FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
 -- Name: linza_sotuvlari Users can insert their own linza_sotuvlari; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -485,6 +525,13 @@ CREATE POLICY "Users can insert their own tekshiruvlar" ON public.tekshiruvlar F
 --
 
 CREATE POLICY "Users can update their own buyurtmalar" ON public.buyurtmalar FOR UPDATE USING ((auth.uid() = user_id));
+
+
+--
+-- Name: linza_royxatlari Users can update their own linza_royxatlari; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update their own linza_royxatlari" ON public.linza_royxatlari FOR UPDATE USING ((auth.uid() = user_id));
 
 
 --
@@ -527,6 +574,13 @@ CREATE POLICY "Users can view their own buyurtmalar" ON public.buyurtmalar FOR S
 --
 
 CREATE POLICY "Users can view their own chiqindilar" ON public.chiqindilar FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: linza_royxatlari Users can view their own linza_royxatlari; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view their own linza_royxatlari" ON public.linza_royxatlari FOR SELECT USING ((auth.uid() = user_id));
 
 
 --
@@ -575,6 +629,12 @@ ALTER TABLE public.buyurtmalar ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.chiqindilar ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: linza_royxatlari; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.linza_royxatlari ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: linza_sotuvlari; Type: ROW SECURITY; Schema: public; Owner: -
