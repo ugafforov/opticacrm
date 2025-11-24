@@ -61,6 +61,14 @@ const Hisobotlar = () => {
       return date;
     }
 
+    // DD-MM-YYYY format with dashes (25-11-2025)
+    if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+      const [day, month, year] = dateString.split("-").map(p => parseInt(p, 10));
+      const date = new Date(Date.UTC(year, month - 1, day));
+      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
+      return date;
+    }
+
     // dd.MM.yyyy format (stored format)
     const parts = dateString.split(".");
     if (parts.length === 3) {
