@@ -754,6 +754,76 @@ const Hisobotlar = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="mt-6 border-t pt-4">
+            <h3 className="text-sm font-semibold mb-3 text-foreground">Eksport qilish</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">Excel format</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToExcel("period")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Davr bo'yicha
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToExcel("section")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Bo'lim bo'yicha
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToExcel("detailed")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Batafsil
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground font-medium">PDF format</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToPDF("period")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Davr bo'yicha
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToPDF("section")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Bo'lim bo'yicha
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToPDF("detailed")}
+                    className="flex items-center gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    Batafsil
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
