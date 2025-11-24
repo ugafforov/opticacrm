@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber } from "@/lib/utils";
-import { setupPdfDoc } from "@/lib/pdfHelpers";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime } from "@/lib/utils";
+import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -216,6 +216,15 @@ const LinzaRoyxati = () => {
   });
 
   const exportToExcel = () => {
+    const dateTime = formatUzbekistanDateTime();
+    
+    // Metadata
+    const metadata = [
+      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
+      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
+    ];
+    
+    // Main data
     const data = filteredRoyxatlar.map((r) => ({
       Sana: r.sana,
       Mijoz: r.mijoz,
@@ -225,9 +234,13 @@ const LinzaRoyxati = () => {
       "Linza turi": r.linzaTuri,
     }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
+    const metaWs = XLSX.utils.json_to_sheet(metadata);
+    const dataWs = XLSX.utils.json_to_sheet(data);
+    
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Linza Royxati");
+    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
+    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    
     XLSX.writeFile(wb, `Linza_Royxati_${formatUzbekistanDate()}.xlsx`);
     toast.success("Excel fayl yuklab olindi");
   };
@@ -235,11 +248,11 @@ const LinzaRoyxati = () => {
   const exportToPDF = () => {
     const doc = setupPdfDoc();
     
-    doc.setFontSize(16);
-    doc.text("Linza Ro'yxati", 14, 15);
-    
-    doc.setFontSize(10);
-    doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
+    const startY = addPdfHeader(
+      doc,
+      "Linza Ro'yxati",
+      user?.email
+    );
 
     const tableData = filteredRoyxatlar.map((r) => [
       r.sana,
@@ -250,7 +263,7 @@ const LinzaRoyxati = () => {
     ]);
 
     autoTable(doc, {
-      startY: 28,
+      startY,
       head: [['Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
       body: tableData,
       styles: { 
