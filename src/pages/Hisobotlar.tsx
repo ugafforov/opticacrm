@@ -255,29 +255,62 @@ const Hisobotlar = () => {
     }
   };
 
+  // Sanani DD-MM-YYYY formatiga normallash
+  const normalizeDateString = (dateString: string): string => {
+    if (!dateString) return "";
+    
+    // Agar ISO formatda (yyyy-MM-dd) bo'lsa, DD-MM-YYYY ga o'zgartirish
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      const [year, month, day] = dateString.split("-");
+      return `${day}-${month}-${year}`;
+    }
+    
+    // Agar DD.MM.YYYY formatda bo'lsa, DD-MM-YYYY ga o'zgartirish
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateString)) {
+      return dateString.replace(/\./g, '-');
+    }
+    
+    return dateString;
+  };
+
   const groupByPeriod = (data: any[]): ReportData[] => {
     const grouped: { [key: string]: number } = {};
     data.forEach(item => {
-      let key = item.sana;
+      // Sanani normallash
+      const normalizedDate = normalizeDateString(item.sana);
+      let key = normalizedDate;
+      
       if (period === "weekly") {
-        const dateParts = item.sana.split(".");
+        const dateParts = normalizedDate.split("-");
         if (dateParts.length === 3) {
           const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
           key = `${dateParts[1]}-oy, ${weekNum}-hafta`;
         }
       } else if (period === "monthly") {
-        const dateParts = item.sana.split(".");
+        const dateParts = normalizedDate.split("-");
         if (dateParts.length === 3) {
-          key = `${dateParts[1]}.${dateParts[2]}`;
+          key = `${dateParts[1]}-${dateParts[2]}`; // OY-YIL
         }
       }
       grouped[key] = (grouped[key] || 0) + item.summa;
     });
+    
     return Object.entries(grouped).map(([name, tushum]) => ({
       name,
       tushum,
       oldatgiTushum: undefined
-    })).sort((a, b) => a.name.localeCompare(b.name));
+    })).sort((a, b) => {
+      // Sanalarni to'g'ri tartiblash (DD-MM-YYYY formatida)
+      const parseForSort = (dateStr: string) => {
+        const parts = dateStr.split("-");
+        if (parts.length === 3 && parts[2].length === 4) {
+          // DD-MM-YYYY -> YYYY-MM-DD formatga o'zgartirish tartiblash uchun
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return dateStr;
+      };
+      return parseForSort(a.name).localeCompare(parseForSort(b.name));
+    });
   };
 
   const getPreviousPeriod = (start: Date | undefined, end: Date | undefined) => {
