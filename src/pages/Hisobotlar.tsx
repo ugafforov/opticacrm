@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 interface ReportData {
   name: string;
   tushum: number;
+  oldatgiTushum?: number;
 }
 
 interface SectionData {
@@ -27,6 +28,8 @@ interface SectionData {
   total: number;
   count: number;
   color: string;
+  previousTotal?: number;
+  change?: number;
 }
 
 const Hisobotlar = () => {
@@ -37,13 +40,14 @@ const Hisobotlar = () => {
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [showComparison, setShowComparison] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       loadReportData();
     }
-  }, [user, period, startDate, endDate]);
+  }, [user, period, startDate, endDate, showComparison]);
 
   const parseDate = (dateString: string): Date => {
     if (!dateString) return new Date();
@@ -113,66 +117,127 @@ const Hisobotlar = () => {
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
 
-      // Calculate section totals
+      // Calculate current period totals
+      const currentBuyurtmalar = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
+      const currentTekshiruvlar = tekshiruvlar.filter((t: any) => !startDate && !endDate ? true : isDateInRange(t.sana));
+      const currentTayyorKozoynaklar = tayyorKozoynaklar.filter((k: any) => !startDate && !endDate ? true : isDateInRange(k.sana));
+      const currentLinzaSotuvlari = linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana));
+
+      // Calculate previous period data if comparison is enabled
+      let previousBuyurtmalar: any[] = [];
+      let previousTekshiruvlar: any[] = [];
+      let previousTayyorKozoynaklar: any[] = [];
+      let previousLinzaSotuvlari: any[] = [];
+
+      if (showComparison && (startDate || endDate)) {
+        const { prevStart, prevEnd } = getPreviousPeriod(startDate, endDate);
+        previousBuyurtmalar = buyurtmalar.filter((b: any) => isDateInPreviousRange(b.sana, prevStart, prevEnd));
+        previousTekshiruvlar = tekshiruvlar.filter((t: any) => isDateInPreviousRange(t.sana, prevStart, prevEnd));
+        previousTayyorKozoynaklar = tayyorKozoynaklar.filter((k: any) => isDateInPreviousRange(k.sana, prevStart, prevEnd));
+        previousLinzaSotuvlari = linzaSotuvlari.filter((l: any) => isDateInPreviousRange(l.sana, prevStart, prevEnd));
+      }
+
+      // Calculate section totals with comparison
       const sections: SectionData[] = [
         {
           name: t("nav.orders"),
-          total: buyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0),
-          count: buyurtmalar.length,
+          total: currentBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0),
+          count: currentBuyurtmalar.length,
           color: "hsl(var(--primary))",
+          previousTotal: showComparison ? previousBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0) : undefined,
         },
         {
           name: t("nav.examination"),
-          total: tekshiruvlar.reduce((sum, t) => sum + (t.jami_summa || 0), 0),
-          count: tekshiruvlar.length,
+          total: currentTekshiruvlar.reduce((sum, t) => sum + (t.jami_summa || 0), 0),
+          count: currentTekshiruvlar.length,
           color: "hsl(var(--chart-2))",
+          previousTotal: showComparison ? previousTekshiruvlar.reduce((sum, t) => sum + (t.jami_summa || 0), 0) : undefined,
         },
         {
           name: t("nav.readyGlasses"),
-          total: tayyorKozoynaklar.reduce((sum, k) => sum + (k.summa || 0), 0),
-          count: tayyorKozoynaklar.length,
+          total: currentTayyorKozoynaklar.reduce((sum, k) => sum + (k.summa || 0), 0),
+          count: currentTayyorKozoynaklar.length,
           color: "hsl(var(--chart-3))",
+          previousTotal: showComparison ? previousTayyorKozoynaklar.reduce((sum, k) => sum + (k.summa || 0), 0) : undefined,
         },
         {
           name: t("nav.lensSales"),
-          total: linzaSotuvlari.reduce((sum, l) => sum + (l.summa || 0), 0),
-          count: linzaSotuvlari.length,
+          total: currentLinzaSotuvlari.reduce((sum, l) => sum + (l.summa || 0), 0),
+          count: currentLinzaSotuvlari.length,
           color: "hsl(var(--chart-4))",
+          previousTotal: showComparison ? previousLinzaSotuvlari.reduce((sum, l) => sum + (l.summa || 0), 0) : undefined,
         },
       ];
+
+      // Calculate change percentages
+      sections.forEach(section => {
+        if (section.previousTotal !== undefined && section.previousTotal > 0) {
+          section.change = ((section.total - section.previousTotal) / section.previousTotal) * 100;
+        }
+      });
 
       setSectionData(sections);
 
       // Combine all data for time-based report
       let allData = [
-        ...buyurtmalar.map((b: any) => ({
+        ...currentBuyurtmalar.map((b: any) => ({
           sana: b.sana,
           summa: b.jami_summa,
           tur: "Buyurtmalar"
         })),
-        ...tekshiruvlar.map((t: any) => ({
+        ...currentTekshiruvlar.map((t: any) => ({
           sana: t.sana,
           summa: t.jami_summa,
           tur: "Tekshiruv"
         })),
-        ...tayyorKozoynaklar.map((k: any) => ({
+        ...currentTayyorKozoynaklar.map((k: any) => ({
           sana: k.sana,
           summa: k.summa,
           tur: "Tayyor ko'zoynaklar"
         })),
-        ...linzaSotuvlari.map((l: any) => ({
+        ...currentLinzaSotuvlari.map((l: any) => ({
           sana: l.sana,
           summa: l.summa,
           tur: "Linza sotuvi"
         }))
       ];
 
-      // Filter by date range
-      if (startDate || endDate) {
-        allData = allData.filter(item => isDateInRange(item.sana));
+      const groupedData = groupByPeriod(allData);
+
+      // Add previous period data if comparison is enabled
+      if (showComparison && (startDate || endDate)) {
+        const previousData = [
+          ...previousBuyurtmalar.map((b: any) => ({
+            sana: b.sana,
+            summa: b.jami_summa,
+            tur: "Buyurtmalar"
+          })),
+          ...previousTekshiruvlar.map((t: any) => ({
+            sana: t.sana,
+            summa: t.jami_summa,
+            tur: "Tekshiruv"
+          })),
+          ...previousTayyorKozoynaklar.map((k: any) => ({
+            sana: k.sana,
+            summa: k.summa,
+            tur: "Tayyor ko'zoynaklar"
+          })),
+          ...previousLinzaSotuvlari.map((l: any) => ({
+            sana: l.sana,
+            summa: l.summa,
+            tur: "Linza sotuvi"
+          }))
+        ];
+
+        const groupedPreviousData = groupByPeriod(previousData);
+        
+        // Merge current and previous data
+        groupedData.forEach(current => {
+          const previous = groupedPreviousData.find(p => p.name === current.name);
+          current.oldatgiTushum = previous ? previous.tushum : 0;
+        });
       }
 
-      const groupedData = groupByPeriod(allData);
       setReportData(groupedData);
     } catch (error: any) {
       toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
@@ -181,7 +246,7 @@ const Hisobotlar = () => {
     }
   };
 
-  const groupByPeriod = (data: any[]) => {
+  const groupByPeriod = (data: any[]): ReportData[] => {
     const grouped: { [key: string]: number } = {};
     data.forEach(item => {
       let key = item.sana;
@@ -201,11 +266,39 @@ const Hisobotlar = () => {
     });
     return Object.entries(grouped).map(([name, tushum]) => ({
       name,
-      tushum
+      tushum,
+      oldatgiTushum: undefined
     })).sort((a, b) => a.name.localeCompare(b.name));
   };
 
+  const getPreviousPeriod = (start: Date | undefined, end: Date | undefined) => {
+    if (!start || !end) {
+      const today = new Date();
+      const daysAgo = period === "daily" ? 1 : period === "weekly" ? 7 : 30;
+      return {
+        prevStart: new Date(today.getTime() - daysAgo * 2 * 24 * 60 * 60 * 1000),
+        prevEnd: new Date(today.getTime() - daysAgo * 24 * 60 * 60 * 1000)
+      };
+    }
+
+    const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+    const prevEnd = new Date(start.getTime() - 24 * 60 * 60 * 1000);
+    const prevStart = new Date(prevEnd.getTime() - daysDiff * 24 * 60 * 60 * 1000);
+
+    return { prevStart, prevEnd };
+  };
+
+  const isDateInPreviousRange = (dateString: string, prevStart: Date, prevEnd: Date) => {
+    const itemDate = parseDate(dateString);
+    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+    const prevStartOnly = new Date(prevStart.getFullYear(), prevStart.getMonth(), prevStart.getDate());
+    const prevEndOnly = new Date(prevEnd.getFullYear(), prevEnd.getMonth(), prevEnd.getDate());
+    return itemDateOnly >= prevStartOnly && itemDateOnly <= prevEndOnly;
+  };
+
   const totalTushum = reportData.reduce((sum, item) => sum + item.tushum, 0);
+  const previousTotalTushum = showComparison ? reportData.reduce((sum, item) => sum + (item.oldatgiTushum || 0), 0) : 0;
+  const totalChange = previousTotalTushum > 0 ? ((totalTushum - previousTotalTushum) / previousTotalTushum) * 100 : 0;
   
   const exportToExcel = async (type: "period" | "section" | "detailed") => {
     if (!user) return;
@@ -420,7 +513,7 @@ const Hisobotlar = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => {
@@ -429,6 +522,14 @@ const Hisobotlar = () => {
                 }}
               >
                 {t("reports.reset")}
+              </Button>
+              <Button
+                variant={showComparison ? "default" : "outline"}
+                onClick={() => setShowComparison(!showComparison)}
+                disabled={!startDate || !endDate}
+                title={!startDate || !endDate ? "Taqqoslash uchun sana oralig'ini tanlang" : ""}
+              >
+                Taqqoslash
               </Button>
             </div>
           </div>
@@ -442,8 +543,26 @@ const Hisobotlar = () => {
           </TabsList>
 
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
-            <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.sum")}</p>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
+                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.sum")}</p>
+              </div>
+              {showComparison && previousTotalTushum > 0 && (
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">O'zgarish</p>
+                  <p className={cn(
+                    "text-2xl font-bold",
+                    totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
+                  )}>
+                    {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Oldingi: {previousTotalTushum.toLocaleString()}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <TabsContent value="daily" className="space-y-4">
@@ -458,7 +577,10 @@ const Hisobotlar = () => {
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -476,7 +598,10 @@ const Hisobotlar = () => {
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -494,7 +619,10 @@ const Hisobotlar = () => {
                     contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                   />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -510,6 +638,19 @@ const Hisobotlar = () => {
               <p className="text-sm text-muted-foreground mb-1">{section.name}</p>
               <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.sum")}</p>
               <p className="text-xs text-muted-foreground mt-1">{section.count} ta yozuv</p>
+              {showComparison && section.previousTotal !== undefined && (
+                <div className="mt-2 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground">Oldingi: {section.previousTotal.toLocaleString()}</p>
+                  {section.change !== undefined && section.previousTotal > 0 && (
+                    <p className={cn(
+                      "text-sm font-semibold",
+                      section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
+                    )}>
+                      {section.change > 0 ? "+" : ""}{section.change.toFixed(1)}%
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
