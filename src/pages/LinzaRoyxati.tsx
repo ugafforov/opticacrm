@@ -337,7 +337,7 @@ const LinzaRoyxati = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <div className="relative w-full sm:w-64">
