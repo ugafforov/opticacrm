@@ -337,10 +337,10 @@ const LinzaRoyxati = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <div className="relative flex-1 sm:max-w-64">
+          <div className="flex flex-col xs:flex-row gap-2 xs:items-center">
+            <div className="relative w-full xs:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder={t("lens.search")}
