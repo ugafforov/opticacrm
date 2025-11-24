@@ -19,11 +19,40 @@ export function getUzbekistanDate(): Date {
 }
 
 /**
- * Format date to Uzbek locale string (dd.MM.yyyy format)
+ * Format date to Uzbek locale string (DD-MM-YYYY format)
  */
 export function formatUzbekistanDate(date?: Date): string {
   const targetDate = date || getUzbekistanDate();
-  return targetDate.toLocaleDateString("uz-UZ", { timeZone: UZ_TIMEZONE });
+  const day = String(targetDate.getDate()).padStart(2, '0');
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const year = targetDate.getFullYear();
+  return `${day}-${month}-${year}`; // DD-MM-YYYY
+}
+
+/**
+ * Convert ISO date string (yyyy-MM-dd) to display format (DD-MM-YYYY)
+ * Also handles existing DD.MM.YYYY and DD-MM-YYYY formats
+ */
+export function formatDisplayDate(dateString: string): string {
+  if (!dateString) return "-";
+  
+  // If already in DD-MM-YYYY format, return as is
+  if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
+    return dateString;
+  }
+  
+  // If in DD.MM.YYYY format (old format), convert to DD-MM-YYYY
+  if (/^\d{2}\.\d{2}\.\d{4}$/.test(dateString)) {
+    return dateString.replace(/\./g, '-');
+  }
+  
+  // If in ISO format yyyy-MM-dd, convert to DD-MM-YYYY
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+    const parts = dateString.split("-");
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  
+  return dateString;
 }
 
 /**

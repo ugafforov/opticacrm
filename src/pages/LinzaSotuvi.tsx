@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -220,7 +220,7 @@ const LinzaSotuvi = () => {
     
     // Main data
     const data = filteredSotuvlar.map((s) => ({
-      Sana: s.sana,
+      Sana: formatDisplayDate(s.sana),
       Kliyent: s.kliyent,
       "Linza turi": s.linzaTuri,
       Summa: s.summa,
@@ -248,7 +248,7 @@ const LinzaSotuvi = () => {
     );
 
     const tableData = filteredSotuvlar.map((s) => [
-      s.sana,
+      formatDisplayDate(s.sana),
       s.kliyent,
       s.linzaTuri,
       s.summa.toLocaleString(),
@@ -392,7 +392,7 @@ const LinzaSotuvi = () => {
             <tbody>
               {filteredSotuvlar.map((s) => (
                 <tr key={s.id} className="border-b border-border">
-                  <td className="px-4 py-2">{s.sana}</td>
+                  <td className="px-4 py-2">{formatDisplayDate(s.sana)}</td>
                   <td className="px-4 py-2">{s.kliyent}</td>
                   <td className="px-4 py-2">{s.linzaTuri}</td>
                   <td className="px-4 py-2 text-right font-semibold">

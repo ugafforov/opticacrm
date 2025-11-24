@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -226,7 +226,7 @@ const LinzaRoyxati = () => {
     
     // Main data
     const data = filteredRoyxatlar.map((r) => ({
-      Sana: r.sana,
+      Sana: formatDisplayDate(r.sana),
       Mijoz: r.mijoz,
       "OD (o'ng)": r.od,
       "OS (chap)": r.os,
@@ -255,7 +255,7 @@ const LinzaRoyxati = () => {
     );
 
     const tableData = filteredRoyxatlar.map((r) => [
-      r.sana,
+      formatDisplayDate(r.sana),
       r.mijoz,
       `${r.od} / ${r.os}`,
       r.telefon,
@@ -409,7 +409,7 @@ const LinzaRoyxati = () => {
             <tbody>
               {filteredRoyxatlar.map((r) => (
                 <tr key={r.id} className="border-b border-border">
-                  <td className="px-4 py-2">{r.sana}</td>
+                  <td className="px-4 py-2">{formatDisplayDate(r.sana)}</td>
                   <td className="px-4 py-2">{r.mijoz}</td>
                   <td className="px-4 py-2">{r.od} / {r.os}</td>
                   <td className="px-4 py-2">{r.telefon}</td>

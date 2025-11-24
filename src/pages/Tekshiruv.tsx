@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -227,7 +227,7 @@ const Tekshiruv = () => {
     // Main data
     const data = filteredTekshiruvlar.map((t) => ({
       "№": t.tartibRaqam,
-      Sana: t.sana,
+      Sana: formatDisplayDate(t.sana),
       Mijoz: t.mijoz,
       Refraksiyametriya: t.refraksiyametriya ? "Ha" : "Yo'q",
       Tanometriya: t.tanometriya ? "Ha" : "Yo'q",
@@ -257,7 +257,7 @@ const Tekshiruv = () => {
 
     const tableData = filteredTekshiruvlar.map((t) => [
       t.tartibRaqam,
-      t.sana,
+      formatDisplayDate(t.sana),
       t.mijoz,
       (t.refraksiyametriya ? "Refr." : "") + (t.refraksiyametriya && t.tanometriya ? ", " : "") + (t.tanometriya ? "Tano." : ""),
       t.jamiSumma.toLocaleString(),
@@ -411,7 +411,7 @@ const Tekshiruv = () => {
               {filteredTekshiruvlar.map((t) => (
                 <tr key={t.id} className="border-b border-border">
                   <td className="px-4 py-2">{t.tartibRaqam}</td>
-                  <td className="px-4 py-2">{t.sana}</td>
+                  <td className="px-4 py-2">{formatDisplayDate(t.sana)}</td>
                   <td className="px-4 py-2">{t.mijoz}</td>
                   <td className="px-4 py-2">
                     {t.refraksiyametriya && "Refraksiyametriya"}
