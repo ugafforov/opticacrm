@@ -41,6 +41,11 @@ All colors MUST be HSL.
     --success: 140 70% 45%;
     --success-foreground: 0 0% 100%;
 
+    --chart-1: 200 95% 45%;
+    --chart-2: 165 75% 45%;
+    --chart-3: 35 90% 55%;
+    --chart-4: 280 70% 55%;
+
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 210 15% 20%;
     --sidebar-primary: 200 95% 45%;
@@ -82,6 +87,11 @@ All colors MUST be HSL.
     
     --success: 140 70% 50%;
     --success-foreground: 210 20% 12%;
+
+    --chart-1: 200 95% 55%;
+    --chart-2: 165 75% 55%;
+    --chart-3: 35 90% 60%;
+    --chart-4: 280 70% 60%;
 
     --sidebar-background: 210 18% 15%;
     --sidebar-foreground: 210 15% 95%;
