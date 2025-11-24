@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -34,7 +34,7 @@ const LinzaRoyxati = () => {
     mijoz: "",
     od: "",
     os: "",
-    telefon: "",
+    telefon: "+998 ",
     linzaTuri: "",
   });
 
@@ -126,7 +126,7 @@ const LinzaRoyxati = () => {
         mijoz: "",
         od: "",
         os: "",
-        telefon: "",
+        telefon: "+998 ",
         linzaTuri: "",
       });
 
@@ -251,24 +251,16 @@ const LinzaRoyxati = () => {
 
             <div>
               <Label htmlFor="telefon">{t("form.phone")}</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  +998
-                </span>
-                <Input
-                  id="telefon"
-                  value={form.telefon}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^\d]/g, "");
-                    if (value.length <= 9) {
-                      setForm({ ...form, telefon: value });
-                    }
-                  }}
-                  placeholder="90 123 45 67"
-                  className="pl-14"
-                  required
-                />
-              </div>
+              <Input
+                id="telefon"
+                type="tel"
+                value={form.telefon}
+                onChange={(e) => {
+                  setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
+                }}
+                placeholder="+998 90 123 45 67"
+                required
+              />
             </div>
 
             <div>
@@ -321,7 +313,7 @@ const LinzaRoyxati = () => {
                   <td className="px-4 py-2">{r.sana}</td>
                   <td className="px-4 py-2">{r.mijoz}</td>
                   <td className="px-4 py-2">{r.od} / {r.os}</td>
-                  <td className="px-4 py-2">+998 {r.telefon}</td>
+                  <td className="px-4 py-2">{r.telefon}</td>
                   <td className="px-4 py-2">{r.linzaTuri}</td>
                   <td className="px-4 py-2">
                     <div className="flex gap-2">
@@ -405,24 +397,16 @@ const LinzaRoyxati = () => {
 
           <div>
             <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                +998
-              </span>
-              <Input
-                id="edit-telefon"
-                value={editingItem?.telefon || ""}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/[^\d]/g, "");
-                  if (value.length <= 9 && editingItem) {
-                    setEditingItem({ ...editingItem, telefon: value });
-                  }
-                }}
-                placeholder="90 123 45 67"
-                className="pl-14"
-                required
-              />
-            </div>
+            <Input
+              id="edit-telefon"
+              type="tel"
+              value={editingItem?.telefon || "+998 "}
+              onChange={(e) => {
+                setEditingItem(editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null);
+              }}
+              placeholder="+998 90 123 45 67"
+              required
+            />
           </div>
 
           <div>
