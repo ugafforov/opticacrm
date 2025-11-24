@@ -334,43 +334,58 @@ const LinzaRoyxati = () => {
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-table');
-    if (!printContent) return;
+    if (!printContent) {
+      toast.error("Chop etish uchun jadval topilmadi");
+      return;
+    }
     
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
     
-    printWindow.document.write(`
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      toast.error("Chop etishda xatolik yuz berdi");
+      document.body.removeChild(iframe);
+      return;
+    }
+    
+    doc.open();
+    doc.write(`
       <html>
         <head>
-          <title>Print - Linza ro'yxati</title>
+          <title>Linza ro'yxati</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { text-align: center; margin-bottom: 20px; }
+            h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
+            .print-date { text-align: center; color: #666; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
             th { background-color: #f2f2f2; font-weight: bold; }
             tr:nth-child(even) { background-color: #f9f9f9; }
-            .print-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-            .print-date { color: #666; }
             @media print {
-              body { -webkit-print-color-adjust: exact; }
+              body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
           </style>
         </head>
         <body>
-          <div class="print-header">
-            <h1>Linza ro'yxati</h1>
-            <span class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</span>
-          </div>
+          <h1>Linza ro'yxati</h1>
+          <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
           ${printContent.outerHTML}
         </body>
       </html>
     `);
+    doc.close();
     
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
   };
 
   return (
