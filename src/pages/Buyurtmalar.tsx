@@ -18,8 +18,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber } from "@/lib/utils";
-import { setupPdfDoc } from "@/lib/pdfHelpers";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime } from "@/lib/utils";
+import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -247,6 +247,16 @@ const Buyurtmalar = () => {
   const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
 
   const exportToExcel = () => {
+    const dateTime = formatUzbekistanDateTime();
+    
+    // Metadata
+    const metadata = [
+      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
+      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
+      { "Ma'lumot": "Jami summa", "Qiymat": `${totalSum.toLocaleString()} so'm` },
+    ];
+    
+    // Main data
     const data = filteredBuyurtmalar.map((b) => ({
       Sana: b.sana,
       Mijoz: b.mijoz,
@@ -260,9 +270,13 @@ const Buyurtmalar = () => {
       "Jami summa": b.jamiSumma,
     }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
+    const metaWs = XLSX.utils.json_to_sheet(metadata);
+    const dataWs = XLSX.utils.json_to_sheet(data);
+    
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Buyurtmalar");
+    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
+    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    
     XLSX.writeFile(wb, `Buyurtmalar_${formatUzbekistanDate()}.xlsx`);
     toast.success("Excel fayl yuklab olindi");
   };
@@ -270,12 +284,12 @@ const Buyurtmalar = () => {
   const exportToPDF = () => {
     const doc = setupPdfDoc('landscape');
     
-    doc.setFontSize(16);
-    doc.text("Buyurtmalar ro'yxati", 14, 15);
-    
-    doc.setFontSize(10);
-    doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
-    doc.text(`Jami summa: ${totalSum.toLocaleString()} so'm`, 14, 28);
+    const startY = addPdfHeader(
+      doc,
+      "Buyurtmalar ro'yxati",
+      user?.email,
+      `Jami summa: ${totalSum.toLocaleString()} so'm`
+    );
 
     const tableData = filteredBuyurtmalar.map((b) => [
       b.sana,
@@ -288,7 +302,7 @@ const Buyurtmalar = () => {
     ]);
 
     autoTable(doc, {
-      startY: 35,
+      startY,
       head: [['Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
       body: tableData,
       styles: { 

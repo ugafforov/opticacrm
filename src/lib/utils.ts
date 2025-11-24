@@ -35,6 +35,21 @@ export function getUzbekistanISOString(date?: Date): string {
 }
 
 /**
+ * Format date and time to Uzbek locale string (dd.MM.yyyy HH:mm format)
+ */
+export function formatUzbekistanDateTime(date?: Date): string {
+  const targetDate = date || getUzbekistanDate();
+  return targetDate.toLocaleString("uz-UZ", { 
+    timeZone: UZ_TIMEZONE,
+    day: "2-digit",
+    month: "2-digit", 
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+/**
  * Format phone number with automatic spacing: +998 90 123 45 67
  * Limits input to 9 digits after +998
  */

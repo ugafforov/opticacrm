@@ -12,11 +12,11 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { setupPdfDoc } from "@/lib/pdfHelpers";
+import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatUzbekistanDateTime } from "@/lib/utils";
 
 interface ReportData {
   name: string;
@@ -305,6 +305,8 @@ const Hisobotlar = () => {
     if (!user) return;
 
     try {
+      const dateTime = formatUzbekistanDateTime();
+      
       const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes] = await Promise.all([
         supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
         supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
@@ -317,6 +319,12 @@ const Hisobotlar = () => {
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
 
+      // Metadata
+      const metadata = [
+        { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
+        { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
+      ];
+
       let data: any[] = [];
       let sheetName = "";
 
@@ -326,6 +334,7 @@ const Hisobotlar = () => {
           [t("reports.income")]: item.tushum
         }));
         sheetName = `${t("reports.title")} - ${period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly")}`;
+        metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalTushum.toLocaleString()} so'm` });
       } else if (type === "section") {
         const sections = [
           { name: t("nav.orders"), data: buyurtmalar, key: "jami_summa" },
@@ -338,6 +347,8 @@ const Hisobotlar = () => {
           [t("reports.income")]: section.data.reduce((sum: number, item: any) => sum + (item[section.key] || 0), 0)
         }));
         sheetName = `${t("reports.title")} - ${t("reports.bySection")}`;
+        const totalIncome = sectionData.reduce((sum, s) => sum + s.total, 0);
+        metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       } else {
         const allData = [
           ...buyurtmalar.map((b: any) => ({
@@ -370,11 +381,17 @@ const Hisobotlar = () => {
           return isDateInRange(item[t("common.date")]);
         });
         sheetName = `${t("reports.title")} - ${t("common.total")}`;
+        const totalIncome = data.reduce((sum, item) => sum + item[t("reports.income")], 0);
+        metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       }
 
-      const ws = XLSX.utils.json_to_sheet(data);
+      const metaWs = XLSX.utils.json_to_sheet(metadata);
+      const dataWs = XLSX.utils.json_to_sheet(data);
+      
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
+      XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+      
       XLSX.writeFile(wb, `${sheetName}.xlsx`);
       toast.success(t("reports.exportExcel"));
     } catch (error: any) {
@@ -402,21 +419,19 @@ const Hisobotlar = () => {
       const linzaSotuvlari = linzaSotuvRes.data || [];
 
       const doc = setupPdfDoc();
-      
-      doc.setFontSize(16);
-      doc.text("Hisobotlar", 14, 15);
-      
-      doc.setFontSize(10);
-      const currentDate = new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" });
-      doc.text(`Sana: ${currentDate}`, 14, 22);
 
       if (type === "period") {
         const periodText = period === "daily" ? "Kunlik" : period === "weekly" ? "Haftalik" : "Oylik";
-        doc.text(`Davr: ${periodText}`, 14, 28);
+        const startY = addPdfHeader(
+          doc,
+          "Hisobotlar",
+          user?.email,
+          `Davr: ${periodText}`
+        );
         
         const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
         autoTable(doc, {
-          startY: 35,
+          startY,
           head: [['Sana', 'Tushum']],
           body: tableData,
           foot: [['Jami', totalTushum.toLocaleString()]],
@@ -444,6 +459,13 @@ const Hisobotlar = () => {
           },
         });
       } else if (type === "section") {
+        const startY = addPdfHeader(
+          doc,
+          "Hisobotlar",
+          user?.email,
+          "Davr: Bo'limlar bo'yicha"
+        );
+        
         const sections = [
           ["Buyurtmalar", buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
           ["Tekshiruvlar", tekshiruvlar.reduce((sum: number, t: any) => sum + t.jami_summa, 0)],
@@ -453,7 +475,7 @@ const Hisobotlar = () => {
         const tableData = sections.map(s => [s[0], s[1].toLocaleString()]);
         const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);
         autoTable(doc, {
-          startY: 30,
+          startY,
           head: [["Bo'lim", "Tushum"]],
           body: tableData,
           foot: [['Jami', total.toLocaleString()]],
@@ -481,6 +503,13 @@ const Hisobotlar = () => {
           },
         });
       } else {
+        const startY = addPdfHeader(
+          doc,
+          "Hisobotlar",
+          user?.email,
+          "Davr: Batafsil"
+        );
+        
         const allData = [
           ...buyurtmalar.map((b: any) => ["Buyurtmalar", b.sana, b.mijoz, b.jami_summa.toLocaleString()]),
           ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", tek.sana, tek.mijoz, tek.jami_summa.toLocaleString()]),
@@ -488,7 +517,7 @@ const Hisobotlar = () => {
           ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", l.sana, l.kliyent, l.summa.toLocaleString()])
         ];
         autoTable(doc, {
-          startY: 30,
+          startY,
           head: [["Bo'lim", "Sana", "Mijoz", "Summa"]],
           body: allData,
           styles: { 
@@ -510,6 +539,7 @@ const Hisobotlar = () => {
         });
       }
 
+      const currentDate = new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" });
       doc.save(`Hisobotlar_${currentDate}.pdf`);
       toast.success("PDF fayl yuklab olindi");
     } catch (error: any) {
