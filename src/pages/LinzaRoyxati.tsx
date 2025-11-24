@@ -12,6 +12,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber } from "@/lib/utils";
+import { setupPdfDoc } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -232,14 +233,12 @@ const LinzaRoyxati = () => {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = setupPdfDoc();
     
-    doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("Linza Ro'yxati", 14, 15);
     
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
     doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
 
     const tableData = filteredRoyxatlar.map((r) => [
@@ -254,8 +253,19 @@ const LinzaRoyxati = () => {
       startY: 28,
       head: [['Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
       body: tableData,
-      styles: { font: 'helvetica', fontSize: 9 },
-      headStyles: { fillColor: [66, 66, 66] },
+      styles: { 
+        font: 'DejaVuSans', 
+        fontSize: 9,
+        cellPadding: 2,
+      },
+      headStyles: { 
+        fillColor: [66, 66, 66],
+        textColor: 255,
+        fontStyle: 'normal',
+      },
+      alternateRowStyles: { 
+        fillColor: [245, 245, 245] 
+      },
     });
 
     doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);

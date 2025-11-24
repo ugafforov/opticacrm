@@ -19,6 +19,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { setupPdfDoc } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -227,14 +228,12 @@ const TayyorKozoynaklar = () => {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
+    const doc = setupPdfDoc();
     
-    doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
     doc.text("Tayyor Ko'zoynaklar", 14, 15);
     
     doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
     doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
     doc.text(`Jami summa: ${totalSum.toLocaleString()} so'm`, 14, 28);
 
@@ -250,8 +249,22 @@ const TayyorKozoynaklar = () => {
       startY: 35,
       head: [['№', 'Sana', 'Kliyent', "Ko'zoynak turi", 'Summa']],
       body: tableData,
-      styles: { font: 'helvetica', fontSize: 9 },
-      headStyles: { fillColor: [66, 66, 66] },
+      styles: { 
+        font: 'DejaVuSans', 
+        fontSize: 9,
+        cellPadding: 2,
+      },
+      headStyles: { 
+        fillColor: [66, 66, 66],
+        textColor: 255,
+        fontStyle: 'normal',
+      },
+      alternateRowStyles: { 
+        fillColor: [245, 245, 245] 
+      },
+      columnStyles: {
+        4: { halign: 'right' }, // Summa column right-aligned
+      },
     });
 
     doc.save(`Tayyor_Kozoynaklar_${formatUzbekistanDate()}.pdf`);
