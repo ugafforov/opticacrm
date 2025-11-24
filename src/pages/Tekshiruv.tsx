@@ -329,18 +329,18 @@ const Tekshiruv = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-lg font-semibold">{t("inspection.list")}</h3>
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h3 className="text-lg font-semibold">Tekshiruvlar ro'yxati</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
+              Jami: {totalSum.toLocaleString()} so'm
             </div>
           </div>
-          <div className="flex flex-col gap-2 items-end">
-            <div className="relative w-full sm:w-72">
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative flex-1 sm:max-w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder={t("inspection.search")}
+                placeholder="Qidirish..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"

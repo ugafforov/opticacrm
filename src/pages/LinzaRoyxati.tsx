@@ -337,13 +337,13 @@ const LinzaRoyxati = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-          <h3 className="text-lg font-semibold">{t("lensRegistry.list")}</h3>
-          <div className="flex flex-col gap-2 items-end">
-            <div className="relative w-full sm:w-72">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+          <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder={t("lensRegistry.search")}
+                placeholder={t("lens.search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
