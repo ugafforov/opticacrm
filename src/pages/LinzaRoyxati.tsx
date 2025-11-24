@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search, Edit } from "lucide-react";
+import { Trash2, Search, Edit, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -211,6 +214,54 @@ const LinzaRoyxati = () => {
     );
   });
 
+  const exportToExcel = () => {
+    const data = filteredRoyxatlar.map((r) => ({
+      Sana: r.sana,
+      Mijoz: r.mijoz,
+      "OD (o'ng)": r.od,
+      "OS (chap)": r.os,
+      Telefon: r.telefon,
+      "Linza turi": r.linzaTuri,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Linza Royxati");
+    XLSX.writeFile(wb, `Linza_Royxati_${formatUzbekistanDate()}.xlsx`);
+    toast.success("Excel fayl yuklab olindi");
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Linza Ro'yxati", 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
+
+    const tableData = filteredRoyxatlar.map((r) => [
+      r.sana,
+      r.mijoz,
+      `${r.od} / ${r.os}`,
+      r.telefon,
+      r.linzaTuri,
+    ]);
+
+    autoTable(doc, {
+      startY: 28,
+      head: [['Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
+      body: tableData,
+      styles: { font: 'helvetica', fontSize: 9 },
+      headStyles: { fillColor: [66, 66, 66] },
+    });
+
+    doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);
+    toast.success("PDF fayl yuklab olindi");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -288,14 +339,36 @@ const LinzaRoyxati = () => {
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
           <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder={t("lens.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder={t("lens.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">

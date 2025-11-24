@@ -10,7 +10,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Trash2, Search, Pencil } from "lucide-react";
+import { Trash2, Search, Pencil, Download } from "lucide-react";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -207,6 +210,54 @@ const TayyorKozoynaklar = () => {
 
   const totalSum = kozoynaklar.reduce((sum, k) => sum + k.summa, 0);
 
+  const exportToExcel = () => {
+    const data = filteredKozoynaklar.map((k) => ({
+      "№": k.tartibRaqam,
+      Sana: k.sana,
+      Kliyent: k.kliyent,
+      "Ko'zoynak turi": k.kozoynakTuri,
+      Summa: k.summa,
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Tayyor Ko'zoynaklar");
+    XLSX.writeFile(wb, `Tayyor_Kozoynaklar_${formatUzbekistanDate()}.xlsx`);
+    toast.success("Excel fayl yuklab olindi");
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Tayyor Ko'zoynaklar", 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Sana: ${formatUzbekistanDate()}`, 14, 22);
+    doc.text(`Jami summa: ${totalSum.toLocaleString()} so'm`, 14, 28);
+
+    const tableData = filteredKozoynaklar.map((k) => [
+      k.tartibRaqam,
+      k.sana,
+      k.kliyent,
+      k.kozoynakTuri,
+      k.summa.toLocaleString(),
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['№', 'Sana', 'Kliyent', "Ko'zoynak turi", 'Summa']],
+      body: tableData,
+      styles: { font: 'helvetica', fontSize: 9 },
+      headStyles: { fillColor: [66, 66, 66] },
+    });
+
+    doc.save(`Tayyor_Kozoynaklar_${formatUzbekistanDate()}.pdf`);
+    toast.success("PDF fayl yuklab olindi");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -263,21 +314,43 @@ const TayyorKozoynaklar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+        <div className="flex flex-col gap-4 mb-4">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
             <h3 className="text-lg font-semibold">{t("ready.list")}</h3>
             <div className="text-lg font-bold text-primary">
               {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder={t("ready.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div className="relative flex-1 sm:max-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder={t("ready.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
