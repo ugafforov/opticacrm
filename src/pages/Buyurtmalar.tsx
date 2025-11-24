@@ -23,6 +23,7 @@ interface Buyurtma {
   id: string;
   sana: string;
   mijoz: string;
+  telefon?: string;
   od: string;
   os: string;
   oynaTuri: string;
@@ -40,6 +41,7 @@ const Buyurtmalar = () => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
     mijoz: "",
+    telefon: "+998 ",
     od: "",
     os: "",
     oynaTuri: "",
@@ -94,6 +96,7 @@ const Buyurtmalar = () => {
         id: item.id,
         sana: item.sana,
         mijoz: item.mijoz,
+        telefon: item.telefon,
         od: item.od,
         os: item.os,
         oynaTuri: item.oyna_tури,
@@ -128,6 +131,7 @@ const Buyurtmalar = () => {
           user_id: user.id,
           sana: formatUzbekistanDate(),
           mijoz: form.mijoz,
+          telefon: form.telefon,
           od: form.od,
           os: form.os,
           oyna_tури: form.oynaTuri,
@@ -143,6 +147,7 @@ const Buyurtmalar = () => {
       
       setForm({
         mijoz: "",
+        telefon: "+998 ",
         od: "",
         os: "",
         oynaTuri: "",
@@ -202,6 +207,7 @@ const Buyurtmalar = () => {
         .from("buyurtmalar")
         .update({
           mijoz: editingItem.mijoz,
+          telefon: editingItem.telefon,
           od: editingItem.od,
           os: editingItem.os,
           oyna_tури: editingItem.oynaTuri,
@@ -226,7 +232,8 @@ const Buyurtmalar = () => {
     const query = searchQuery.toLowerCase();
     return (
       b.mijoz.toLowerCase().includes(query) ||
-      b.sana.includes(query)
+      b.sana.includes(query) ||
+      (b.telefon && b.telefon.toLowerCase().includes(query))
     );
   });
 
@@ -242,13 +249,32 @@ const Buyurtmalar = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
+            <div>
               <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
                 onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
                 required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="telefon">Telefon raqami</Label>
+              <Input
+                id="telefon"
+                type="tel"
+                value={form.telefon}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Ensure +998 stays at the beginning
+                  if (!value.startsWith("+998 ")) {
+                    setForm({ ...form, telefon: "+998 " });
+                  } else {
+                    setForm({ ...form, telefon: value });
+                  }
+                }}
+                placeholder="+998 90 123 45 67"
               />
             </div>
 
@@ -358,6 +384,7 @@ const Buyurtmalar = () => {
               <tr>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">Telefon</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
@@ -370,6 +397,7 @@ const Buyurtmalar = () => {
                 <tr key={b.id} className="border-b border-border hover:bg-muted/50">
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.sana}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
+                  <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
@@ -426,6 +454,28 @@ const Buyurtmalar = () => {
                 )
               }
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="edit-telefon">Telefon raqami</Label>
+            <Input
+              id="edit-telefon"
+              type="tel"
+              value={editingItem?.telefon || "+998 "}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (!value.startsWith("+998 ")) {
+                  setEditingItem(
+                    editingItem ? { ...editingItem, telefon: "+998 " } : null
+                  );
+                } else {
+                  setEditingItem(
+                    editingItem ? { ...editingItem, telefon: value } : null
+                  );
+                }
+              }}
+              placeholder="+998 90 123 45 67"
             />
           </div>
 
