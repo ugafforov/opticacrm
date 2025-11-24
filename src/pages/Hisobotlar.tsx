@@ -34,6 +34,14 @@ interface SectionData {
   change?: number;
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+  total?: number;
+  showComparison?: boolean;
+}
+
 const Hisobotlar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -45,6 +53,38 @@ const Hisobotlar = () => {
   const [showComparison, setShowComparison] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
+
+  const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
+    if (active && payload && payload.length) {
+      const currentIncome = payload[0].value;
+      const percentage = total ? ((currentIncome / total) * 100).toFixed(1) : "0";
+      const previousIncome = payload[1]?.value;
+
+      return (
+        <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
+          <p className="font-semibold text-foreground mb-2">{label}</p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[0].color }} />
+              <p className="text-sm text-foreground">
+                <span className="font-medium">{currentIncome.toLocaleString()}</span> so'm
+                <span className="text-muted-foreground ml-1">({percentage}%)</span>
+              </p>
+            </div>
+            {showComparison && previousIncome !== undefined && (
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[1].color }} />
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium">{previousIncome.toLocaleString()}</span> so'm
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   useEffect(() => {
     if (user) {
@@ -753,10 +793,7 @@ const Hisobotlar = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
-                  />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
                   <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
                   {showComparison && (
@@ -774,10 +811,7 @@ const Hisobotlar = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
-                  />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
                   <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
                   {showComparison && (
@@ -795,10 +829,7 @@ const Hisobotlar = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
-                  <Tooltip 
-                    formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`}
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
-                  />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
                   <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
                   {showComparison && (
