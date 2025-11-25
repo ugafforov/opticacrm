@@ -333,7 +333,9 @@ const Tekshiruv = () => {
         doc,
         t("exam.list"),
         user?.email,
-        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        t("common.exportedBy"),
+        t("common.dateAndTime")
       );
 
       const tableData = filteredTekshiruvlar.map((exam) => [

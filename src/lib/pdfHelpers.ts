@@ -50,7 +50,9 @@ export const addPdfHeader = (
   doc: jsPDF, 
   title: string, 
   userEmail?: string,
-  additionalInfo?: string
+  additionalInfo?: string,
+  exportedByLabel: string = "Eksport qilgan:",
+  dateTimeLabel: string = "Sana va vaqt:"
 ): number => {
   const dateTime = formatUzbekistanDateTime();
   
@@ -58,8 +60,8 @@ export const addPdfHeader = (
   doc.text(title, 14, 15);
   
   doc.setFontSize(9);
-  doc.text(`Eksport qilgan: ${userEmail || "Noma'lum"}`, 14, 22);
-  doc.text(`Sana va vaqt: ${dateTime}`, 14, 27);
+  doc.text(`${exportedByLabel} ${userEmail || "Noma'lum"}`, 14, 22);
+  doc.text(`${dateTimeLabel} ${dateTime}`, 14, 27);
   
   if (additionalInfo) {
     doc.text(additionalInfo, 14, 32);

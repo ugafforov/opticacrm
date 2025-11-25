@@ -164,6 +164,9 @@ const translations = {
     "common.cancel": "Бекор қилиш",
     "common.from": "дан",
     "common.to": "гача",
+    "common.exportedBy": "Экспорт қилган:",
+    "common.dateAndTime": "Сана ва вақт:",
+    "common.currency": "сўм",
     
     // Form labels - Orders
     "form.clientName": "Мижоз фамилияси ва исми",
@@ -463,6 +466,9 @@ const translations = {
     "common.cancel": "Bekor qilish",
     "common.from": "dan",
     "common.to": "gacha",
+    "common.exportedBy": "Eksport qilgan:",
+    "common.dateAndTime": "Sana va vaqt:",
+    "common.currency": "so'm",
     
     // Form labels - Orders
     "form.clientName": "Mijoz familiyasi va ismi",

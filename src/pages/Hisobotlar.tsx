@@ -532,7 +532,9 @@ const Hisobotlar = () => {
           doc,
           t("reports.title"),
           user?.email,
-          `Davr: ${periodText}`
+          `Davr: ${periodText}`,
+          t("common.exportedBy"),
+          t("common.dateAndTime")
         );
         
         const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
@@ -571,7 +573,9 @@ const Hisobotlar = () => {
           doc,
           t("reports.title"),
           user?.email,
-          `Davr: ${t("reports.bySection")}`
+          `Davr: ${t("reports.bySection")}`,
+          t("common.exportedBy"),
+          t("common.dateAndTime")
         );
         
         const sections = [
@@ -617,7 +621,9 @@ const Hisobotlar = () => {
           doc,
           "Hisobotlar",
           user?.email,
-          "Davr: Batafsil"
+          "Davr: Batafsil",
+          t("common.exportedBy"),
+          t("common.dateAndTime")
         );
         
         const allData = [
