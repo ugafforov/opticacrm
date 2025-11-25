@@ -632,8 +632,18 @@ const Buyurtmalar = () => {
                 placeholder={t("orders.search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-10"
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              )}
             </div>
             <div className="flex gap-2">
               <Button
@@ -669,7 +679,12 @@ const Buyurtmalar = () => {
         
         {isMobile ? (
           <div className="space-y-4">
-            {currentBuyurtmalar.map((b) => (
+            {currentBuyurtmalar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha buyurtmalar yo'q"}
+              </div>
+            ) : (
+              currentBuyurtmalar.map((b) => (
               <div key={b.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
@@ -742,11 +757,17 @@ const Buyurtmalar = () => {
                   <span className="text-lg font-bold">{b.jamiSumma.toLocaleString()}</span>
                 </div>
               </div>
-            ))}
+            ))
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <table id="printable-table" className="w-full min-w-[640px]">
+            {currentBuyurtmalar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha buyurtmalar yo'q"}
+              </div>
+            ) : (
+              <table id="printable-table" className="w-full min-w-[640px]">
               <thead className="bg-secondary text-secondary-foreground">
                 <tr>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
@@ -811,6 +832,7 @@ const Buyurtmalar = () => {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
 
