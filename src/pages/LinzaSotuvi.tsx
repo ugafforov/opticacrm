@@ -39,6 +39,7 @@ import {
 interface LinzaSotish {
   id: string;
   sana: string;
+  createdAt: string;
   tartibRaqam: number;
   kliyent: string;
   linzaTuri: string;
@@ -107,6 +108,7 @@ const LinzaSotuvi = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        createdAt: item.created_at,
         tartibRaqam: item.tartib_raqam,
         kliyent: item.kliyent,
         linzaTuri: item.linza_turi,
@@ -582,7 +584,18 @@ const LinzaSotuvi = () => {
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <div className="font-semibold text-lg">№ {s.tartibRaqam}</div>
-                    <div className="text-sm text-muted-foreground">{formatDisplayDate(s.sana)}</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground cursor-help">
+                            {formatDisplayDate(s.sana)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatUzbekistanDateTime(new Date(s.createdAt))}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex gap-2">
                     <TooltipProvider>
@@ -661,7 +674,18 @@ const LinzaSotuvi = () => {
                 {currentSotuvlar.map((s) => (
                   <tr key={s.id} className="border-b border-border">
                     <td className="px-4 py-2">{s.tartibRaqam}</td>
-                    <td className="px-4 py-2">{formatDisplayDate(s.sana)}</td>
+                    <td className="px-4 py-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{formatDisplayDate(s.sana)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(s.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-4 py-2">{s.kliyent}</td>
                     <td className="px-4 py-2">{s.linzaTuri}</td>
                     <td className="px-4 py-2 text-right font-semibold">
