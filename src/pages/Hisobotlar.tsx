@@ -565,7 +565,8 @@ const Hisobotlar = () => {
             fillColor: [245, 245, 245] 
           },
           columnStyles: {
-            1: { halign: 'right' },
+            0: { cellWidth: 30 },
+            1: { cellWidth: 30, halign: 'right' },
           },
         });
       } else if (type === "section") {
@@ -613,7 +614,8 @@ const Hisobotlar = () => {
             fillColor: [245, 245, 245] 
           },
           columnStyles: {
-            1: { halign: 'right' },
+            0: { cellWidth: 50 },
+            1: { cellWidth: 30, halign: 'right' },
           },
         });
       } else {
@@ -651,7 +653,10 @@ const Hisobotlar = () => {
             fillColor: [245, 245, 245] 
           },
           columnStyles: {
-            3: { halign: 'right' },
+            0: { cellWidth: 35 },
+            1: { cellWidth: 22 },
+            2: { cellWidth: 'auto' },
+            3: { cellWidth: 28, halign: 'right' },
           },
         });
       }
