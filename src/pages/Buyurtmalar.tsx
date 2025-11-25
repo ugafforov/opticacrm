@@ -494,7 +494,9 @@ const Buyurtmalar = () => {
                 onChange={(e) => setForm({ ...form, os: e.target.value })}
               />
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
               <Select value={form.oynaTuri} onValueChange={(value) => setForm({ ...form, oynaTuri: value })}>
