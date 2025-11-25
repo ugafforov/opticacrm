@@ -755,7 +755,7 @@ const Hisobotlar = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "dd.MM.yyyy") : <span>Sanani tanlang</span>}
+                    {startDate ? format(startDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -781,7 +781,7 @@ const Hisobotlar = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "dd.MM.yyyy") : <span>Sanani tanlang</span>}
+                    {endDate ? format(endDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -810,15 +810,15 @@ const Hisobotlar = () => {
                 variant={showComparison ? "default" : "outline"}
                 onClick={() => setShowComparison(!showComparison)}
                 disabled={!startDate || !endDate}
-                title={!startDate || !endDate ? "Taqqoslash uchun sana oralig'ini tanlang" : ""}
+                title={!startDate || !endDate ? t("reports.compareTooltip") : ""}
               >
-                Taqqoslash
+                {t("reports.compare")}
               </Button>
             </div>
           </div>
           
           <div className="mt-4">
-            <Label>Mahsulot/Xizmat turi</Label>
+            <Label>{t("reports.productServiceType")}</Label>
             <Select value={selectedType} onValueChange={setSelectedType}>
               <SelectTrigger className="w-full md:w-[300px]">
                 <SelectValue placeholder="Turni tanlang" />
@@ -859,15 +859,15 @@ const Hisobotlar = () => {
               
               <Button variant="outline" size="sm" onClick={() => handleExport("period")}>
                 <FileDown className="h-4 w-4 mr-2" />
-                Davr bo'yicha
+                {t("reports.exportByPeriod")}
               </Button>
               <Button variant="outline" size="sm" onClick={() => handleExport("section")}>
                 <FileDown className="h-4 w-4 mr-2" />
-                Bo'lim bo'yicha
+                {t("reports.exportBySection")}
               </Button>
               <Button variant="outline" size="sm" onClick={() => handleExport("detailed")}>
                 <FileDown className="h-4 w-4 mr-2" />
-                Batafsil
+                {t("reports.exportDetailed")}
               </Button>
               
               <Button variant="outline" size="sm" onClick={handlePrint}>
@@ -885,7 +885,7 @@ const Hisobotlar = () => {
               </div>
               {showComparison && previousTotalTushum > 0 && (
                 <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">O'zgarish</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t("reports.change")}</p>
                   <p className={cn(
                     "text-2xl font-bold",
                     totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
@@ -893,7 +893,7 @@ const Hisobotlar = () => {
                     {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Oldingi: {previousTotalTushum.toLocaleString()}
+                    {t("reports.previous")} {previousTotalTushum.toLocaleString()}
                   </p>
                 </div>
               )}
@@ -909,9 +909,9 @@ const Hisobotlar = () => {
                   <YAxis />
                   <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
                   {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
                   )}
                 </BarChart>
               </ResponsiveContainer>
@@ -927,9 +927,9 @@ const Hisobotlar = () => {
                   <YAxis />
                   <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
                   {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
                   )}
                 </BarChart>
               </ResponsiveContainer>
@@ -945,9 +945,9 @@ const Hisobotlar = () => {
                   <YAxis />
                   <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
                   <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? "Joriy davr" : t("reports.income")} />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
                   {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name="Oldingi davr" />
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
                   )}
                 </BarChart>
               </ResponsiveContainer>
@@ -964,10 +964,10 @@ const Hisobotlar = () => {
             <div key={section.name} className="bg-secondary rounded-lg p-4">
               <p className="text-sm text-muted-foreground mb-1">{section.name}</p>
               <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.sum")}</p>
-              <p className="text-xs text-muted-foreground mt-1">{section.count} ta yozuv</p>
+              <p className="text-xs text-muted-foreground mt-1">{section.count} {t("reports.records")}</p>
               {showComparison && section.previousTotal !== undefined && (
                 <div className="mt-2 pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">Oldingi: {section.previousTotal.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{t("reports.previous")} {section.previousTotal.toLocaleString()}</p>
                   {section.change !== undefined && section.previousTotal > 0 && (
                     <p className={cn(
                       "text-sm font-semibold",

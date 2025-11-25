@@ -130,6 +130,20 @@ const translations = {
     "reports.income": "Тушум",
     "reports.bySection": "Бўлимлар бўйича тушум",
     "reports.recordCount": "та ёзув",
+    "reports.dateRange": "Сана оралиғи",
+    "reports.reset": "Қайта тиклаш",
+    "reports.selectDate": "Санани танланг",
+    "reports.compare": "Таққослаш",
+    "reports.compareTooltip": "Таққослаш учун сана оралиғини танланг",
+    "reports.productServiceType": "Маҳсулот/Хизмат тури",
+    "reports.exportByPeriod": "Давр бўйича",
+    "reports.exportBySection": "Бўлим бўйича",
+    "reports.exportDetailed": "Батафсил",
+    "reports.currentPeriod": "Жорий давр",
+    "reports.previousPeriod": "Олдинги давр",
+    "reports.change": "Ўзгариш",
+    "reports.previous": "Олдинги:",
+    "reports.records": "та ёзув",
     
     // Common
     "common.sum": "сўм",
@@ -210,14 +224,6 @@ const translations = {
     // Edit dialog
     "edit.title": "Таҳрирлаш",
     "edit.success": "Сақланди!",
-    
-    // Reports (additional)
-    "reports.dateRange": "Сана оралиғи",
-    "reports.apply": "Қўллаш",
-    "reports.reset": "Тозалаш",
-    "reports.export": "Экспорт",
-    "reports.exportExcel": "Excel форматида экспорт",
-    "reports.exportPDF": "PDF форматида экспорт",
     
     // Auth
     "auth.login": "Кириш",
@@ -417,6 +423,20 @@ const translations = {
     "reports.export": "Export",
     "reports.exportExcel": "Excel formatida export",
     "reports.exportPDF": "PDF formatida export",
+    "reports.dateRange": "Sana oraliği",
+    "reports.reset": "Qayta tiklash",
+    "reports.selectDate": "Sanani tanlang",
+    "reports.compare": "Taqqoslash",
+    "reports.compareTooltip": "Taqqoslash uchun sana oralig'ini tanlang",
+    "reports.productServiceType": "Mahsulot/Xizmat turi",
+    "reports.exportByPeriod": "Davr bo'yicha",
+    "reports.exportBySection": "Bo'lim bo'yicha",
+    "reports.exportDetailed": "Batafsil",
+    "reports.currentPeriod": "Joriy davr",
+    "reports.previousPeriod": "Oldingi davr",
+    "reports.change": "O'zgarish",
+    "reports.previous": "Oldingi:",
+    "reports.records": "ta yozuv",
     
     // Common
     "common.sum": "so'm",
@@ -496,11 +516,6 @@ const translations = {
     // Edit dialog
     "edit.title": "Tahrirlash",
     "edit.success": "Saqlandi!",
-    
-    // Reports (additional keys)
-    "reports.dateRange": "Sana oraliği",
-    "reports.apply": "Qo'llash",
-    "reports.reset": "Tozalash",
     
     // Auth
     "auth.login": "Kirish",
