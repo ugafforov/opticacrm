@@ -13,9 +13,9 @@ export const loadRobotoFont = async (): Promise<string> => {
   }
 
   try {
-    // Fetch font from CDN that supports Cyrillic characters
-    // Using pdfmake's Roboto font which has full Cyrillic support
-    const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Regular.ttf');
+    // Fetch font from same-origin public/fonts to avoid CORS issues
+    const response = await fetch('/fonts/Roboto-Regular.ttf');
+    
     
     if (!response.ok) {
       throw new Error(`Failed to fetch font: ${response.status}`);
