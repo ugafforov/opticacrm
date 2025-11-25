@@ -811,6 +811,37 @@ const LinzaRoyxati = () => {
       >
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
+            <Label>{t("common.date")}</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editingItem?.sana ? new Date(editingItem.sana.split('-').reverse().join('-')) : undefined}
+                  onSelect={(date) => {
+                    if (date && editingItem) {
+                      setEditingItem({
+                        ...editingItem,
+                        sana: formatUzbekistanDate(date)
+                      });
+                    }
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div>
             <Label htmlFor="edit-mijoz">{t("form.clientName")}</Label>
             <Input
               id="edit-mijoz"
