@@ -47,7 +47,7 @@ interface LinzaSotish {
 }
 
 const LinzaSotuvi = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -328,30 +328,31 @@ const LinzaSotuvi = () => {
     toast.success(t("toast.excelSuccess"));
   };
 
-  const exportToPDF = () => {
-    const doc = setupPdfDoc();
-    
-    const startY = addPdfHeader(
-      doc,
-      t("lensSale.list"),
-      user?.email,
-      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
-    );
+  const exportToPDF = async () => {
+    try {
+      const doc = await setupPdfDoc('portrait', script);
+      
+      const startY = addPdfHeader(
+        doc,
+        t("lensSale.list"),
+        user?.email,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+      );
 
-    const tableData = filteredSotuvlar.map((s) => [
-      s.tartibRaqam,
-      formatDisplayDate(s.sana),
-      s.kliyent,
-      getLensTypeTranslation(s.linzaTuri),
-      s.summa.toLocaleString(),
-    ]);
+      const tableData = filteredSotuvlar.map((s) => [
+        s.tartibRaqam,
+        formatDisplayDate(s.sana),
+        s.kliyent,
+        getLensTypeTranslation(s.linzaTuri),
+        s.summa.toLocaleString(),
+      ]);
 
-    autoTable(doc, {
-      startY,
-      head: [[t("orders.number"), t("common.date"), t("lensSale.client"), t("lensSale.type"), t("lensSale.amount")]],
-      body: tableData,
-      styles: { 
-        font: 'helvetica',
+      autoTable(doc, {
+        startY,
+        head: [[t("orders.number"), t("common.date"), t("lensSale.client"), t("lensSale.type"), t("lensSale.amount")]],
+        body: tableData,
+        styles: { 
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
@@ -370,6 +371,10 @@ const LinzaSotuvi = () => {
 
     doc.save(`Linza_Sotuvi_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
+    } catch (error) {
+      console.error("PDF eksport xatosi:", error);
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const handlePrint = () => {

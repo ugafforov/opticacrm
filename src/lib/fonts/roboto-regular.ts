@@ -5,7 +5,7 @@ let cachedFont: string | null = null;
 
 /**
  * Loads Roboto font and converts to base64 for jsPDF
- * Uses runtime fetching to avoid build issues
+ * Uses runtime fetching from CDN to support Cyrillic characters
  */
 export const loadRobotoFont = async (): Promise<string> => {
   if (cachedFont) {
@@ -13,8 +13,14 @@ export const loadRobotoFont = async (): Promise<string> => {
   }
 
   try {
-    // Fetch font from Google Fonts CDN
-    const response = await fetch('https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu72xKOzY.woff2');
+    // Fetch font from CDN that supports Cyrillic characters
+    // Using pdfmake's Roboto font which has full Cyrillic support
+    const response = await fetch('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/fonts/Roboto/Roboto-Regular.ttf');
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch font: ${response.status}`);
+    }
+    
     const blob = await response.blob();
     
     return new Promise((resolve, reject) => {

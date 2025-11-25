@@ -53,7 +53,7 @@ interface Buyurtma {
 }
 
 const Buyurtmalar = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -381,33 +381,34 @@ const Buyurtmalar = () => {
     toast.success(t("toast.excelSuccess"));
   };
 
-  const exportToPDF = () => {
-    const doc = setupPdfDoc('landscape');
-    
-    const startY = addPdfHeader(
-      doc,
-      t("orders.list"),
-      user?.email,
-      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
-    );
+  const exportToPDF = async () => {
+    try {
+      const doc = await setupPdfDoc('landscape', script);
+      
+      const startY = addPdfHeader(
+        doc,
+        t("orders.list"),
+        user?.email,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+      );
 
-    const tableData = filteredBuyurtmalar.map((b) => [
-      b.tartibRaqam,
-      formatDisplayDate(b.sana),
-      b.mijoz,
-      b.telefon || "-",
-      `${b.od} / ${b.os}`,
-      getLensTypeTranslation(b.oynaTuri),
-      getFrameTypeTranslation(b.opravaTuri),
-      b.jamiSumma.toLocaleString(),
-    ]);
+      const tableData = filteredBuyurtmalar.map((b) => [
+        b.tartibRaqam,
+        formatDisplayDate(b.sana),
+        b.mijoz,
+        b.telefon || "-",
+        `${b.od} / ${b.os}`,
+        getLensTypeTranslation(b.oynaTuri),
+        getFrameTypeTranslation(b.opravaTuri),
+        b.jamiSumma.toLocaleString(),
+      ]);
 
-    autoTable(doc, {
-      startY,
-      head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD/OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
-      body: tableData,
-      styles: { 
-        font: 'helvetica',
+      autoTable(doc, {
+        startY,
+        head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD/OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
+        body: tableData,
+        styles: { 
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 8,
         cellPadding: 2,
       },
@@ -426,6 +427,10 @@ const Buyurtmalar = () => {
 
     doc.save(`Buyurtmalar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
+    } catch (error) {
+      console.error("PDF eksport xatosi:", error);
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const handlePrint = () => {
