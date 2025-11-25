@@ -676,7 +676,7 @@ const Buyurtmalar = () => {
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
                 <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>
-                <th className="px-2 sm:px-4 py-2"></th>
+                <th className="px-2 sm:px-4 py-2 text-right"></th>
               </tr>
             </thead>
             <tbody>
@@ -690,9 +690,9 @@ const Buyurtmalar = () => {
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
                   <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
-                  <td className="px-2 sm:px-4 py-2">
+                  <td className="px-2 sm:px-4 py-2 text-right">
                     <TooltipProvider>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 justify-end">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
