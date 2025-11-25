@@ -50,6 +50,17 @@ const TayyorKozoynaklar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+
+  // Mapping funksiya - ko'zoynak turlarini tarjimalash
+  const getGlassesTypeTranslation = (glassesType: string): string => {
+    const glassesMap: Record<string, string> = {
+      "quyoshdan-himoya": t("ready.sunProtection"),
+      "kompyuter-hameleon": t("ready.computerChameleon"),
+      "kompyuter": t("ready.computer"),
+      "zreniya": t("ready.vision"),
+    };
+    return glassesMap[glassesType] || glassesType;
+  };
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -299,7 +310,7 @@ const TayyorKozoynaklar = () => {
       [t("orders.number")]: k.tartibRaqam,
       [t("common.date")]: formatDisplayDate(k.sana),
       [t("ready.client")]: k.kliyent,
-      [t("ready.type")]: k.kozoynakTuri,
+      [t("ready.type")]: getGlassesTypeTranslation(k.kozoynakTuri),
       [t("ready.amount")]: k.summa,
     }));
 
@@ -328,13 +339,13 @@ const TayyorKozoynaklar = () => {
       k.tartibRaqam,
       formatDisplayDate(k.sana),
       k.kliyent,
-      k.kozoynakTuri,
+      getGlassesTypeTranslation(k.kozoynakTuri),
       k.summa.toLocaleString(),
     ]);
 
     autoTable(doc, {
       startY,
-      head: [['№', 'Sana', 'Kliyent', "Ko'zoynak turi", 'Summa']],
+      head: [[t("orders.number"), t("common.date"), t("ready.client"), t("ready.type"), t("ready.amount")]],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -388,7 +399,7 @@ const TayyorKozoynaklar = () => {
     doc.write(`
       <html>
         <head>
-          <title>Tayyor ko'zoynaklar</title>
+          <title>${t("ready.list")}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
@@ -403,8 +414,8 @@ const TayyorKozoynaklar = () => {
           </style>
         </head>
         <body>
-          <h1>Tayyor ko'zoynaklar</h1>
-          <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
+          <h1>${t("ready.list")}</h1>
+          <p class="print-date">${t("common.date")}: ${formatDisplayDate(formatUzbekistanDate())}</p>
           ${clonedTable.outerHTML}
         </body>
       </html>
@@ -637,12 +648,12 @@ const TayyorKozoynaklar = () => {
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("ready.type")}:</span>
-                    <span className="ml-2">{k.kozoynakTuri}</span>
+                    <span className="ml-2">{getGlassesTypeTranslation(k.kozoynakTuri)}</span>
                   </div>
                 </div>
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">Summa:</span>
+                  <span className="text-muted-foreground text-sm">{t("ready.amount")}:</span>
                   <span className="text-lg font-bold">{k.summa.toLocaleString()}</span>
                 </div>
               </div>
@@ -663,7 +674,7 @@ const TayyorKozoynaklar = () => {
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("ready.client")}</th>
                   <th className="px-4 py-2 text-left">{t("ready.type")}</th>
-                  <th className="px-4 py-2 text-right">Summa</th>
+                  <th className="px-4 py-2 text-right">{t("ready.amount")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
@@ -684,7 +695,7 @@ const TayyorKozoynaklar = () => {
                       </TooltipProvider>
                     </td>
                     <td className="px-4 py-2">{k.kliyent}</td>
-                    <td className="px-4 py-2">{k.kozoynakTuri}</td>
+                    <td className="px-4 py-2">{getGlassesTypeTranslation(k.kozoynakTuri)}</td>
                     <td className="px-4 py-2 text-right font-semibold">
                       {k.summa.toLocaleString()}
                     </td>

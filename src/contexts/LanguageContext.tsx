@@ -114,7 +114,7 @@ const translations = {
     "lensSale.american": "Американский",
     "lensSale.korean": "Корейский",
     "lensSale.astigmatic": "Астигматик",
-    "lensSale.coloredVision": "Ранgli zreniya",
+    "lensSale.coloredVision": "Ранgli зрения",
     "lensSale.beauty": "Чирой учун",
     "lensSale.solution": "Линза суви",
     "lensSale.container": "Линза контейнери",
