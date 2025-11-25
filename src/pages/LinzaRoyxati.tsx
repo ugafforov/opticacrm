@@ -309,13 +309,13 @@ const LinzaRoyxati = () => {
     
     // Main data
     const data = filteredRoyxatlar.map((r) => ({
-      [t("orders.number")]: r.tartibRaqam,
+      [t("lens.number")]: r.tartibRaqam,
       [t("common.date")]: formatDisplayDate(r.sana),
-      [t("orders.client")]: r.mijoz,
+      [t("lens.client")]: r.mijoz,
       [t("form.rightEye")]: r.od,
       [t("form.leftEye")]: r.os,
-      [t("orders.phone")]: r.telefon,
-      [t("form.lensTypeRegistry")]: r.linzaTuri,
+      [t("lens.phone")]: r.telefon,
+      [t("lens.lensType")]: r.linzaTuri,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
@@ -349,7 +349,7 @@ const LinzaRoyxati = () => {
 
     autoTable(doc, {
       startY,
-      head: [['№', 'Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
+      head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD/OS', t("lens.phone"), t("lens.lensType")]],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -400,7 +400,7 @@ const LinzaRoyxati = () => {
     doc.write(`
       <html>
         <head>
-          <title>Linza ro'yxati</title>
+          <title>${t("lens.list")}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
@@ -415,8 +415,8 @@ const LinzaRoyxati = () => {
           </style>
         </head>
         <body>
-          <h1>Linza ro'yxati</h1>
-          <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
+          <h1>${t("lens.list")}</h1>
+          <p class="print-date">${t("common.date")}: ${formatDisplayDate(formatUzbekistanDate())}</p>
           ${clonedTable.outerHTML}
         </body>
       </html>
@@ -599,7 +599,7 @@ const LinzaRoyxati = () => {
           <div className="space-y-4">
             {currentRoyxatlar.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha ro'yxat bo'sh"}
+                {searchQuery ? t("lens.noResults") : t("lens.empty")}
               </div>
             ) : (
               currentRoyxatlar.map((r) => (
@@ -656,9 +656,9 @@ const LinzaRoyxati = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-sm">
+                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Mijoz:</span>
+                    <span className="text-muted-foreground">{t("lens.client")}:</span>
                     <span className="ml-2 font-medium">{r.mijoz}</span>
                   </div>
                   <div>
@@ -666,11 +666,11 @@ const LinzaRoyxati = () => {
                     <span className="ml-2">{r.od} / {r.os}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Telefon:</span>
+                    <span className="text-muted-foreground">{t("lens.phone")}:</span>
                     <span className="ml-2">{r.telefon}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Linza turi:</span>
+                    <span className="text-muted-foreground">{t("lens.lensType")}:</span>
                     <span className="ml-2">{r.linzaTuri}</span>
                   </div>
                 </div>
@@ -682,18 +682,18 @@ const LinzaRoyxati = () => {
           <div className="overflow-x-auto">
             {currentRoyxatlar.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha ro'yxat bo'sh"}
+                {searchQuery ? t("lens.noResults") : t("lens.empty")}
               </div>
             ) : (
               <table id="printable-table" className="w-full">
               <thead className="bg-secondary text-secondary-foreground">
                 <tr>
-                  <th className="px-4 py-2 text-left">№</th>
-                  <th className="px-4 py-2 text-left">Sana</th>
-                  <th className="px-4 py-2 text-left">Mijoz</th>
+                  <th className="px-4 py-2 text-left">{t("lens.number")}</th>
+                  <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                  <th className="px-4 py-2 text-left">{t("lens.client")}</th>
                   <th className="px-4 py-2 text-left">OD/OS</th>
-                  <th className="px-4 py-2 text-left">Telefon</th>
-                  <th className="px-4 py-2 text-left">Linza turi</th>
+                  <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
+                  <th className="px-4 py-2 text-left">{t("lens.lensType")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
