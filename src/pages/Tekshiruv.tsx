@@ -469,37 +469,40 @@ const Tekshiruv = () => {
               />
             </div>
 
-            <div className="space-y-3 border border-border rounded-lg p-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="refraksiyametriya"
-                  checked={form.refraksiyametriya}
-                  onCheckedChange={(checked) =>
-                    setForm({ ...form, refraksiyametriya: checked as boolean })
-                  }
-                />
-                <label
-                  htmlFor="refraksiyametriya"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {t("exam.refractometry")} — 50,000 сўм
-                </label>
-              </div>
+            <div className="space-y-2 border border-border rounded-lg p-4">
+              <Label>Tekshiruv turi</Label>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="refraksiyametriya"
+                    checked={form.refraksiyametriya}
+                    onCheckedChange={(checked) =>
+                      setForm({ ...form, refraksiyametriya: checked as boolean })
+                    }
+                  />
+                  <label
+                    htmlFor="refraksiyametriya"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {t("exam.refractometry")} — 50,000 сўм
+                  </label>
+                </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="tanometriya"
-                  checked={form.tanometriya}
-                  onCheckedChange={(checked) =>
-                    setForm({ ...form, tanometriya: checked as boolean })
-                  }
-                />
-                <label
-                  htmlFor="tanometriya"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  {t("exam.tonometry")} — 15,000 сўм
-                </label>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="tanometriya"
+                    checked={form.tanometriya}
+                    onCheckedChange={(checked) =>
+                      setForm({ ...form, tanometriya: checked as boolean })
+                    }
+                  />
+                  <label
+                    htmlFor="tanometriya"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    {t("exam.tonometry")} — 15,000 сўм
+                  </label>
+                </div>
               </div>
             </div>
           </div>
