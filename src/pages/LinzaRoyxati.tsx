@@ -429,6 +429,20 @@ const LinzaRoyxati = () => {
               />
             </div>
 
+            <div>
+              <Label htmlFor="telefon">{t("form.phone")}</Label>
+              <Input
+                id="telefon"
+                type="tel"
+                value={form.telefon}
+                onChange={(e) => {
+                  setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
+                }}
+                placeholder="+998 90 123 45 67"
+                required
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <Label htmlFor="od">{t("form.rightEye")}</Label>
@@ -448,20 +462,6 @@ const LinzaRoyxati = () => {
                   required
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="telefon">{t("form.phone")}</Label>
-              <Input
-                id="telefon"
-                type="tel"
-                value={form.telefon}
-                onChange={(e) => {
-                  setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
-                }}
-                placeholder="+998 90 123 45 67"
-                required
-              />
             </div>
 
             <div>
