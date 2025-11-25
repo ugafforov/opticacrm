@@ -512,13 +512,13 @@ const LinzaSotuvi = () => {
                 <SelectValue placeholder="Sana filtri" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Barchasi</SelectItem>
-                <SelectItem value="today">Bugun</SelectItem>
-                <SelectItem value="yesterday">Kecha</SelectItem>
-                <SelectItem value="thisWeek">Hozirgi hafta</SelectItem>
-                <SelectItem value="lastWeek">O'tgan hafta</SelectItem>
-                <SelectItem value="thisMonth">Hozirgi oy</SelectItem>
-                <SelectItem value="lastMonth">O'tgan oy</SelectItem>
+                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                <SelectItem value="today">{t("dateFilter.today")}</SelectItem>
+                <SelectItem value="yesterday">{t("dateFilter.yesterday")}</SelectItem>
+                <SelectItem value="thisWeek">{t("dateFilter.thisWeek")}</SelectItem>
+                <SelectItem value="lastWeek">{t("dateFilter.lastWeek")}</SelectItem>
+                <SelectItem value="thisMonth">{t("dateFilter.thisMonth")}</SelectItem>
+                <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
               </SelectContent>
             </Select>
             <div className="relative w-full sm:w-64">
