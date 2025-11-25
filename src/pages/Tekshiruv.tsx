@@ -432,39 +432,39 @@ const Tekshiruv = () => {
                 required
               />
             </div>
-          </div>
 
-          <div className="space-y-3 border border-border rounded-lg p-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="refraksiyametriya"
-                checked={form.refraksiyametriya}
-                onCheckedChange={(checked) =>
-                  setForm({ ...form, refraksiyametriya: checked as boolean })
-                }
-              />
-              <label
-                htmlFor="refraksiyametriya"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {t("exam.refractometry")}
-              </label>
-            </div>
+            <div className="space-y-3 border border-border rounded-lg p-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="refraksiyametriya"
+                  checked={form.refraksiyametriya}
+                  onCheckedChange={(checked) =>
+                    setForm({ ...form, refraksiyametriya: checked as boolean })
+                  }
+                />
+                <label
+                  htmlFor="refraksiyametriya"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {t("exam.refractometry")} — 50,000 {t("common.sum")}
+                </label>
+              </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="tanometriya"
-                checked={form.tanometriya}
-                onCheckedChange={(checked) =>
-                  setForm({ ...form, tanometriya: checked as boolean })
-                }
-              />
-              <label
-                htmlFor="tanometriya"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {t("exam.tonometry")}
-              </label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="tanometriya"
+                  checked={form.tanometriya}
+                  onCheckedChange={(checked) =>
+                    setForm({ ...form, tanometriya: checked as boolean })
+                  }
+                />
+                <label
+                  htmlFor="tanometriya"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {t("exam.tonometry")} — 15,000 {t("common.sum")}
+                </label>
+              </div>
             </div>
           </div>
 
