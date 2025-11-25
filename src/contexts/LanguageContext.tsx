@@ -130,13 +130,13 @@ const translations = {
     
     // Form labels - Orders
     "form.clientName": "Мижоз фамилияси ва исми",
+    "form.phone": "Телефон рақами",
     "form.rightEye": "OD (ўнг кўз)",
     "form.leftEye": "OS (чап кўз)",
     "form.lensType": "Ойна тури",
     "form.lensPrice": "Ойна нархи (сўм)",
     "form.frameType": "Оправа (рамка) тури",
     "form.framePrice": "Оправа нархи (сўм)",
-    "form.phone": "Телефон рақами",
     "form.select": "Танланг",
     
     // Lens types
@@ -400,13 +400,13 @@ const translations = {
     
     // Form labels - Orders
     "form.clientName": "Mijoz familiyasi va ismi",
+    "form.phone": "Telefon raqami",
     "form.rightEye": "OK (o'ng ko'z)",
     "form.leftEye": "ChK (chap ko'z)",
     "form.lensType": "Oyna turi",
     "form.lensPrice": "Oyna narxi (so'm)",
     "form.frameType": "Oprava (ramka) turi",
     "form.framePrice": "Oprava narxi (so'm)",
-    "form.phone": "Telefon raqami",
     "form.select": "Tanlang",
     
     // Lens types
