@@ -342,7 +342,7 @@ const Tekshiruv = () => {
         exam.tartibRaqam,
         formatDisplayDate(exam.sana),
         exam.mijoz,
-        (exam.refraksiyametriya ? "Refr." : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? "Tano." : ""),
+        (exam.refraksiyametriya ? t("exam.refractometryAbbr") : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? t("exam.tonometryAbbr") : ""),
         exam.jamiSumma.toLocaleString(),
       ]);
 
@@ -365,6 +365,7 @@ const Tekshiruv = () => {
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
+        3: { halign: 'left' },
         4: { halign: 'right' },
       },
     });
