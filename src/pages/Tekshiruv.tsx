@@ -49,7 +49,7 @@ interface Tekshiruv {
 }
 
 const Tekshiruv = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
@@ -325,30 +325,31 @@ const Tekshiruv = () => {
     toast.success(t("toast.excelSuccess"));
   };
 
-  const exportToPDF = () => {
-    const doc = setupPdfDoc();
-    
-    const startY = addPdfHeader(
-      doc,
-      t("exam.list"),
-      user?.email,
-      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
-    );
+  const exportToPDF = async () => {
+    try {
+      const doc = await setupPdfDoc('portrait', script);
+      
+      const startY = addPdfHeader(
+        doc,
+        t("exam.list"),
+        user?.email,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+      );
 
-    const tableData = filteredTekshiruvlar.map((exam) => [
-      exam.tartibRaqam,
-      formatDisplayDate(exam.sana),
-      exam.mijoz,
-      (exam.refraksiyametriya ? "Refr." : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? "Tano." : ""),
-      exam.jamiSumma.toLocaleString(),
-    ]);
+      const tableData = filteredTekshiruvlar.map((exam) => [
+        exam.tartibRaqam,
+        formatDisplayDate(exam.sana),
+        exam.mijoz,
+        (exam.refraksiyametriya ? "Refr." : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? "Tano." : ""),
+        exam.jamiSumma.toLocaleString(),
+      ]);
 
-    autoTable(doc, {
-      startY,
-      head: [[t("exam.number"), t("common.date"), t("exam.patient"), t("exam.examinations"), t("exam.amount")]],
-      body: tableData,
-      styles: { 
-        font: 'helvetica',
+      autoTable(doc, {
+        startY,
+        head: [[t("exam.number"), t("common.date"), t("exam.patient"), t("exam.examinations"), t("exam.amount")]],
+        body: tableData,
+        styles: { 
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
@@ -367,6 +368,10 @@ const Tekshiruv = () => {
 
     doc.save(`Tekshiruvlar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
+    } catch (error) {
+      console.error("PDF eksport xatosi:", error);
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const handlePrint = () => {

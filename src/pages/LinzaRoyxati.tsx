@@ -49,7 +49,7 @@ interface LinzaRoyxat {
 }
 
 const LinzaRoyxati = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
@@ -329,30 +329,31 @@ const LinzaRoyxati = () => {
     toast.success(t("toast.excelSuccess"));
   };
 
-  const exportToPDF = () => {
-    const doc = setupPdfDoc();
-    
-    const startY = addPdfHeader(
-      doc,
-      t("lens.list"),
-      user?.email
-    );
+  const exportToPDF = async () => {
+    try {
+      const doc = await setupPdfDoc('portrait', script);
+      
+      const startY = addPdfHeader(
+        doc,
+        t("lens.list"),
+        user?.email
+      );
 
-    const tableData = filteredRoyxatlar.map((r) => [
-      r.tartibRaqam,
-      formatDisplayDate(r.sana),
-      r.mijoz,
-      `${r.od} / ${r.os}`,
-      r.telefon,
-      r.linzaTuri,
-    ]);
+      const tableData = filteredRoyxatlar.map((r) => [
+        r.tartibRaqam,
+        formatDisplayDate(r.sana),
+        r.mijoz,
+        `${r.od} / ${r.os}`,
+        r.telefon,
+        r.linzaTuri,
+      ]);
 
-    autoTable(doc, {
-      startY,
-      head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD/OS', t("lens.phone"), t("lens.lensType")]],
-      body: tableData,
-      styles: { 
-        font: 'helvetica',
+      autoTable(doc, {
+        startY,
+        head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD/OS', t("lens.phone"), t("lens.lensType")]],
+        body: tableData,
+        styles: { 
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
@@ -368,6 +369,10 @@ const LinzaRoyxati = () => {
 
     doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
+    } catch (error) {
+      console.error("PDF eksport xatosi:", error);
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const handlePrint = () => {

@@ -47,7 +47,7 @@ interface TayyorKozoynak {
 }
 
 const TayyorKozoynaklar = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -325,30 +325,31 @@ const TayyorKozoynaklar = () => {
     toast.success(t("toast.excelSuccess"));
   };
 
-  const exportToPDF = () => {
-    const doc = setupPdfDoc();
-    
-    const startY = addPdfHeader(
-      doc,
-      t("ready.list"),
-      user?.email,
-      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
-    );
+  const exportToPDF = async () => {
+    try {
+      const doc = await setupPdfDoc('portrait', script);
+      
+      const startY = addPdfHeader(
+        doc,
+        t("ready.list"),
+        user?.email,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+      );
 
-    const tableData = filteredKozoynaklar.map((k) => [
-      k.tartibRaqam,
-      formatDisplayDate(k.sana),
-      k.kliyent,
-      getGlassesTypeTranslation(k.kozoynakTuri),
-      k.summa.toLocaleString(),
-    ]);
+      const tableData = filteredKozoynaklar.map((k) => [
+        k.tartibRaqam,
+        formatDisplayDate(k.sana),
+        k.kliyent,
+        getGlassesTypeTranslation(k.kozoynakTuri),
+        k.summa.toLocaleString(),
+      ]);
 
-    autoTable(doc, {
-      startY,
-      head: [[t("orders.number"), t("common.date"), t("ready.client"), t("ready.type"), t("ready.amount")]],
-      body: tableData,
-      styles: { 
-        font: 'helvetica',
+      autoTable(doc, {
+        startY,
+        head: [[t("orders.number"), t("common.date"), t("ready.client"), t("ready.type"), t("ready.amount")]],
+        body: tableData,
+        styles: { 
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
@@ -367,6 +368,10 @@ const TayyorKozoynaklar = () => {
 
     doc.save(`Tayyor_Kozoynaklar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
+    } catch (error) {
+      console.error("PDF eksport xatosi:", error);
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const handlePrint = () => {
