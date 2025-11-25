@@ -50,6 +50,20 @@ const LinzaSotuvi = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+
+  // Mapping funksiya - linza turlarini tarjimalash
+  const getLensTypeTranslation = (lensType: string): string => {
+    const lensMap: Record<string, string> = {
+      "amerikanskiy": t("lensSale.american"),
+      "koreyskiy": t("lensSale.korean"),
+      "astigmatik": t("lensSale.astigmatic"),
+      "rangli-zreniya": t("lensSale.coloredVision"),
+      "chiroy-uchun": t("lensSale.beauty"),
+      "linza-suvi": t("lensSale.solution"),
+      "linza-konteyneri": t("lensSale.container"),
+    };
+    return lensMap[lensType] || lensType;
+  };
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -299,7 +313,7 @@ const LinzaSotuvi = () => {
       [t("orders.number")]: s.tartibRaqam,
       [t("common.date")]: formatDisplayDate(s.sana),
       [t("lensSale.client")]: s.kliyent,
-      [t("lensSale.type")]: s.linzaTuri,
+      [t("lensSale.type")]: getLensTypeTranslation(s.linzaTuri),
       [t("lensSale.amount")]: s.summa,
     }));
 
@@ -328,13 +342,13 @@ const LinzaSotuvi = () => {
       s.tartibRaqam,
       formatDisplayDate(s.sana),
       s.kliyent,
-      s.linzaTuri,
+      getLensTypeTranslation(s.linzaTuri),
       s.summa.toLocaleString(),
     ]);
 
     autoTable(doc, {
       startY,
-      head: [['№', 'Sana', 'Kliyent', 'Linza turi', 'Summa']],
+      head: [[t("orders.number"), t("common.date"), t("lensSale.client"), t("lensSale.type"), t("lensSale.amount")]],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -388,7 +402,7 @@ const LinzaSotuvi = () => {
     doc.write(`
       <html>
         <head>
-          <title>Linza sotuvlari</title>
+          <title>${t("lensSale.list")}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
@@ -403,8 +417,8 @@ const LinzaSotuvi = () => {
           </style>
         </head>
         <body>
-          <h1>Linza sotuvlari</h1>
-          <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
+          <h1>${t("lensSale.list")}</h1>
+          <p class="print-date">${t("common.date")}: ${formatDisplayDate(formatUzbekistanDate())}</p>
           ${clonedTable.outerHTML}
         </body>
       </html>
@@ -640,12 +654,12 @@ const LinzaSotuvi = () => {
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("lensSale.type")}:</span>
-                    <span className="ml-2">{s.linzaTuri}</span>
+                    <span className="ml-2">{getLensTypeTranslation(s.linzaTuri)}</span>
                   </div>
                 </div>
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">Summa:</span>
+                  <span className="text-muted-foreground text-sm">{t("lensSale.amount")}:</span>
                   <span className="text-lg font-bold">{s.summa.toLocaleString()}</span>
                 </div>
               </div>
@@ -666,7 +680,7 @@ const LinzaSotuvi = () => {
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lensSale.client")}</th>
                   <th className="px-4 py-2 text-left">{t("lensSale.type")}</th>
-                  <th className="px-4 py-2 text-right">Summa</th>
+                  <th className="px-4 py-2 text-right">{t("lensSale.amount")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
@@ -687,7 +701,7 @@ const LinzaSotuvi = () => {
                       </TooltipProvider>
                     </td>
                     <td className="px-4 py-2">{s.kliyent}</td>
-                    <td className="px-4 py-2">{s.linzaTuri}</td>
+                    <td className="px-4 py-2">{getLensTypeTranslation(s.linzaTuri)}</td>
                     <td className="px-4 py-2 text-right font-semibold">
                       {s.summa.toLocaleString()}
                     </td>
