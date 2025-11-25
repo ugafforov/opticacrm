@@ -264,6 +264,8 @@ const translations = {
     "common.add": "Қўшиш",
     "common.error": "Хатолик юз берди",
     "common.updateSuccess": "Янгиланди!",
+    "common.sheet": "Маълумотлар",
+    "common.metadata": "Маълумот",
   },
   latin: {
     // Navigation
@@ -519,6 +521,8 @@ const translations = {
     "common.add": "Qo'shish",
     "common.error": "Xatolik yuz berdi",
     "common.updateSuccess": "Yangilandi!",
+    "common.sheet": "Ma'lumotlar",
+    "common.metadata": "Ma'lumot",
   },
 };
 

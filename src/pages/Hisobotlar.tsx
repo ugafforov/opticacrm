@@ -527,10 +527,10 @@ const Hisobotlar = () => {
       const doc = setupPdfDoc();
 
       if (type === "period") {
-        const periodText = period === "daily" ? "Kunlik" : period === "weekly" ? "Haftalik" : "Oylik";
+        const periodText = period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly");
         const startY = addPdfHeader(
           doc,
-          "Hisobotlar",
+          t("reports.title"),
           user?.email,
           `Davr: ${periodText}`
         );
@@ -567,16 +567,16 @@ const Hisobotlar = () => {
       } else if (type === "section") {
         const startY = addPdfHeader(
           doc,
-          "Hisobotlar",
+          t("reports.title"),
           user?.email,
-          "Davr: Bo'limlar bo'yicha"
+          `Davr: ${t("reports.bySection")}`
         );
         
         const sections = [
-          ["Buyurtmalar", buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
-          ["Tekshiruvlar", tekshiruvlar.reduce((sum: number, t: any) => sum + t.jami_summa, 0)],
-          ["Tayyor ko'zoynaklar", tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
-          ["Linza sotuvi", linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
+          [t("nav.orders"), buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
+          [t("nav.examination"), tekshiruvlar.reduce((sum: number, tek: any) => sum + tek.jami_summa, 0)],
+          [t("nav.readyGlasses"), tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
+          [t("nav.lensSales"), linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
         ];
         const tableData = sections.map(s => [s[0], s[1].toLocaleString()]);
         const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);

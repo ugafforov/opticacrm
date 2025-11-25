@@ -134,7 +134,7 @@ const LinzaRoyxati = () => {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Iltimos, tizimga kiring");
+      toast.error(t("toast.loginRequired"));
       return;
     }
 
@@ -303,30 +303,30 @@ const LinzaRoyxati = () => {
     
     // Metadata
     const metadata = [
-      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
-      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
+      { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
+      { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
     ];
     
     // Main data
     const data = filteredRoyxatlar.map((r) => ({
-      "№": r.tartibRaqam,
-      Sana: formatDisplayDate(r.sana),
-      Mijoz: r.mijoz,
-      "OD (o'ng)": r.od,
-      "OS (chap)": r.os,
-      Telefon: r.telefon,
-      "Linza turi": r.linzaTuri,
+      [t("orders.number")]: r.tartibRaqam,
+      [t("common.date")]: formatDisplayDate(r.sana),
+      [t("orders.client")]: r.mijoz,
+      [t("form.rightEye")]: r.od,
+      [t("form.leftEye")]: r.os,
+      [t("orders.phone")]: r.telefon,
+      [t("form.lensTypeRegistry")]: r.linzaTuri,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
     const dataWs = XLSX.utils.json_to_sheet(data);
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
-    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    XLSX.utils.book_append_sheet(wb, dataWs, t("common.sheet"));
+    XLSX.utils.book_append_sheet(wb, metaWs, t("common.metadata"));
     
     XLSX.writeFile(wb, `Linza_Royxati_${formatUzbekistanDate()}.xlsx`);
-    toast.success("Excel fayl yuklab olindi");
+    toast.success(t("toast.excelSuccess"));
   };
 
   const exportToPDF = () => {
@@ -334,7 +334,7 @@ const LinzaRoyxati = () => {
     
     const startY = addPdfHeader(
       doc,
-      "Linza Ro'yxati",
+      t("lens.list"),
       user?.email
     );
 
@@ -367,13 +367,13 @@ const LinzaRoyxati = () => {
     });
 
     doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);
-    toast.success("PDF fayl yuklab olindi");
+    toast.success(t("toast.pdfSuccess"));
   };
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-table');
     if (!printContent) {
-      toast.error("Chop etish uchun jadval topilmadi");
+      toast.error(t("toast.printTableNotFound"));
       return;
     }
     
@@ -391,7 +391,7 @@ const LinzaRoyxati = () => {
     
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      toast.error("Chop etishda xatolik yuz berdi");
+      toast.error(t("toast.printError"));
       document.body.removeChild(iframe);
       return;
     }
