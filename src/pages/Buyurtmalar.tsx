@@ -930,6 +930,37 @@ const Buyurtmalar = () => {
       >
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
+            <Label>{t("common.date")}</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editingItem?.sana ? new Date(editingItem.sana.split('-').reverse().join('-')) : undefined}
+                  onSelect={(date) => {
+                    if (date && editingItem) {
+                      setEditingItem({
+                        ...editingItem,
+                        sana: formatUzbekistanDate(date)
+                      });
+                    }
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div>
             <Label htmlFor="edit-mijoz">{t("orders.client")}</Label>
             <Input
               id="edit-mijoz"
@@ -986,7 +1017,7 @@ const Buyurtmalar = () => {
           </div>
 
           <div>
-            <Label htmlFor="edit-oynaTuri">{t("orders.lensType")}</Label>
+            <Label htmlFor="edit-oynaTuri">{t("form.lensType")}</Label>
             <Select
               value={editingItem?.oynaTuri || ""}
               onValueChange={(value) =>
@@ -999,10 +1030,11 @@ const Buyurtmalar = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="zreniya">{t("orders.vision")}</SelectItem>
-                <SelectItem value="quyoshdan-himoya">{t("orders.sunProtection")}</SelectItem>
-                <SelectItem value="hameleon">{t("orders.chameleon")}</SelectItem>
-                <SelectItem value="kompyuter">{t("orders.computer")}</SelectItem>
+                <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
+                <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
+                <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
+                <SelectItem value="420">{t("lens.420")}</SelectItem>
+                <SelectItem value="SR">{t("lens.sr")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -1025,16 +1057,25 @@ const Buyurtmalar = () => {
           </div>
 
           <div>
-            <Label htmlFor="edit-opravaTuri">{t("orders.frameType")}</Label>
-            <Input
-              id="edit-opravaTuri"
+            <Label htmlFor="edit-opravaTuri">{t("form.frameType")}</Label>
+            <Select
               value={editingItem?.opravaTuri || ""}
-              onChange={(e) =>
+              onValueChange={(value) =>
                 setEditingItem(
-                  editingItem ? { ...editingItem, opravaTuri: e.target.value } : null
+                  editingItem ? { ...editingItem, opravaTuri: value } : null
                 )
               }
-            />
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
+                <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
+                <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
+                <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
