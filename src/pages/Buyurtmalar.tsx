@@ -56,6 +56,28 @@ const Buyurtmalar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+
+  // Mapping funksiyalar - lotin yozuvli qiymatlarni tarjima kalitlariga moslashtirish
+  const getLensTypeTranslation = (lensType: string): string => {
+    const lensMap: Record<string, string> = {
+      "3B1 jigarrang": t("lens.3b1Brown"),
+      "3B1 qora": t("lens.3b1Black"),
+      "4B1": t("lens.4b1"),
+      "420": t("lens.420"),
+      "SR": t("lens.sr"),
+    };
+    return lensMap[lensType] || lensType;
+  };
+
+  const getFrameTypeTranslation = (frameType: string): string => {
+    const frameMap: Record<string, string> = {
+      "dumaloq": t("frame.round"),
+      "fabritsio": t("frame.fabritsio"),
+      "alaniye": t("frame.alaniye"),
+      "titanik": t("frame.titanik"),
+    };
+    return frameMap[frameType] || frameType;
+  };
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -341,9 +363,9 @@ const Buyurtmalar = () => {
       [t("orders.phone")]: b.telefon || "-",
       [t("form.rightEye")]: b.od,
       [t("form.leftEye")]: b.os,
-      [t("form.lensType")]: b.oynaTuri,
+      [t("form.lensType")]: getLensTypeTranslation(b.oynaTuri),
       [t("form.lensPrice")]: b.oynaNarxi,
-      [t("form.frameType")]: b.opravaTuri,
+      [t("form.frameType")]: getFrameTypeTranslation(b.opravaTuri),
       [t("form.framePrice")]: b.opravaNarxi,
       [t("orders.totalAmount")]: b.jamiSumma,
     }));
@@ -375,8 +397,8 @@ const Buyurtmalar = () => {
       b.mijoz,
       b.telefon || "-",
       `${b.od} / ${b.os}`,
-      b.oynaTuri,
-      b.opravaTuri,
+      getLensTypeTranslation(b.oynaTuri),
+      getFrameTypeTranslation(b.opravaTuri),
       b.jamiSumma.toLocaleString(),
     ]);
 
@@ -757,11 +779,11 @@ const Buyurtmalar = () => {
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("form.lensType")}:</span>
-                    <span className="ml-2">{b.oynaTuri}</span>
+                    <span className="ml-2">{getLensTypeTranslation(b.oynaTuri)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("form.frameType")}:</span>
-                    <span className="ml-2">{b.opravaTuri}</span>
+                    <span className="ml-2">{getFrameTypeTranslation(b.opravaTuri)}</span>
                   </div>
                 </div>
                 
@@ -813,8 +835,8 @@ const Buyurtmalar = () => {
                     <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
-                    <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
-                    <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{getLensTypeTranslation(b.oynaTuri)}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{getFrameTypeTranslation(b.opravaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
                     <td className="px-2 sm:px-4 py-2 text-right">
                       <TooltipProvider>
