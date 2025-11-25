@@ -368,11 +368,8 @@ const LinzaSotuvi = () => {
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        0: { cellWidth: 12, halign: 'center' },
-        1: { cellWidth: 25, halign: 'center' },
-        2: { cellWidth: 'auto' },
-        3: { cellWidth: 40, halign: 'left' },
-        4: { cellWidth: 28, halign: 'right' },
+        3: { halign: 'left' },
+        4: { halign: 'center' },
       },
     });
 

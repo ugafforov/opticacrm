@@ -424,14 +424,7 @@ const Buyurtmalar = () => {
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 20, halign: 'center' },
-        2: { cellWidth: 'auto' },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 22, halign: 'center' },
-        5: { cellWidth: 28, halign: 'left' },
-        6: { cellWidth: 25, halign: 'left' },
-        7: { cellWidth: 25, halign: 'right' },
+        6: { halign: 'right' },
       },
     });
 
