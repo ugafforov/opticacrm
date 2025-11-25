@@ -689,7 +689,7 @@ const LinzaSotuvi = () => {
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lensSale.client")}</th>
                   <th className="px-4 py-2 text-left">{t("lensSale.type")}</th>
-                  <th className="px-4 py-2 text-right">{t("lensSale.amount")}</th>
+                  <th className="px-4 py-2 text-center">{t("lensSale.amount")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
@@ -711,7 +711,7 @@ const LinzaSotuvi = () => {
                     </td>
                     <td className="px-4 py-2">{s.kliyent}</td>
                     <td className="px-4 py-2">{getLensTypeTranslation(s.linzaTuri)}</td>
-                    <td className="px-4 py-2 text-right font-semibold">
+                    <td className="px-4 py-2 text-center font-semibold">
                       {s.summa.toLocaleString()}
                     </td>
                     <td className="px-4 py-2 text-right">

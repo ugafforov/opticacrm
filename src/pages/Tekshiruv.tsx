@@ -703,7 +703,7 @@ const Tekshiruv = () => {
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("exam.patient")}</th>
                   <th className="px-4 py-2 text-left">{t("exam.examinations")}</th>
-                  <th className="px-4 py-2 text-right">{t("exam.amount")}</th>
+                  <th className="px-4 py-2 text-center">{t("exam.amount")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
@@ -729,7 +729,7 @@ const Tekshiruv = () => {
                       {exam.refraksiyametriya && exam.tanometriya && ", "}
                       {exam.tanometriya && t("exam.tonometryShort")}
                     </td>
-                    <td className="px-4 py-2 text-right font-semibold">
+                    <td className="px-4 py-2 text-center font-semibold">
                       {exam.jamiSumma.toLocaleString()}
                     </td>
                     <td className="px-4 py-2 text-right">

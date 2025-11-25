@@ -820,7 +820,7 @@ const Buyurtmalar = () => {
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
-                  <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-center text-sm">{t("orders.totalAmount")}</th>
                   <th className="px-2 sm:px-4 py-2 text-right"></th>
                 </tr>
               </thead>
@@ -845,7 +845,7 @@ const Buyurtmalar = () => {
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getLensTypeTranslation(b.oynaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getFrameTypeTranslation(b.opravaTuri)}</td>
-                    <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
+                    <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
                     <td className="px-2 sm:px-4 py-2 text-right">
                       <TooltipProvider>
                         <div className="flex gap-1 justify-end">
