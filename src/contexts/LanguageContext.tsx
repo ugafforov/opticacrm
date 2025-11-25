@@ -38,6 +38,12 @@ const translations = {
     "orders.addSuccess": "Буюртма қўшилди!",
     "orders.deleteSuccess": "Ўчирилди",
     "orders.search": "Қидириш...",
+    "orders.lensPrice": "Ойна нархи",
+    "orders.framePrice": "Оправа нархи",
+    "orders.vision": "Зрения",
+    "orders.sunProtection": "Қуёшдан ҳимоя",
+    "orders.chameleon": "Хамелеон",
+    "orders.computer": "Компютер",
     
     // Lens lists
     "lens.title": "Линза рўйхатлари",
@@ -328,6 +334,12 @@ const translations = {
     "orders.addSuccess": "Buyurtma qo'shildi!",
     "orders.deleteSuccess": "O'chirildi",
     "orders.search": "Qidirish...",
+    "orders.lensPrice": "Oyna narxi",
+    "orders.framePrice": "Oprava narxi",
+    "orders.vision": "Zreniya",
+    "orders.sunProtection": "Quyoshdan himoya",
+    "orders.chameleon": "Hameleon",
+    "orders.computer": "Kompyuter",
     
     // Lens lists
     "lens.title": "Linza ro'yxatlari",
