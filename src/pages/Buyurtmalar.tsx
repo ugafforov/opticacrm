@@ -424,7 +424,7 @@ const Buyurtmalar = () => {
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        6: { halign: 'right' },
+        7: { halign: 'right' },
       },
     });
 
