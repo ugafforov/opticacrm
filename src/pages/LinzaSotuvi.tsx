@@ -359,7 +359,8 @@ const LinzaSotuvi = () => {
       headStyles: { 
         fillColor: [66, 66, 66],
         textColor: 255,
-        fontStyle: 'bold',
+        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+        fontStyle: 'normal',
       },
       alternateRowStyles: { 
         fillColor: [245, 245, 245] 
