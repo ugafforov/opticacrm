@@ -27,6 +27,7 @@ export type Database = {
           oyna_narxi: number
           oyna_tури: string
           sana: string
+          tartib_raqam: number
           telefon: string | null
           updated_at: string
           user_id: string
@@ -43,6 +44,7 @@ export type Database = {
           oyna_narxi?: number
           oyna_tури: string
           sana: string
+          tartib_raqam?: number
           telefon?: string | null
           updated_at?: string
           user_id: string
@@ -59,6 +61,7 @@ export type Database = {
           oyna_narxi?: number
           oyna_tури?: string
           sana?: string
+          tartib_raqam?: number
           telefon?: string | null
           updated_at?: string
           user_id?: string
@@ -104,6 +107,7 @@ export type Database = {
           od: string
           os: string
           sana: string
+          tartib_raqam: number
           telefon: string
           updated_at: string
           user_id: string
@@ -116,6 +120,7 @@ export type Database = {
           od: string
           os: string
           sana: string
+          tartib_raqam?: number
           telefon: string
           updated_at?: string
           user_id: string
@@ -128,6 +133,7 @@ export type Database = {
           od?: string
           os?: string
           sana?: string
+          tartib_raqam?: number
           telefon?: string
           updated_at?: string
           user_id?: string
@@ -142,6 +148,7 @@ export type Database = {
           linza_turi: string
           sana: string
           summa: number
+          tartib_raqam: number
           updated_at: string
           user_id: string
         }
@@ -152,6 +159,7 @@ export type Database = {
           linza_turi: string
           sana: string
           summa?: number
+          tartib_raqam?: number
           updated_at?: string
           user_id: string
         }
@@ -162,6 +170,7 @@ export type Database = {
           linza_turi?: string
           sana?: string
           summa?: number
+          tartib_raqam?: number
           updated_at?: string
           user_id?: string
         }

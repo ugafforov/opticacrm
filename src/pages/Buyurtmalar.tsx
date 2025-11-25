@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface Buyurtma {
   id: string;
   sana: string;
+  tartibRaqam: number;
   mijoz: string;
   telefon?: string;
   od: string;
@@ -104,6 +105,7 @@ const Buyurtmalar = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        tartibRaqam: item.tartib_raqam,
         mijoz: item.mijoz,
         telefon: item.telefon,
         od: item.od,
@@ -134,11 +136,25 @@ const Buyurtmalar = () => {
     const jamiSumma = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
     
     try {
+      // Get the maximum tartib_raqam for this user
+      const { data: maxData, error: maxError } = await supabase
+        .from("buyurtmalar")
+        .select("tartib_raqam")
+        .eq("user_id", user.id)
+        .order("tartib_raqam", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (maxError) throw maxError;
+
+      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
       const { error } = await supabase
         .from("buyurtmalar")
         .insert({
           user_id: user.id,
           sana: formatUzbekistanDate(selectedDate),
+          tartib_raqam: nextTartibRaqam,
           mijoz: form.mijoz,
           telefon: form.telefon,
           od: form.od,
