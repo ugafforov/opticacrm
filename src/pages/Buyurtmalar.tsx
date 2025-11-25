@@ -53,7 +53,7 @@ interface Buyurtma {
 }
 
 const Buyurtmalar = () => {
-  const { t, script } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -382,7 +382,7 @@ const Buyurtmalar = () => {
   };
 
   const exportToPDF = () => {
-    const doc = setupPdfDoc('landscape', script);
+    const doc = setupPdfDoc('landscape');
     
     const startY = addPdfHeader(
       doc,
@@ -407,7 +407,7 @@ const Buyurtmalar = () => {
       head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD/OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
       body: tableData,
       styles: { 
-        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+        font: 'helvetica',
         fontSize: 8,
         cellPadding: 2,
       },

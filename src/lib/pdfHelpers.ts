@@ -1,11 +1,11 @@
 import jsPDF from "jspdf";
 import { formatUzbekistanDateTime } from "./utils";
-import robotoBase64 from "./fonts/roboto-regular";
 
 /**
  * Creates a new jsPDF document configured for Cyrillic or Latin text
+ * For now, uses helvetica for both until custom font loading is implemented
  * @param orientation - 'portrait' or 'landscape' (default: 'portrait')
- * @param script - 'cyrillic' or 'latin' (default: 'latin') - determines which font to use
+ * @param script - 'cyrillic' or 'latin' (default: 'latin')
  * @returns Configured jsPDF instance with appropriate font
  */
 export const setupPdfDoc = (
@@ -18,15 +18,10 @@ export const setupPdfDoc = (
     format: "a4",
   });
 
-  if (script === 'cyrillic') {
-    // Add and use Roboto font for Cyrillic support
-    doc.addFileToVFS('Roboto-Regular.ttf', robotoBase64);
-    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-    doc.setFont('Roboto', 'normal');
-  } else {
-    // Use default helvetica font for Latin
-    doc.setFont("helvetica", "normal");
-  }
+  // Note: For Cyrillic support, we would need to load a custom font
+  // Currently using helvetica as fallback which has limited Cyrillic support
+  // TODO: Implement async font loading with loadRobotoFont() from fonts/roboto-regular.ts
+  doc.setFont("helvetica", "normal");
 
   return doc;
 };

@@ -43,7 +43,7 @@ interface CustomTooltipProps {
 }
 
 const Hisobotlar = () => {
-  const { t, script } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [sectionData, setSectionData] = useState<SectionData[]>([]);
@@ -524,7 +524,7 @@ const Hisobotlar = () => {
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
 
-      const doc = setupPdfDoc('portrait', script);
+      const doc = setupPdfDoc();
 
       if (type === "period") {
         const periodText = period === "daily" ? t("reports.daily") : period === "weekly" ? t("reports.weekly") : t("reports.monthly");
@@ -542,7 +542,7 @@ const Hisobotlar = () => {
           body: tableData,
           foot: [['Jami', totalTushum.toLocaleString()]],
           styles: { 
-            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            font: 'helvetica',
             fontSize: 9,
             cellPadding: 3,
           },
@@ -586,7 +586,7 @@ const Hisobotlar = () => {
           body: tableData,
           foot: [['Jami', total.toLocaleString()]],
           styles: { 
-            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            font: 'helvetica',
             fontSize: 10,
             cellPadding: 3,
           },
@@ -627,7 +627,7 @@ const Hisobotlar = () => {
           head: [["Bo'lim", "Sana", "Mijoz", "Summa"]],
           body: allData,
           styles: { 
-            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            font: 'helvetica',
             fontSize: 8,
             cellPadding: 2,
           },
