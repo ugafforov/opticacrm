@@ -333,7 +333,7 @@ const Tekshiruv = () => {
         doc,
         t("exam.list"),
         user?.email,
-        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.currency")}`,
         t("common.exportedBy"),
         t("common.dateAndTime")
       );
@@ -343,7 +343,7 @@ const Tekshiruv = () => {
         formatDisplayDate(exam.sana),
         exam.mijoz,
         (exam.refraksiyametriya ? t("exam.refractometryAbbr") : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? t("exam.tonometryAbbr") : ""),
-        exam.jamiSumma.toLocaleString(),
+        `${exam.jamiSumma.toLocaleString()} ${t("common.currency")}`,
       ]);
 
       autoTable(doc, {
@@ -522,7 +522,7 @@ const Tekshiruv = () => {
             <div className="text-lg font-semibold">
               {t("orders.totalAmount")}:{" "}
               {((form.refraksiyametriya ? 50000 : 0) + (form.tanometriya ? 15000 : 0)).toLocaleString()}{" "}
-              {t("common.sum")}
+              {t("common.currency")}
             </div>
             <Button type="submit" className="bg-primary hover:bg-primary/90">
               {t("exam.add")}
@@ -536,7 +536,7 @@ const Tekshiruv = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("exam.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("exam.total")}: {totalSum.toLocaleString()} {t("common.sum")}
+              {t("exam.total")}: {totalSum.toLocaleString()} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -683,7 +683,7 @@ const Tekshiruv = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("exam.amount")}:</span>
-                  <span className="text-lg font-bold">{exam.jamiSumma.toLocaleString()}</span>
+                  <span className="text-lg font-bold">{exam.jamiSumma.toLocaleString()} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -730,7 +730,7 @@ const Tekshiruv = () => {
                       {exam.tanometriya && t("exam.tonometryShort")}
                     </td>
                     <td className="px-4 py-2 text-center font-semibold">
-                      {exam.jamiSumma.toLocaleString()}
+                      {exam.jamiSumma.toLocaleString()} {t("common.currency")}
                     </td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
