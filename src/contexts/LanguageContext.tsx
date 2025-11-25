@@ -266,6 +266,15 @@ const translations = {
     "common.updateSuccess": "Янгиланди!",
     "common.sheet": "Маълумотлар",
     "common.metadata": "Маълумот",
+    
+    // Date filters
+    "dateFilter.all": "Барчаси",
+    "dateFilter.today": "Бугун",
+    "dateFilter.yesterday": "Кеча",
+    "dateFilter.thisWeek": "Ҳозирги ҳафта",
+    "dateFilter.lastWeek": "Ўтган ҳафта",
+    "dateFilter.thisMonth": "Ҳозирги ой",
+    "dateFilter.lastMonth": "Ўтган ой",
   },
   latin: {
     // Navigation
@@ -523,6 +532,15 @@ const translations = {
     "common.updateSuccess": "Yangilandi!",
     "common.sheet": "Ma'lumotlar",
     "common.metadata": "Ma'lumot",
+    
+    // Date filters
+    "dateFilter.all": "Barchasi",
+    "dateFilter.today": "Bugun",
+    "dateFilter.yesterday": "Kecha",
+    "dateFilter.thisWeek": "Hozirgi hafta",
+    "dateFilter.lastWeek": "O'tgan hafta",
+    "dateFilter.thisMonth": "Hozirgi oy",
+    "dateFilter.lastMonth": "O'tgan oy",
   },
 };
 

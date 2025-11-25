@@ -824,7 +824,7 @@ const Hisobotlar = () => {
                 <SelectValue placeholder="Turni tanlang" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Barchasi</SelectItem>
+                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
                 <SelectItem value="buyurtmalar">{t("nav.orders")}</SelectItem>
                 <SelectItem value="tekshiruvlar">{t("nav.examination")}</SelectItem>
                 <SelectItem value="tayyor_kozoynaklar">{t("nav.readyGlasses")}</SelectItem>
