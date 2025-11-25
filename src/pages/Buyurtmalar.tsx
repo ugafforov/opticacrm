@@ -389,7 +389,7 @@ const Buyurtmalar = () => {
         doc,
         t("orders.list"),
         user?.email,
-        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.currency")}`,
         t("common.exportedBy"),
         t("common.dateAndTime")
       );
@@ -402,7 +402,7 @@ const Buyurtmalar = () => {
         `${b.od} / ${b.os}`,
         getLensTypeTranslation(b.oynaTuri),
         getFrameTypeTranslation(b.opravaTuri),
-        b.jamiSumma.toLocaleString(),
+        `${b.jamiSumma.toLocaleString()} ${t("common.currency")}`,
       ]);
 
       autoTable(doc, {
@@ -424,7 +424,7 @@ const Buyurtmalar = () => {
         fillColor: [245, 245, 245] 
       },
       columnStyles: {
-        7: { halign: 'right' },
+        7: { halign: 'center' },
       },
     });
 
@@ -626,7 +626,7 @@ const Buyurtmalar = () => {
 
           <div className="flex justify-between items-center pt-4 border-t border-border">
             <div className="text-lg font-semibold">
-              {t("orders.totalAmount")}: {((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0)).toLocaleString()} {t("common.sum")}
+              {t("orders.totalAmount")}: {((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0)).toLocaleString()} {t("common.currency")}
             </div>
             <Button type="submit" className="bg-primary hover:bg-primary/90">
               {t("orders.add")}
@@ -640,7 +640,7 @@ const Buyurtmalar = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("orders.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
+              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -797,7 +797,7 @@ const Buyurtmalar = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("orders.totalAmount")}:</span>
-                  <span className="text-lg font-bold">{b.jamiSumma.toLocaleString()}</span>
+                  <span className="text-lg font-bold">{b.jamiSumma.toLocaleString()} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -845,7 +845,7 @@ const Buyurtmalar = () => {
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getLensTypeTranslation(b.oynaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getFrameTypeTranslation(b.opravaTuri)}</td>
-                    <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
+                    <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()} {t("common.currency")}</td>
                     <td className="px-2 sm:px-4 py-2 text-right">
                       <TooltipProvider>
                         <div className="flex gap-1 justify-end">

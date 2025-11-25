@@ -343,7 +343,7 @@ const TayyorKozoynaklar = () => {
         formatDisplayDate(k.sana),
         k.kliyent,
         getGlassesTypeTranslation(k.kozoynakTuri),
-        k.summa.toLocaleString(),
+        `${k.summa.toLocaleString()} ${t("common.currency")}`,
       ]);
 
       autoTable(doc, {
@@ -520,7 +520,7 @@ const TayyorKozoynaklar = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("ready.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
+              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -663,7 +663,7 @@ const TayyorKozoynaklar = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("ready.amount")}:</span>
-                  <span className="text-lg font-bold">{k.summa.toLocaleString()}</span>
+                  <span className="text-lg font-bold">{k.summa.toLocaleString()} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -706,7 +706,7 @@ const TayyorKozoynaklar = () => {
                     <td className="px-4 py-2">{k.kliyent}</td>
                     <td className="px-4 py-2">{getGlassesTypeTranslation(k.kozoynakTuri)}</td>
                     <td className="px-4 py-2 text-center font-semibold">
-                      {k.summa.toLocaleString()}
+                      {k.summa.toLocaleString()} {t("common.currency")}
                     </td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>

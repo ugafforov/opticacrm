@@ -537,12 +537,12 @@ const Hisobotlar = () => {
           t("common.dateAndTime")
         );
         
-        const tableData = reportData.map(item => [item.name, item.tushum.toLocaleString()]);
+        const tableData = reportData.map(item => [item.name, `${item.tushum.toLocaleString()} ${t("common.currency")}`]);
         autoTable(doc, {
           startY,
           head: [['Sana', 'Tushum']],
           body: tableData,
-          foot: [['Jami', totalTushum.toLocaleString()]],
+          foot: [[' Jami', `${totalTushum.toLocaleString()} ${t("common.currency")}`]],
           styles: { 
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontSize: 9,
@@ -584,13 +584,13 @@ const Hisobotlar = () => {
           [t("nav.readyGlasses"), tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
           [t("nav.lensSales"), linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
         ];
-        const tableData = sections.map(s => [s[0], s[1].toLocaleString()]);
+        const tableData = sections.map(s => [s[0], `${s[1].toLocaleString()} ${t("common.currency")}`]);
         const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);
         autoTable(doc, {
           startY,
           head: [["Bo'lim", "Tushum"]],
           body: tableData,
-          foot: [['Jami', total.toLocaleString()]],
+          foot: [['Jami', `${total.toLocaleString()} ${t("common.currency")}`]],
           styles: { 
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontSize: 10,
@@ -627,10 +627,10 @@ const Hisobotlar = () => {
         );
         
         const allData = [
-          ...buyurtmalar.map((b: any) => ["Buyurtmalar", formatDisplayDate(b.sana), b.mijoz, b.jami_summa.toLocaleString()]),
-          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", formatDisplayDate(tek.sana), tek.mijoz, tek.jami_summa.toLocaleString()]),
-          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", formatDisplayDate(k.sana), k.kliyent, k.summa.toLocaleString()]),
-          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", formatDisplayDate(l.sana), l.kliyent, l.summa.toLocaleString()])
+          ...buyurtmalar.map((b: any) => ["Buyurtmalar", formatDisplayDate(b.sana), b.mijoz, `${b.jami_summa.toLocaleString()} ${t("common.currency")}`]),
+          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", formatDisplayDate(tek.sana), tek.mijoz, `${tek.jami_summa.toLocaleString()} ${t("common.currency")}`]),
+          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", formatDisplayDate(k.sana), k.kliyent, `${k.summa.toLocaleString()} ${t("common.currency")}`]),
+          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", formatDisplayDate(l.sana), l.kliyent, `${l.summa.toLocaleString()} ${t("common.currency")}`])
         ];
         autoTable(doc, {
           startY,
@@ -892,7 +892,7 @@ const Hisobotlar = () => {
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
-                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.sum")}</p>
+                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.currency")}</p>
               </div>
               {showComparison && previousTotalTushum > 0 && (
                 <div className="text-right">
@@ -974,7 +974,7 @@ const Hisobotlar = () => {
           {sectionData.map((section) => (
             <div key={section.name} className="bg-secondary rounded-lg p-4">
               <p className="text-sm text-muted-foreground mb-1">{section.name}</p>
-              <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.sum")}</p>
+              <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.currency")}</p>
               <p className="text-xs text-muted-foreground mt-1">{section.count} {t("reports.records")}</p>
               {showComparison && section.previousTotal !== undefined && (
                 <div className="mt-2 pt-2 border-t border-border">
@@ -1009,7 +1009,7 @@ const Hisobotlar = () => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.sum")}`} />
+              <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
             </PieChart>
           </ResponsiveContainer>
         </div>

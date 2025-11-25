@@ -346,7 +346,7 @@ const LinzaSotuvi = () => {
         formatDisplayDate(s.sana),
         s.kliyent,
         getLensTypeTranslation(s.linzaTuri),
-        s.summa.toLocaleString(),
+        `${s.summa.toLocaleString()} ${t("common.currency")}`,
       ]);
 
       autoTable(doc, {
@@ -526,7 +526,7 @@ const LinzaSotuvi = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("lensSale.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.sum")}
+              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -669,7 +669,7 @@ const LinzaSotuvi = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("lensSale.amount")}:</span>
-                  <span className="text-lg font-bold">{s.summa.toLocaleString()}</span>
+                  <span className="text-lg font-bold">{s.summa.toLocaleString()} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -712,7 +712,7 @@ const LinzaSotuvi = () => {
                     <td className="px-4 py-2">{s.kliyent}</td>
                     <td className="px-4 py-2">{getLensTypeTranslation(s.linzaTuri)}</td>
                     <td className="px-4 py-2 text-center font-semibold">
-                      {s.summa.toLocaleString()}
+                      {s.summa.toLocaleString()} {t("common.currency")}
                     </td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
