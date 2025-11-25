@@ -447,7 +447,7 @@ const LinzaSotuvi = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="kliyent">{t("lensSale.client")}</Label>
               <Input
