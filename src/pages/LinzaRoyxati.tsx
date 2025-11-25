@@ -289,6 +289,7 @@ const LinzaRoyxati = () => {
     
     // Main data
     const data = filteredRoyxatlar.map((r) => ({
+      "№": r.tartibRaqam,
       Sana: formatDisplayDate(r.sana),
       Mijoz: r.mijoz,
       "OD (o'ng)": r.od,
@@ -318,6 +319,7 @@ const LinzaRoyxati = () => {
     );
 
     const tableData = filteredRoyxatlar.map((r) => [
+      r.tartibRaqam,
       formatDisplayDate(r.sana),
       r.mijoz,
       `${r.od} / ${r.os}`,
@@ -327,7 +329,7 @@ const LinzaRoyxati = () => {
 
     autoTable(doc, {
       startY,
-      head: [['Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
+      head: [['№', 'Sana', 'Mijoz', 'OD/OS', 'Telefon', 'Linza turi']],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -561,6 +563,7 @@ const LinzaRoyxati = () => {
           <table id="printable-table" className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
+                <th className="px-4 py-2 text-left">№</th>
                 <th className="px-4 py-2 text-left">Sana</th>
                 <th className="px-4 py-2 text-left">Mijoz</th>
                 <th className="px-4 py-2 text-left">OD/OS</th>
@@ -572,6 +575,7 @@ const LinzaRoyxati = () => {
             <tbody>
               {filteredRoyxatlar.map((r) => (
                 <tr key={r.id} className="border-b border-border">
+                  <td className="px-4 py-2">{r.tartibRaqam}</td>
                   <td className="px-4 py-2">{formatDisplayDate(r.sana)}</td>
                   <td className="px-4 py-2">{r.mijoz}</td>
                   <td className="px-4 py-2">{r.od} / {r.os}</td>
