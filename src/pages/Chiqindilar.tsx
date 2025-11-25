@@ -107,7 +107,7 @@ const Chiqindilar = () => {
 
       const tableName = tableMap[item.type];
       if (!tableName) {
-        toast.error("Noto'g'ri ma'lumot turi");
+        toast.error(t("toast.invalidType"));
         return;
       }
 

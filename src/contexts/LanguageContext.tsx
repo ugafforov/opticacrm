@@ -216,6 +216,54 @@ const translations = {
     "auth.noAccount": "Ҳисобингиз йўқми? Рўйхатдан ўтинг",
     "auth.haveAccount": "Ҳисобингиз борми? Киринг",
     "auth.logout": "Чиқиш",
+    "auth.passwordHint": "(камида 8 та белги)",
+
+    // Admin page
+    "admin.title": "Фойдаланувчилар бошқаруви",
+    "admin.subtitle": "Тизимга янги фойдаланувчилар қўшинг",
+    "admin.addUser": "Фойдаланувчи қўшиш",
+    "admin.email": "Электрон почта",
+    "admin.fullName": "Тўлиқ исм",
+    "admin.role": "Рол",
+    "admin.roleUser": "Фойдаланувчи",
+    "admin.roleAdmin": "Админ",
+    "admin.addedDate": "Қўшилган сана",
+    "admin.deleteTitle": "Фойдаланувчини ўчириш",
+    "admin.deleteDesc": "Бу фойдаланувчи ва унинг барча маълумотлари ўчирилади. Давом етасизми?",
+
+    // Nav additional
+    "nav.users": "Фойдаланувчилар",
+
+    // Toast messages
+    "toast.loadError": "Маълумотларни юклашда хатолик юз берди",
+    "toast.loginRequired": "Илтимос, тизимга киринг",
+    "toast.saveError": "Маълумотни сақлашда хатолик юз берди",
+    "toast.deleteError": "Маълумотни ўчиришда хатолик юз берди",
+    "toast.updateError": "Маълумотни янгилашда хатолик юз берди",
+    "toast.excelSuccess": "Excel файл юклаб олинди",
+    "toast.pdfSuccess": "PDF файл юклаб олинди",
+    "toast.printError": "Чоп этишда хатолик юз берди",
+    "toast.printTableNotFound": "Чоп этиш учун жадвал топилмади",
+    "toast.exportError": "Экспорт қилишда хатолик юз берди",
+    "toast.userAdded": "Фойдаланувчи муваффақиятли қўшилди",
+    "toast.userDeleted": "Фойдаланувчи ўчирилди",
+    "toast.userAddError": "Фойдаланувчи қўшишда хатолик юз берди",
+    "toast.userDeleteError": "Фойдаланувчини ўчиришда хатолик юз берди",
+    "toast.authError": "Тизимга киришда хатолик юз берди",
+    "toast.invalidType": "Нотўғри маълумот тури",
+
+    // Export
+    "export.exportedBy": "Экспорт қилган",
+    "export.dateTime": "Сана ва вақт",
+    "export.totalSum": "Жами сумма",
+    "export.unknown": "Номаълум",
+    "export.info": "Маълумот",
+    "export.value": "Қиймат",
+
+    // Common additional
+    "common.add": "Қўшиш",
+    "common.error": "Хатолик юз берди",
+    "common.updateSuccess": "Янгиланди!",
   },
   latin: {
     // Navigation
@@ -423,6 +471,54 @@ const translations = {
     "auth.noAccount": "Hisobingiz yo'qmi? Ro'yxatdan o'ting",
     "auth.haveAccount": "Hisobingiz bormi? Kiring",
     "auth.logout": "Chiqish",
+    "auth.passwordHint": "(kamida 8 ta belgi)",
+
+    // Admin page
+    "admin.title": "Foydalanuvchilar boshqaruvi",
+    "admin.subtitle": "Tizimga yangi foydalanuvchilar qo'shing",
+    "admin.addUser": "Foydalanuvchi qo'shish",
+    "admin.email": "Elektron pochta",
+    "admin.fullName": "To'liq ism",
+    "admin.role": "Rol",
+    "admin.roleUser": "Foydalanuvchi",
+    "admin.roleAdmin": "Admin",
+    "admin.addedDate": "Qo'shilgan sana",
+    "admin.deleteTitle": "Foydalanuvchini o'chirish",
+    "admin.deleteDesc": "Bu foydalanuvchi va uning barcha ma'lumotlari o'chiriladi. Davom etasizmi?",
+
+    // Nav additional
+    "nav.users": "Foydalanuvchilar",
+
+    // Toast messages
+    "toast.loadError": "Ma'lumotlarni yuklashda xatolik yuz berdi",
+    "toast.loginRequired": "Iltimos, tizimga kiring",
+    "toast.saveError": "Ma'lumotni saqlashda xatolik yuz berdi",
+    "toast.deleteError": "Ma'lumotni o'chirishda xatolik yuz berdi",
+    "toast.updateError": "Ma'lumotni yangilashda xatolik yuz berdi",
+    "toast.excelSuccess": "Excel fayl yuklab olindi",
+    "toast.pdfSuccess": "PDF fayl yuklab olindi",
+    "toast.printError": "Chop etishda xatolik yuz berdi",
+    "toast.printTableNotFound": "Chop etish uchun jadval topilmadi",
+    "toast.exportError": "Eksport qilishda xatolik yuz berdi",
+    "toast.userAdded": "Foydalanuvchi muvaffaqiyatli qo'shildi",
+    "toast.userDeleted": "Foydalanuvchi o'chirildi",
+    "toast.userAddError": "Foydalanuvchi qo'shishda xatolik yuz berdi",
+    "toast.userDeleteError": "Foydalanuvchini o'chirishda xatolik yuz berdi",
+    "toast.authError": "Tizimga kirishda xatolik yuz berdi",
+    "toast.invalidType": "Noto'g'ri ma'lumot turi",
+
+    // Export
+    "export.exportedBy": "Eksport qilgan",
+    "export.dateTime": "Sana va vaqt",
+    "export.totalSum": "Jami summa",
+    "export.unknown": "Noma'lum",
+    "export.info": "Ma'lumot",
+    "export.value": "Qiymat",
+
+    // Common additional
+    "common.add": "Qo'shish",
+    "common.error": "Xatolik yuz berdi",
+    "common.updateSuccess": "Yangilandi!",
   },
 };
 
