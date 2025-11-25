@@ -27,6 +27,7 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime,
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pagination,
   PaginationContent,
@@ -49,6 +50,7 @@ interface Tekshiruv {
 const Tekshiruv = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -578,73 +580,143 @@ const Tekshiruv = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table id="printable-table" className="w-full">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="px-4 py-2 text-left">№</th>
-                <th className="px-4 py-2 text-left">Sana</th>
-                <th className="px-4 py-2 text-left">Mijoz</th>
-                <th className="px-4 py-2 text-left">Tekshiruvlar</th>
-                <th className="px-4 py-2 text-right">Summa</th>
-                <th className="px-4 py-2 text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentTekshiruvlar.map((t) => (
-                <tr key={t.id} className="border-b border-border">
-                  <td className="px-4 py-2">{t.tartibRaqam}</td>
-                  <td className="px-4 py-2">{formatDisplayDate(t.sana)}</td>
-                  <td className="px-4 py-2">{t.mijoz}</td>
-                  <td className="px-4 py-2">
-                    {t.refraksiyametriya && "Refraksiyametriya"}
-                    {t.refraksiyametriya && t.tanometriya && ", "}
-                    {t.tanometriya && "Tanometriya"}
-                  </td>
-                  <td className="px-4 py-2 text-right font-semibold">
-                    {t.jamiSumma.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 text-right">
+        
+        {isMobile ? (
+          <div className="space-y-4">
+            {currentTekshiruvlar.map((t) => (
+              <div key={t.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-lg">№ {t.tartibRaqam}</div>
+                    <div className="text-sm text-muted-foreground">{formatDisplayDate(t.sana)}</div>
+                  </div>
+                  <div className="flex gap-2">
                     <TooltipProvider>
-                      <div className="flex gap-2 justify-end">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(t)}
-                              className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tahrirlash</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteId(t.id)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>O'chirish</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(t)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tahrirlash</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(t.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>O'chirish</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TooltipProvider>
-                  </td>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Mijoz:</span>
+                    <span className="ml-2 font-medium">{t.mijoz}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Tekshiruvlar:</span>
+                    <span className="ml-2">
+                      {t.refraksiyametriya && "Refraksiyametriya"}
+                      {t.refraksiyametriya && t.tanometriya && ", "}
+                      {t.tanometriya && "Tanometriya"}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Summa:</span>
+                  <span className="text-lg font-bold">{t.jamiSumma.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table id="printable-table" className="w-full">
+              <thead className="bg-secondary text-secondary-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left">№</th>
+                  <th className="px-4 py-2 text-left">Sana</th>
+                  <th className="px-4 py-2 text-left">Mijoz</th>
+                  <th className="px-4 py-2 text-left">Tekshiruvlar</th>
+                  <th className="px-4 py-2 text-right">Summa</th>
+                  <th className="px-4 py-2 text-right"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentTekshiruvlar.map((t) => (
+                  <tr key={t.id} className="border-b border-border">
+                    <td className="px-4 py-2">{t.tartibRaqam}</td>
+                    <td className="px-4 py-2">{formatDisplayDate(t.sana)}</td>
+                    <td className="px-4 py-2">{t.mijoz}</td>
+                    <td className="px-4 py-2">
+                      {t.refraksiyametriya && "Refraksiyametriya"}
+                      {t.refraksiyametriya && t.tanometriya && ", "}
+                      {t.tanometriya && "Tanometriya"}
+                    </td>
+                    <td className="px-4 py-2 text-right font-semibold">
+                      {t.jamiSumma.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <TooltipProvider>
+                        <div className="flex gap-2 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(t)}
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Tahrirlash</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(t.id)}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>O'chirish</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className="mt-4 flex justify-center">

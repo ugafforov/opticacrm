@@ -26,6 +26,7 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, format
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pagination,
   PaginationContent,
@@ -49,13 +50,14 @@ interface LinzaRoyxat {
 const LinzaRoyxati = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [editingItem, setEditingItem] = useState<LinzaRoyxat | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState({ open: false, itemId: "" });
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
@@ -205,7 +207,7 @@ const LinzaRoyxati = () => {
 
       await loadRoyxatlar();
       toast.success(t("lens.deleteSuccess"));
-      setConfirmDialog({ open: false, itemId: "" });
+      setDeleteId(null);
     } catch (error: any) {
       console.error("Error deleting linza royxat:", error);
       toast.error(t("common.error"));
@@ -580,69 +582,138 @@ const LinzaRoyxati = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table id="printable-table" className="w-full">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="px-4 py-2 text-left">№</th>
-                <th className="px-4 py-2 text-left">Sana</th>
-                <th className="px-4 py-2 text-left">Mijoz</th>
-                <th className="px-4 py-2 text-left">OD/OS</th>
-                <th className="px-4 py-2 text-left">Telefon</th>
-                <th className="px-4 py-2 text-left">Linza turi</th>
-                <th className="px-4 py-2 text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentRoyxatlar.map((r) => (
-                <tr key={r.id} className="border-b border-border">
-                  <td className="px-4 py-2">{r.tartibRaqam}</td>
-                  <td className="px-4 py-2">{formatDisplayDate(r.sana)}</td>
-                  <td className="px-4 py-2">{r.mijoz}</td>
-                  <td className="px-4 py-2">{r.od} / {r.os}</td>
-                  <td className="px-4 py-2">{r.telefon}</td>
-                  <td className="px-4 py-2">{r.linzaTuri}</td>
-                  <td className="px-4 py-2 text-right">
+        
+        {isMobile ? (
+          <div className="space-y-4">
+            {currentRoyxatlar.map((r) => (
+              <div key={r.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-lg">№ {r.tartibRaqam}</div>
+                    <div className="text-sm text-muted-foreground">{formatDisplayDate(r.sana)}</div>
+                  </div>
+                  <div className="flex gap-2">
                     <TooltipProvider>
-                      <div className="flex gap-2 justify-end">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(r)}
-                              className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tahrirlash</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setConfirmDialog({ open: true, itemId: r.id })}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>O'chirish</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(r)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tahrirlash</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(r.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>O'chirish</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TooltipProvider>
-                  </td>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Mijoz:</span>
+                    <span className="ml-2 font-medium">{r.mijoz}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">OD / OS:</span>
+                    <span className="ml-2">{r.od} / {r.os}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Telefon:</span>
+                    <span className="ml-2">{r.telefon}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Linza turi:</span>
+                    <span className="ml-2">{r.linzaTuri}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table id="printable-table" className="w-full">
+              <thead className="bg-secondary text-secondary-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left">№</th>
+                  <th className="px-4 py-2 text-left">Sana</th>
+                  <th className="px-4 py-2 text-left">Mijoz</th>
+                  <th className="px-4 py-2 text-left">OD/OS</th>
+                  <th className="px-4 py-2 text-left">Telefon</th>
+                  <th className="px-4 py-2 text-left">Linza turi</th>
+                  <th className="px-4 py-2 text-right"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentRoyxatlar.map((r) => (
+                  <tr key={r.id} className="border-b border-border">
+                    <td className="px-4 py-2">{r.tartibRaqam}</td>
+                    <td className="px-4 py-2">{formatDisplayDate(r.sana)}</td>
+                    <td className="px-4 py-2">{r.mijoz}</td>
+                    <td className="px-4 py-2">{r.od} / {r.os}</td>
+                    <td className="px-4 py-2">{r.telefon}</td>
+                    <td className="px-4 py-2">{r.linzaTuri}</td>
+                    <td className="px-4 py-2 text-right">
+                      <TooltipProvider>
+                        <div className="flex gap-2 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(r)}
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Tahrirlash</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(r.id)}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>O'chirish</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className="mt-4 flex justify-center">
@@ -678,9 +749,9 @@ const LinzaRoyxati = () => {
       </div>
 
       <ConfirmDialog
-        open={confirmDialog.open}
-        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
-        onConfirm={() => handleDelete(confirmDialog.itemId)}
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={() => deleteId && handleDelete(deleteId)}
         title={t("delete.confirm")}
         description={t("delete.confirmDesc")}
         confirmText={t("common.yes")}

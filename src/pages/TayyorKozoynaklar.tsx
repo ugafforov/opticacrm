@@ -26,6 +26,7 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime,
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pagination,
   PaginationContent,
@@ -47,6 +48,7 @@ interface TayyorKozoynak {
 const TayyorKozoynaklar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -554,69 +556,135 @@ const TayyorKozoynaklar = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table id="printable-table" className="w-full">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="px-4 py-2 text-left">{t("orders.number")}</th>
-                <th className="px-4 py-2 text-left">{t("common.date")}</th>
-                <th className="px-4 py-2 text-left">{t("ready.client")}</th>
-                <th className="px-4 py-2 text-left">{t("ready.type")}</th>
-                <th className="px-4 py-2 text-right">Summa</th>
-                <th className="px-4 py-2 text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentKozoynaklar.map((k) => (
-                <tr key={k.id} className="border-b border-border">
-                  <td className="px-4 py-2">{k.tartibRaqam}</td>
-                  <td className="px-4 py-2">{formatDisplayDate(k.sana)}</td>
-                  <td className="px-4 py-2">{k.kliyent}</td>
-                  <td className="px-4 py-2">{k.kozoynakTuri}</td>
-                  <td className="px-4 py-2 text-right font-semibold">
-                    {k.summa.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 text-right">
+        
+        {isMobile ? (
+          <div className="space-y-4">
+            {currentKozoynaklar.map((k) => (
+              <div key={k.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-lg">№ {k.tartibRaqam}</div>
+                    <div className="text-sm text-muted-foreground">{formatDisplayDate(k.sana)}</div>
+                  </div>
+                  <div className="flex gap-2">
                     <TooltipProvider>
-                      <div className="flex gap-2 justify-end">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(k)}
-                              className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tahrirlash</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteId(k.id)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>O'chirish</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(k)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tahrirlash</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(k.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>O'chirish</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TooltipProvider>
-                  </td>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">{t("ready.client")}:</span>
+                    <span className="ml-2 font-medium">{k.kliyent}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{t("ready.type")}:</span>
+                    <span className="ml-2">{k.kozoynakTuri}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Summa:</span>
+                  <span className="text-lg font-bold">{k.summa.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table id="printable-table" className="w-full">
+              <thead className="bg-secondary text-secondary-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left">{t("orders.number")}</th>
+                  <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                  <th className="px-4 py-2 text-left">{t("ready.client")}</th>
+                  <th className="px-4 py-2 text-left">{t("ready.type")}</th>
+                  <th className="px-4 py-2 text-right">Summa</th>
+                  <th className="px-4 py-2 text-right"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentKozoynaklar.map((k) => (
+                  <tr key={k.id} className="border-b border-border">
+                    <td className="px-4 py-2">{k.tartibRaqam}</td>
+                    <td className="px-4 py-2">{formatDisplayDate(k.sana)}</td>
+                    <td className="px-4 py-2">{k.kliyent}</td>
+                    <td className="px-4 py-2">{k.kozoynakTuri}</td>
+                    <td className="px-4 py-2 text-right font-semibold">
+                      {k.summa.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <TooltipProvider>
+                        <div className="flex gap-2 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(k)}
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Tahrirlash</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(k.id)}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>O'chirish</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className="mt-4 flex justify-center">
