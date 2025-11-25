@@ -43,6 +43,11 @@ const translations = {
     "lens.title": "Линза рўйхатлари",
     "lens.subtitle": "Кўзга текшириш маълумотлари",
     "lens.list": "Линза рўйхати",
+    "lens.number": "№",
+    "lens.date": "Сана",
+    "lens.client": "Мижоз",
+    "lens.phone": "Телефон",
+    "lens.lensType": "Линза тури",
     "lens.rightEye": "Ўнг кўз",
     "lens.leftEye": "Чап кўз",
     "lens.sphere": "Сфера",
@@ -53,6 +58,8 @@ const translations = {
     "lens.addSuccess": "Линза қўшилди!",
     "lens.deleteSuccess": "Ўчирилди",
     "lens.search": "Қидириш...",
+    "lens.noResults": "Қидирув бўйича натижа топилмади",
+    "lens.empty": "Ҳозирча рўйхат бўш",
     
     // Examination
     "exam.title": "Кўз текшируви",
@@ -310,6 +317,11 @@ const translations = {
     "lens.title": "Linza ro'yxatlari",
     "lens.subtitle": "Ko'zga tekshirish ma'lumotlari",
     "lens.list": "Linza ro'yxati",
+    "lens.number": "№",
+    "lens.date": "Sana",
+    "lens.client": "Mijoz",
+    "lens.phone": "Telefon",
+    "lens.lensType": "Linza turi",
     "lens.rightEye": "O'ng ko'z",
     "lens.leftEye": "Chap ko'z",
     "lens.sphere": "Sfera",
@@ -320,6 +332,8 @@ const translations = {
     "lens.addSuccess": "Linza qo'shildi!",
     "lens.deleteSuccess": "O'chirildi",
     "lens.search": "Qidirish...",
+    "lens.noResults": "Qidiruv bo'yicha natija topilmadi",
+    "lens.empty": "Hozircha ro'yxat bo'sh",
     
     // Examination
     "exam.title": "Ko'z tekshiruvi",
