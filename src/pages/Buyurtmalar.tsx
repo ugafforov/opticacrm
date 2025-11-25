@@ -134,7 +134,7 @@ const Buyurtmalar = () => {
 
       setBuyurtmalar(mapped);
     } catch (error: any) {
-      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
+      toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
     }
@@ -144,7 +144,7 @@ const Buyurtmalar = () => {
     e.preventDefault();
     
     if (!user) {
-      toast.error("Iltimos, tizimga kiring");
+      toast.error(t("toast.loginRequired"));
       return;
     }
     
@@ -199,7 +199,7 @@ const Buyurtmalar = () => {
       
       toast.success(t("orders.addSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni saqlashda xatolik yuz berdi");
+      toast.error(t("toast.saveError"));
     }
   };
 
@@ -231,7 +231,7 @@ const Buyurtmalar = () => {
       setDeleteId(null);
       toast.success(t("orders.deleteSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni o'chirishda xatolik yuz berdi");
+      toast.error(t("toast.deleteError"));
     }
   };
 
@@ -265,7 +265,7 @@ const Buyurtmalar = () => {
       setEditingItem(null);
       toast.success(t("common.updateSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni yangilashda xatolik yuz berdi");
+      toast.error(t("toast.updateError"));
     }
   };
 
@@ -328,35 +328,35 @@ const Buyurtmalar = () => {
     
     // Metadata
     const metadata = [
-      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
-      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
-      { "Ma'lumot": "Jami summa", "Qiymat": `${totalSum.toLocaleString()} so'm` },
+      { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
+      { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
+      { [t("export.info")]: t("export.totalSum"), [t("export.value")]: `${totalSum.toLocaleString()} ${t("common.sum")}` },
     ];
     
     // Main data
     const data = filteredBuyurtmalar.map((b) => ({
-      "№": b.tartibRaqam,
-      Sana: formatDisplayDate(b.sana),
-      Mijoz: b.mijoz,
-      Telefon: b.telefon || "-",
-      "OD (o'ng)": b.od,
-      "OS (chap)": b.os,
-      "Oyna turi": b.oynaTuri,
-      "Oyna narxi": b.oynaNarxi,
-      "Oprava turi": b.opravaTuri,
-      "Oprava narxi": b.opravaNarxi,
-      "Jami summa": b.jamiSumma,
+      [t("orders.number")]: b.tartibRaqam,
+      [t("common.date")]: formatDisplayDate(b.sana),
+      [t("orders.client")]: b.mijoz,
+      [t("orders.phone")]: b.telefon || "-",
+      [t("form.rightEye")]: b.od,
+      [t("form.leftEye")]: b.os,
+      [t("form.lensType")]: b.oynaTuri,
+      [t("form.lensPrice")]: b.oynaNarxi,
+      [t("form.frameType")]: b.opravaTuri,
+      [t("form.framePrice")]: b.opravaNarxi,
+      [t("orders.totalAmount")]: b.jamiSumma,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
     const dataWs = XLSX.utils.json_to_sheet(data);
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
-    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    XLSX.utils.book_append_sheet(wb, dataWs, t("common.sheet"));
+    XLSX.utils.book_append_sheet(wb, metaWs, t("common.metadata"));
     
     XLSX.writeFile(wb, `Buyurtmalar_${formatUzbekistanDate()}.xlsx`);
-    toast.success("Excel fayl yuklab olindi");
+    toast.success(t("toast.excelSuccess"));
   };
 
   const exportToPDF = () => {
@@ -364,9 +364,9 @@ const Buyurtmalar = () => {
     
     const startY = addPdfHeader(
       doc,
-      "Buyurtmalar ro'yxati",
+      t("orders.list"),
       user?.email,
-      `Jami summa: ${totalSum.toLocaleString()} so'm`
+      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
     );
 
     const tableData = filteredBuyurtmalar.map((b) => [
@@ -403,13 +403,13 @@ const Buyurtmalar = () => {
     });
 
     doc.save(`Buyurtmalar_${formatUzbekistanDate()}.pdf`);
-    toast.success("PDF fayl yuklab olindi");
+    toast.success(t("toast.pdfSuccess"));
   };
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-table');
     if (!printContent) {
-      toast.error("Chop etish uchun jadval topilmadi");
+      toast.error(t("toast.printTableNotFound"));
       return;
     }
     
@@ -427,7 +427,7 @@ const Buyurtmalar = () => {
     
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      toast.error("Chop etishda xatolik yuz berdi");
+      toast.error(t("toast.printError"));
       document.body.removeChild(iframe);
       return;
     }

@@ -128,7 +128,7 @@ const LinzaSotuvi = () => {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Iltimos, tizimga kiring");
+      toast.error(t("toast.loginRequired"));
       return;
     }
 
@@ -289,29 +289,29 @@ const LinzaSotuvi = () => {
     
     // Metadata
     const metadata = [
-      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
-      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
-      { "Ma'lumot": "Jami summa", "Qiymat": `${totalSum.toLocaleString()} so'm` },
+      { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
+      { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
+      { [t("export.info")]: t("export.totalSum"), [t("export.value")]: `${totalSum.toLocaleString()} ${t("common.sum")}` },
     ];
     
     // Main data
     const data = filteredSotuvlar.map((s) => ({
-      "№": s.tartibRaqam,
-      Sana: formatDisplayDate(s.sana),
-      Kliyent: s.kliyent,
-      "Linza turi": s.linzaTuri,
-      Summa: s.summa,
+      [t("orders.number")]: s.tartibRaqam,
+      [t("common.date")]: formatDisplayDate(s.sana),
+      [t("lensSale.client")]: s.kliyent,
+      [t("lensSale.type")]: s.linzaTuri,
+      [t("lensSale.amount")]: s.summa,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
     const dataWs = XLSX.utils.json_to_sheet(data);
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
-    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    XLSX.utils.book_append_sheet(wb, dataWs, t("common.sheet"));
+    XLSX.utils.book_append_sheet(wb, metaWs, t("common.metadata"));
     
     XLSX.writeFile(wb, `Linza_Sotuvi_${formatUzbekistanDate()}.xlsx`);
-    toast.success("Excel fayl yuklab olindi");
+    toast.success(t("toast.excelSuccess"));
   };
 
   const exportToPDF = () => {
@@ -319,9 +319,9 @@ const LinzaSotuvi = () => {
     
     const startY = addPdfHeader(
       doc,
-      "Linza Sotuvi",
+      t("lensSale.list"),
       user?.email,
-      `Jami summa: ${totalSum.toLocaleString()} so'm`
+      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
     );
 
     const tableData = filteredSotuvlar.map((s) => [
@@ -355,13 +355,13 @@ const LinzaSotuvi = () => {
     });
 
     doc.save(`Linza_Sotuvi_${formatUzbekistanDate()}.pdf`);
-    toast.success("PDF fayl yuklab olindi");
+    toast.success(t("toast.pdfSuccess"));
   };
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-table');
     if (!printContent) {
-      toast.error("Chop etish uchun jadval topilmadi");
+      toast.error(t("toast.printTableNotFound"));
       return;
     }
     
@@ -379,7 +379,7 @@ const LinzaSotuvi = () => {
     
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      toast.error("Chop etishda xatolik yuz berdi");
+      toast.error(t("toast.printError"));
       document.body.removeChild(iframe);
       return;
     }

@@ -120,7 +120,7 @@ const Tekshiruv = () => {
 
       setTekshiruvlar(mapped);
     } catch (error: any) {
-      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
+      toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
     }
@@ -130,7 +130,7 @@ const Tekshiruv = () => {
     e.preventDefault();
 
     if (!user) {
-      toast.error("Iltimos, tizimga kiring");
+      toast.error(t("toast.loginRequired"));
       return;
     }
 
@@ -177,7 +177,7 @@ const Tekshiruv = () => {
 
       toast.success(t("exam.addSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni saqlashda xatolik yuz berdi");
+      toast.error(t("toast.saveError"));
     }
   };
 
@@ -207,7 +207,7 @@ const Tekshiruv = () => {
       setDeleteId(null);
       toast.success(t("exam.deleteSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni o'chirishda xatolik yuz berdi");
+      toast.error(t("toast.deleteError"));
     }
   };
 
@@ -241,7 +241,7 @@ const Tekshiruv = () => {
       setEditingItem(null);
       toast.success(t("common.updateSuccess"));
     } catch (error: any) {
-      toast.error("Ma'lumotni yangilashda xatolik yuz berdi");
+      toast.error(t("toast.updateError"));
     }
   };
 
@@ -299,30 +299,30 @@ const Tekshiruv = () => {
     
     // Metadata
     const metadata = [
-      { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
-      { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
-      { "Ma'lumot": "Jami summa", "Qiymat": `${totalSum.toLocaleString()} so'm` },
+      { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
+      { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
+      { [t("export.info")]: t("export.totalSum"), [t("export.value")]: `${totalSum.toLocaleString()} ${t("common.sum")}` },
     ];
     
     // Main data
-    const data = filteredTekshiruvlar.map((t) => ({
-      "№": t.tartibRaqam,
-      Sana: formatDisplayDate(t.sana),
-      Mijoz: t.mijoz,
-      Refraksiyametriya: t.refraksiyametriya ? "Ha" : "Yo'q",
-      Tanometriya: t.tanometriya ? "Ha" : "Yo'q",
-      Summa: t.jamiSumma,
+    const data = filteredTekshiruvlar.map((tek) => ({
+      [t("orders.number")]: tek.tartibRaqam,
+      [t("common.date")]: formatDisplayDate(tek.sana),
+      [t("exam.patient")]: tek.mijoz,
+      "Refraksiyametriya": tek.refraksiyametriya ? t("common.yes") : t("common.no"),
+      "Tanometriya": tek.tanometriya ? t("common.yes") : t("common.no"),
+      [t("lensSale.amount")]: tek.jamiSumma,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
     const dataWs = XLSX.utils.json_to_sheet(data);
     
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
-    XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
+    XLSX.utils.book_append_sheet(wb, dataWs, t("common.sheet"));
+    XLSX.utils.book_append_sheet(wb, metaWs, t("common.metadata"));
     
     XLSX.writeFile(wb, `Tekshiruvlar_${formatUzbekistanDate()}.xlsx`);
-    toast.success("Excel fayl yuklab olindi");
+    toast.success(t("toast.excelSuccess"));
   };
 
   const exportToPDF = () => {
@@ -330,9 +330,9 @@ const Tekshiruv = () => {
     
     const startY = addPdfHeader(
       doc,
-      "Tekshiruvlar ro'yxati",
+      t("exam.list"),
       user?.email,
-      `Jami summa: ${totalSum.toLocaleString()} so'm`
+      `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
     );
 
     const tableData = filteredTekshiruvlar.map((t) => [
@@ -366,13 +366,13 @@ const Tekshiruv = () => {
     });
 
     doc.save(`Tekshiruvlar_${formatUzbekistanDate()}.pdf`);
-    toast.success("PDF fayl yuklab olindi");
+    toast.success(t("toast.pdfSuccess"));
   };
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-table');
     if (!printContent) {
-      toast.error("Chop etish uchun jadval topilmadi");
+      toast.error(t("toast.printTableNotFound"));
       return;
     }
     
@@ -390,7 +390,7 @@ const Tekshiruv = () => {
     
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      toast.error("Chop etishda xatolik yuz berdi");
+      toast.error(t("toast.printError"));
       document.body.removeChild(iframe);
       return;
     }
