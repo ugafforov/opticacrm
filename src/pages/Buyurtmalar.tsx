@@ -26,6 +26,7 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, format
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pagination,
   PaginationContent,
@@ -53,6 +54,7 @@ interface Buyurtma {
 const Buyurtmalar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -664,73 +666,153 @@ const Buyurtmalar = () => {
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto -mx-4 sm:mx-0">
-          <table id="printable-table" className="w-full min-w-[640px]">
-            <thead className="bg-secondary text-secondary-foreground">
-              <tr>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">Telefon</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
-                <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
-                <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>
-                <th className="px-2 sm:px-4 py-2 text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentBuyurtmalar.map((b) => (
-                <tr key={b.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="px-2 sm:px-4 py-2 text-sm">{b.tartibRaqam}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
-                  <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
-                  <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
-                  <td className="px-2 sm:px-4 py-2 text-right">
+        
+        {isMobile ? (
+          <div className="space-y-4">
+            {currentBuyurtmalar.map((b) => (
+              <div key={b.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-lg">№ {b.tartibRaqam}</div>
+                    <div className="text-sm text-muted-foreground">{formatDisplayDate(b.sana)}</div>
+                  </div>
+                  <div className="flex gap-2">
                     <TooltipProvider>
-                      <div className="flex gap-1 justify-end">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEdit(b)}
-                              className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Tahrirlash</p>
-                          </TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteId(b.id)}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>O'chirish</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(b)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tahrirlash</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(b.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>O'chirish</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </TooltipProvider>
-                  </td>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">{t("orders.client")}:</span>
+                    <span className="ml-2 font-medium">{b.mijoz}</span>
+                  </div>
+                  {b.telefon && (
+                    <div>
+                      <span className="text-muted-foreground">Telefon:</span>
+                      <span className="ml-2">{b.telefon}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-muted-foreground">OD / OS:</span>
+                    <span className="ml-2">{b.od} / {b.os}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{t("form.lensType")}:</span>
+                    <span className="ml-2">{b.oynaTuri}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{t("form.frameType")}:</span>
+                    <span className="ml-2">{b.opravaTuri}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">{t("orders.totalAmount")}:</span>
+                  <span className="text-lg font-bold">{b.jamiSumma.toLocaleString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <table id="printable-table" className="w-full min-w-[640px]">
+              <thead className="bg-secondary text-secondary-foreground">
+                <tr>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">Telefon</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-right text-sm">{t("orders.totalAmount")}</th>
+                  <th className="px-2 sm:px-4 py-2 text-right"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {currentBuyurtmalar.map((b) => (
+                  <tr key={b.id} className="border-b border-border hover:bg-muted/50">
+                    <td className="px-2 sm:px-4 py-2 text-sm">{b.tartibRaqam}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{b.oynaTuri}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{b.opravaTuri}</td>
+                    <td className="px-2 sm:px-4 py-2 text-right font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()}</td>
+                    <td className="px-2 sm:px-4 py-2 text-right">
+                      <TooltipProvider>
+                        <div className="flex gap-1 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(b)}
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Tahrirlash</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(b.id)}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>O'chirish</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {totalPages > 1 && (
           <div className="mt-4 flex justify-center">
