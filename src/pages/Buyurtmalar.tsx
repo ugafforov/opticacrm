@@ -389,7 +389,9 @@ const Buyurtmalar = () => {
         doc,
         t("orders.list"),
         user?.email,
-        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        t("common.exportedBy"),
+        t("common.dateAndTime")
       );
 
       const tableData = filteredBuyurtmalar.map((b) => [

@@ -333,7 +333,9 @@ const TayyorKozoynaklar = () => {
         doc,
         t("ready.list"),
         user?.email,
-        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
+        `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        t("common.exportedBy"),
+        t("common.dateAndTime")
       );
 
       const tableData = filteredKozoynaklar.map((k) => [

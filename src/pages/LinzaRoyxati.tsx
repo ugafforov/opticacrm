@@ -336,7 +336,10 @@ const LinzaRoyxati = () => {
       const startY = addPdfHeader(
         doc,
         t("lens.list"),
-        user?.email
+        user?.email,
+        undefined,
+        t("common.exportedBy"),
+        t("common.dateAndTime")
       );
 
       const tableData = filteredRoyxatlar.map((r) => [
