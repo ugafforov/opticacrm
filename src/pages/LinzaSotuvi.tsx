@@ -25,6 +25,14 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime,
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface LinzaSotish {
   id: string;
@@ -43,6 +51,8 @@ const LinzaSotuvi = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [form, setForm] = useState({
     kliyent: "",
     linzaTuri: "",
@@ -261,6 +271,11 @@ const LinzaSotuvi = () => {
         return true;
     }
   });
+
+  const totalPages = Math.ceil(filteredSotuvlar.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSotuvlar = filteredSotuvlar.slice(startIndex, endIndex);
 
   const totalSum = sotuvlar.reduce((sum, s) => sum + s.summa, 0);
 
@@ -554,7 +569,7 @@ const LinzaSotuvi = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredSotuvlar.map((s) => (
+              {currentSotuvlar.map((s) => (
                 <tr key={s.id} className="border-b border-border">
                   <td className="px-4 py-2">{s.tartibRaqam}</td>
                   <td className="px-4 py-2">{formatDisplayDate(s.sana)}</td>
@@ -588,6 +603,38 @@ const LinzaSotuvi = () => {
             </tbody>
           </table>
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       <ConfirmDialog

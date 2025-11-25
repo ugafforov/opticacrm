@@ -25,6 +25,14 @@ import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, format
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface Buyurtma {
   id: string;
@@ -61,6 +69,8 @@ const Buyurtmalar = () => {
   });
   const [editingItem, setEditingItem] = useState<Buyurtma | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (user) {
@@ -300,6 +310,11 @@ const Buyurtmalar = () => {
         return true;
     }
   });
+
+  const totalPages = Math.ceil(filteredBuyurtmalar.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentBuyurtmalar = filteredBuyurtmalar.slice(startIndex, endIndex);
 
   const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
 
@@ -664,7 +679,7 @@ const Buyurtmalar = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredBuyurtmalar.map((b) => (
+              {currentBuyurtmalar.map((b) => (
                 <tr key={b.id} className="border-b border-border hover:bg-muted/50">
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.tartibRaqam}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
@@ -699,6 +714,38 @@ const Buyurtmalar = () => {
             </tbody>
           </table>
         </div>
+
+        {totalPages > 1 && (
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                      className="cursor-pointer"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       <ConfirmDialog
