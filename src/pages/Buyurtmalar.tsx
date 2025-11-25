@@ -315,6 +315,7 @@ const Buyurtmalar = () => {
     
     // Main data
     const data = filteredBuyurtmalar.map((b) => ({
+      "№": b.tartibRaqam,
       Sana: formatDisplayDate(b.sana),
       Mijoz: b.mijoz,
       Telefon: b.telefon || "-",
@@ -349,6 +350,7 @@ const Buyurtmalar = () => {
     );
 
     const tableData = filteredBuyurtmalar.map((b) => [
+      b.tartibRaqam,
       formatDisplayDate(b.sana),
       b.mijoz,
       b.telefon || "-",
@@ -360,7 +362,7 @@ const Buyurtmalar = () => {
 
     autoTable(doc, {
       startY,
-      head: [['Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
+      head: [['№', 'Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -645,6 +647,7 @@ const Buyurtmalar = () => {
           <table id="printable-table" className="w-full min-w-[640px]">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
+                <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
                 <th className="px-2 sm:px-4 py-2 text-left text-sm">Telefon</th>
@@ -658,6 +661,7 @@ const Buyurtmalar = () => {
             <tbody>
               {filteredBuyurtmalar.map((b) => (
                 <tr key={b.id} className="border-b border-border hover:bg-muted/50">
+                  <td className="px-2 sm:px-4 py-2 text-sm">{b.tartibRaqam}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
                   <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>

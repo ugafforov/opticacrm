@@ -276,6 +276,7 @@ const LinzaSotuvi = () => {
     
     // Main data
     const data = filteredSotuvlar.map((s) => ({
+      "№": s.tartibRaqam,
       Sana: formatDisplayDate(s.sana),
       Kliyent: s.kliyent,
       "Linza turi": s.linzaTuri,
@@ -304,6 +305,7 @@ const LinzaSotuvi = () => {
     );
 
     const tableData = filteredSotuvlar.map((s) => [
+      s.tartibRaqam,
       formatDisplayDate(s.sana),
       s.kliyent,
       s.linzaTuri,
@@ -312,7 +314,7 @@ const LinzaSotuvi = () => {
 
     autoTable(doc, {
       startY,
-      head: [['Sana', 'Kliyent', 'Linza turi', 'Summa']],
+      head: [['№', 'Sana', 'Kliyent', 'Linza turi', 'Summa']],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -538,6 +540,7 @@ const LinzaSotuvi = () => {
           <table id="printable-table" className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
+                <th className="px-4 py-2 text-left">№</th>
                 <th className="px-4 py-2 text-left">{t("common.date")}</th>
                 <th className="px-4 py-2 text-left">{t("lensSale.client")}</th>
                 <th className="px-4 py-2 text-left">{t("lensSale.type")}</th>
@@ -548,6 +551,7 @@ const LinzaSotuvi = () => {
             <tbody>
               {filteredSotuvlar.map((s) => (
                 <tr key={s.id} className="border-b border-border">
+                  <td className="px-4 py-2">{s.tartibRaqam}</td>
                   <td className="px-4 py-2">{formatDisplayDate(s.sana)}</td>
                   <td className="px-4 py-2">{s.kliyent}</td>
                   <td className="px-4 py-2">{s.linzaTuri}</td>
