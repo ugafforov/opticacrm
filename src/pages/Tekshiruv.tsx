@@ -813,16 +813,16 @@ const Tekshiruv = () => {
         onOpenChange={(open) => !open && setEditingItem(null)}
         title={t("common.edit")}
       >
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-3">
           <div>
-            <Label>{t("common.date")}</Label>
+            <Label className="text-xs">{t("common.date")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                  className="w-full justify-start text-left font-normal h-9 text-sm"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
                 </Button>
               </PopoverTrigger>
@@ -846,7 +846,7 @@ const Tekshiruv = () => {
           </div>
 
           <div>
-            <Label htmlFor="edit-mijoz">{t("exam.patient")}</Label>
+            <Label htmlFor="edit-mijoz" className="text-xs">{t("exam.patient")}</Label>
             <Input
               id="edit-mijoz"
               value={editingItem?.mijoz || ""}
@@ -856,10 +856,11 @@ const Tekshiruv = () => {
                 )
               }
               required
+              className="h-9"
             />
           </div>
 
-          <div className="space-y-3 border border-border rounded-lg p-4">
+          <div className="border border-border rounded-lg p-3 space-y-2">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edit-refraksiyametriya"
@@ -874,7 +875,7 @@ const Tekshiruv = () => {
               />
               <label
                 htmlFor="edit-refraksiyametriya"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {t("exam.refractometry")}
               </label>
@@ -894,22 +895,23 @@ const Tekshiruv = () => {
               />
               <label
                 htmlFor="edit-tanometriya"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {t("exam.tonometry")}
               </label>
             </div>
           </div>
 
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setEditingItem(null)}
+              size="sm"
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit">{t("common.save")}</Button>
+            <Button type="submit" size="sm">{t("common.save")}</Button>
           </div>
         </form>
       </EditDialog>
