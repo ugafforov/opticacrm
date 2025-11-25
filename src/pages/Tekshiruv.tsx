@@ -366,7 +366,7 @@ const Tekshiruv = () => {
       },
       columnStyles: {
         3: { halign: 'left' },
-        4: { halign: 'right' },
+        4: { halign: 'center' },
       },
     });
 
