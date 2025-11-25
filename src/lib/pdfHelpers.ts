@@ -56,7 +56,7 @@ export const addPdfHeader = (
 ): number => {
   const dateTime = formatUzbekistanDateTime();
   
-  doc.setFontSize(16);
+  doc.setFontSize(20);
   doc.text(title, 14, 15);
   
   doc.setFontSize(9);
