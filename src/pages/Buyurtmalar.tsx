@@ -39,6 +39,7 @@ import {
 interface Buyurtma {
   id: string;
   sana: string;
+  createdAt: string;
   tartibRaqam: number;
   mijoz: string;
   telefon?: string;
@@ -118,6 +119,7 @@ const Buyurtmalar = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        createdAt: item.created_at,
         tartibRaqam: item.tartib_raqam,
         mijoz: item.mijoz,
         telefon: item.telefon,
@@ -689,7 +691,18 @@ const Buyurtmalar = () => {
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <div className="font-semibold text-lg">№ {b.tartibRaqam}</div>
-                    <div className="text-sm text-muted-foreground">{formatDisplayDate(b.sana)}</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground cursor-help">
+                            {formatDisplayDate(b.sana)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatUzbekistanDateTime(new Date(b.createdAt))}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex gap-2">
                     <TooltipProvider>
@@ -785,7 +798,18 @@ const Buyurtmalar = () => {
                 {currentBuyurtmalar.map((b) => (
                   <tr key={b.id} className="border-b border-border hover:bg-muted/50">
                     <td className="px-2 sm:px-4 py-2 text-sm">{b.tartibRaqam}</td>
-                    <td className="px-2 sm:px-4 py-2 text-sm">{formatDisplayDate(b.sana)}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{formatDisplayDate(b.sana)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(b.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>

@@ -39,6 +39,7 @@ import {
 interface LinzaRoyxat {
   id: string;
   sana: string;
+  createdAt: string;
   tartibRaqam: number;
   mijoz: string;
   od: string;
@@ -111,6 +112,7 @@ const LinzaRoyxati = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        createdAt: item.created_at,
         tartibRaqam: item.tartib_raqam,
         mijoz: item.mijoz,
         od: item.od,
@@ -605,7 +607,18 @@ const LinzaRoyxati = () => {
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <div className="font-semibold text-lg">№ {r.tartibRaqam}</div>
-                    <div className="text-sm text-muted-foreground">{formatDisplayDate(r.sana)}</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground cursor-help">
+                            {formatDisplayDate(r.sana)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatUzbekistanDateTime(new Date(r.createdAt))}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex gap-2">
                     <TooltipProvider>
@@ -688,7 +701,18 @@ const LinzaRoyxati = () => {
                 {currentRoyxatlar.map((r) => (
                   <tr key={r.id} className="border-b border-border">
                     <td className="px-4 py-2">{r.tartibRaqam}</td>
-                    <td className="px-4 py-2">{formatDisplayDate(r.sana)}</td>
+                    <td className="px-4 py-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{formatDisplayDate(r.sana)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(r.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-4 py-2">{r.mijoz}</td>
                     <td className="px-4 py-2">{r.od} / {r.os}</td>
                     <td className="px-4 py-2">{r.telefon}</td>

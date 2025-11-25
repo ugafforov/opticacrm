@@ -39,6 +39,7 @@ import {
 interface TayyorKozoynak {
   id: string;
   sana: string;
+  createdAt: string;
   tartibRaqam: number;
   kliyent: string;
   kozoynakTuri: string;
@@ -107,6 +108,7 @@ const TayyorKozoynaklar = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        createdAt: item.created_at,
         tartibRaqam: item.tartib_raqam,
         kliyent: item.kliyent,
         kozoynakTuri: item.kozoynak_turi,
@@ -579,7 +581,18 @@ const TayyorKozoynaklar = () => {
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <div className="font-semibold text-lg">№ {k.tartibRaqam}</div>
-                    <div className="text-sm text-muted-foreground">{formatDisplayDate(k.sana)}</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground cursor-help">
+                            {formatDisplayDate(k.sana)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatUzbekistanDateTime(new Date(k.createdAt))}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                   <div className="flex gap-2">
                     <TooltipProvider>
@@ -658,7 +671,18 @@ const TayyorKozoynaklar = () => {
                 {currentKozoynaklar.map((k) => (
                   <tr key={k.id} className="border-b border-border">
                     <td className="px-4 py-2">{k.tartibRaqam}</td>
-                    <td className="px-4 py-2">{formatDisplayDate(k.sana)}</td>
+                    <td className="px-4 py-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{formatDisplayDate(k.sana)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(k.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
                     <td className="px-4 py-2">{k.kliyent}</td>
                     <td className="px-4 py-2">{k.kozoynakTuri}</td>
                     <td className="px-4 py-2 text-right font-semibold">
