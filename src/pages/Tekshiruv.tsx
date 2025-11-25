@@ -306,12 +306,12 @@ const Tekshiruv = () => {
     
     // Main data
     const data = filteredTekshiruvlar.map((tek) => ({
-      [t("orders.number")]: tek.tartibRaqam,
+      [t("exam.number")]: tek.tartibRaqam,
       [t("common.date")]: formatDisplayDate(tek.sana),
       [t("exam.patient")]: tek.mijoz,
-      "Refraksiyametriya": tek.refraksiyametriya ? t("common.yes") : t("common.no"),
-      "Tanometriya": tek.tanometriya ? t("common.yes") : t("common.no"),
-      [t("lensSale.amount")]: tek.jamiSumma,
+      [t("exam.refractometryShort")]: tek.refraksiyametriya ? t("common.yes") : t("common.no"),
+      [t("exam.tonometryShort")]: tek.tanometriya ? t("common.yes") : t("common.no"),
+      [t("exam.amount")]: tek.jamiSumma,
     }));
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
@@ -335,17 +335,17 @@ const Tekshiruv = () => {
       `${t("export.totalSum")}: ${totalSum.toLocaleString()} ${t("common.sum")}`
     );
 
-    const tableData = filteredTekshiruvlar.map((t) => [
-      t.tartibRaqam,
-      formatDisplayDate(t.sana),
-      t.mijoz,
-      (t.refraksiyametriya ? "Refr." : "") + (t.refraksiyametriya && t.tanometriya ? ", " : "") + (t.tanometriya ? "Tano." : ""),
-      t.jamiSumma.toLocaleString(),
+    const tableData = filteredTekshiruvlar.map((exam) => [
+      exam.tartibRaqam,
+      formatDisplayDate(exam.sana),
+      exam.mijoz,
+      (exam.refraksiyametriya ? "Refr." : "") + (exam.refraksiyametriya && exam.tanometriya ? ", " : "") + (exam.tanometriya ? "Tano." : ""),
+      exam.jamiSumma.toLocaleString(),
     ]);
 
     autoTable(doc, {
       startY,
-      head: [['№', 'Sana', 'Mijoz', 'Tekshiruvlar', 'Summa']],
+      head: [[t("exam.number"), t("common.date"), t("exam.patient"), t("exam.examinations"), t("exam.amount")]],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -399,7 +399,7 @@ const Tekshiruv = () => {
     doc.write(`
       <html>
         <head>
-          <title>Tekshiruvlar ro'yxati</title>
+          <title>${t("exam.list")}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             h1 { text-align: center; margin-bottom: 10px; font-size: 18px; }
@@ -414,8 +414,8 @@ const Tekshiruv = () => {
           </style>
         </head>
         <body>
-          <h1>Tekshiruvlar ro'yxati</h1>
-          <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
+          <h1>${t("exam.list")}</h1>
+          <p class="print-date">${t("common.date")}: ${formatDisplayDate(formatUzbekistanDate())}</p>
           ${clonedTable.outerHTML}
         </body>
       </html>
@@ -472,7 +472,7 @@ const Tekshiruv = () => {
             </div>
 
             <div className="space-y-2 border border-border rounded-lg p-4">
-              <Label>Tekshiruv turi</Label>
+              <Label>{t("exam.examType")}</Label>
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -525,9 +525,9 @@ const Tekshiruv = () => {
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-lg font-semibold">Tekshiruvlar ro'yxati</h3>
+            <h3 className="text-lg font-semibold">{t("exam.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              Jami: {totalSum.toLocaleString()} so'm
+              {t("exam.total")}: {totalSum.toLocaleString()} {t("common.sum")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -548,7 +548,7 @@ const Tekshiruv = () => {
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="Qidirish..."
+                placeholder={t("exam.search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-10"
@@ -600,23 +600,23 @@ const Tekshiruv = () => {
           <div className="space-y-4">
             {currentTekshiruvlar.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha tekshiruvlar yo'q"}
+                {searchQuery ? t("exam.noResults") : t("exam.empty")}
               </div>
             ) : (
-              currentTekshiruvlar.map((t) => (
-              <div key={t.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+              currentTekshiruvlar.map((exam) => (
+              <div key={exam.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {t.tartibRaqam}</div>
+                    <div className="font-semibold text-lg">№ {exam.tartibRaqam}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div className="text-sm text-muted-foreground cursor-help">
-                            {formatDisplayDate(t.sana)}
+                            {formatDisplayDate(exam.sana)}
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{formatUzbekistanDateTime(new Date(t.createdAt))}</p>
+                          <p>{formatUzbekistanDateTime(new Date(exam.createdAt))}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -628,7 +628,7 @@ const Tekshiruv = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEdit(t)}
+                            onClick={() => handleEdit(exam)}
                             className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
                           >
                             <Pencil className="w-4 h-4" />
@@ -643,7 +643,7 @@ const Tekshiruv = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setDeleteId(t.id)}
+                            onClick={() => setDeleteId(exam.id)}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -659,22 +659,22 @@ const Tekshiruv = () => {
                 
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-muted-foreground">Mijoz:</span>
-                    <span className="ml-2 font-medium">{t.mijoz}</span>
+                    <span className="text-muted-foreground">{t("exam.patient")}:</span>
+                    <span className="ml-2 font-medium">{exam.mijoz}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">Tekshiruvlar:</span>
+                    <span className="text-muted-foreground">{t("exam.examinations")}:</span>
                     <span className="ml-2">
-                      {t.refraksiyametriya && "Refraksiyametriya"}
-                      {t.refraksiyametriya && t.tanometriya && ", "}
-                      {t.tanometriya && "Tanometriya"}
+                      {exam.refraksiyametriya && t("exam.refractometryShort")}
+                      {exam.refraksiyametriya && exam.tanometriya && ", "}
+                      {exam.tanometriya && t("exam.tonometryShort")}
                     </span>
                   </div>
                 </div>
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">Summa:</span>
-                  <span className="text-lg font-bold">{t.jamiSumma.toLocaleString()}</span>
+                  <span className="text-muted-foreground text-sm">{t("exam.amount")}:</span>
+                  <span className="text-lg font-bold">{exam.jamiSumma.toLocaleString()}</span>
                 </div>
               </div>
             ))
@@ -684,44 +684,44 @@ const Tekshiruv = () => {
           <div className="overflow-x-auto">
             {currentTekshiruvlar.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha tekshiruvlar yo'q"}
+                {searchQuery ? t("exam.noResults") : t("exam.empty")}
               </div>
             ) : (
               <table id="printable-table" className="w-full">
               <thead className="bg-secondary text-secondary-foreground">
                 <tr>
-                  <th className="px-4 py-2 text-left">№</th>
-                  <th className="px-4 py-2 text-left">Sana</th>
-                  <th className="px-4 py-2 text-left">Mijoz</th>
-                  <th className="px-4 py-2 text-left">Tekshiruvlar</th>
-                  <th className="px-4 py-2 text-right">Summa</th>
+                  <th className="px-4 py-2 text-left">{t("exam.number")}</th>
+                  <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                  <th className="px-4 py-2 text-left">{t("exam.patient")}</th>
+                  <th className="px-4 py-2 text-left">{t("exam.examinations")}</th>
+                  <th className="px-4 py-2 text-right">{t("exam.amount")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
               <tbody>
-                {currentTekshiruvlar.map((t) => (
-                  <tr key={t.id} className="border-b border-border">
-                    <td className="px-4 py-2">{t.tartibRaqam}</td>
+                {currentTekshiruvlar.map((exam) => (
+                  <tr key={exam.id} className="border-b border-border">
+                    <td className="px-4 py-2">{exam.tartibRaqam}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="cursor-help">{formatDisplayDate(t.sana)}</span>
+                            <span className="cursor-help">{formatDisplayDate(exam.sana)}</span>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>{formatUzbekistanDateTime(new Date(t.createdAt))}</p>
+                            <p>{formatUzbekistanDateTime(new Date(exam.createdAt))}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-2">{t.mijoz}</td>
+                    <td className="px-4 py-2">{exam.mijoz}</td>
                     <td className="px-4 py-2">
-                      {t.refraksiyametriya && "Refraksiyametriya"}
-                      {t.refraksiyametriya && t.tanometriya && ", "}
-                      {t.tanometriya && "Tanometriya"}
+                      {exam.refraksiyametriya && t("exam.refractometryShort")}
+                      {exam.refraksiyametriya && exam.tanometriya && ", "}
+                      {exam.tanometriya && t("exam.tonometryShort")}
                     </td>
                     <td className="px-4 py-2 text-right font-semibold">
-                      {t.jamiSumma.toLocaleString()}
+                      {exam.jamiSumma.toLocaleString()}
                     </td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
@@ -731,7 +731,7 @@ const Tekshiruv = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEdit(t)}
+                                onClick={() => handleEdit(exam)}
                                 className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
                               >
                                 <Pencil className="w-4 h-4" />
@@ -746,7 +746,7 @@ const Tekshiruv = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setDeleteId(t.id)}
+                                onClick={() => setDeleteId(exam.id)}
                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
                               >
                                 <Trash2 className="w-4 h-4" />
