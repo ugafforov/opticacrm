@@ -960,7 +960,7 @@ const Buyurtmalar = () => {
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="edit-od">OD (o'ng)</Label>
+              <Label htmlFor="edit-od">{t("form.rightEye")}</Label>
               <Input
                 id="edit-od"
                 value={editingItem?.od || ""}
@@ -972,7 +972,7 @@ const Buyurtmalar = () => {
               />
             </div>
             <div>
-              <Label htmlFor="edit-os">OS (chap)</Label>
+              <Label htmlFor="edit-os">{t("form.leftEye")}</Label>
               <Input
                 id="edit-os"
                 value={editingItem?.os || ""}
