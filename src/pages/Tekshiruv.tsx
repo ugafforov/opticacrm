@@ -356,6 +356,11 @@ const Tekshiruv = () => {
       return;
     }
     
+    // Clone the table and remove action buttons
+    const clonedTable = printContent.cloneNode(true) as HTMLElement;
+    const actionCells = clonedTable.querySelectorAll('td:last-child, th:last-child');
+    actionCells.forEach(cell => cell.remove());
+    
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.width = '0';
@@ -391,7 +396,7 @@ const Tekshiruv = () => {
         <body>
           <h1>Tekshiruvlar ro'yxati</h1>
           <p class="print-date">Sana: ${formatDisplayDate(formatUzbekistanDate())}</p>
-          ${printContent.outerHTML}
+          ${clonedTable.outerHTML}
         </body>
       </html>
     `);
