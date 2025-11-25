@@ -47,7 +47,7 @@ const AdminUsers = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Tizimga kirish talab qilinadi");
+        toast.error(t("toast.loginRequired"));
         return;
       }
 
@@ -62,7 +62,7 @@ const AdminUsers = () => {
 
       setUsers(data.users);
     } catch (error: any) {
-      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
+      toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,7 @@ const AdminUsers = () => {
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Tizimga kirish talab qilinadi");
+        toast.error(t("toast.loginRequired"));
         return;
       }
 
@@ -92,7 +92,7 @@ const AdminUsers = () => {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      toast.success("Foydalanuvchi muvaffaqiyatli qo'shildi");
+      toast.success(t("toast.userAdded"));
       setFormData({ email: "", password: "", fullName: "", role: "user" });
       setShowAddUser(false);
       loadUsers();
@@ -101,7 +101,7 @@ const AdminUsers = () => {
         // Zod validation errors
         toast.error(error.errors[0].message);
       } else {
-        toast.error("Foydalanuvchi qo'shishda xatolik yuz berdi");
+        toast.error(t("toast.userAddError"));
       }
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ const AdminUsers = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast.error("Tizimga kirish talab qilinadi");
+        toast.error(t("toast.loginRequired"));
         return;
       }
 
@@ -128,11 +128,11 @@ const AdminUsers = () => {
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      toast.success("Foydalanuvchi o'chirildi");
+      toast.success(t("toast.userDeleted"));
       setDeleteUserId(null);
       loadUsers();
     } catch (error: any) {
-      toast.error("Foydalanuvchini o'chirishda xatolik yuz berdi");
+      toast.error(t("toast.userDeleteError"));
     }
   };
 
@@ -145,15 +145,15 @@ const AdminUsers = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            Foydalanuvchilar boshqaruvi
+            {t("admin.title")}
           </h2>
           <p className="text-muted-foreground">
-            Tizimga yangi foydalanuvchilar qo'shing
+            {t("admin.subtitle")}
           </p>
         </div>
         <Button onClick={() => setShowAddUser(!showAddUser)}>
           <UserPlus className="w-4 h-4 mr-2" />
-          Foydalanuvchi qo'shish
+          {t("admin.addUser")}
         </Button>
       </div>
 
@@ -162,7 +162,7 @@ const AdminUsers = () => {
           <form onSubmit={handleAddUser} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("admin.email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -175,7 +175,7 @@ const AdminUsers = () => {
               </div>
 
               <div>
-                <Label htmlFor="fullName">To'liq ism</Label>
+                <Label htmlFor="fullName">{t("admin.fullName")}</Label>
                 <Input
                   id="fullName"
                   value={formData.fullName}
@@ -187,7 +187,7 @@ const AdminUsers = () => {
               </div>
 
               <div>
-                <Label htmlFor="password">Parol (kamida 8 ta belgi)</Label>
+                <Label htmlFor="password">{t("auth.password")} {t("auth.passwordHint")}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -201,7 +201,7 @@ const AdminUsers = () => {
               </div>
 
               <div>
-                <Label htmlFor="role">Rol</Label>
+                <Label htmlFor="role">{t("admin.role")}</Label>
                 <select
                   id="role"
                   value={formData.role}
@@ -210,8 +210,8 @@ const AdminUsers = () => {
                   }
                   className="w-full px-3 py-2 border border-border rounded-md bg-background"
                 >
-                  <option value="user">Foydalanuvchi</option>
-                  <option value="admin">Admin</option>
+                  <option value="user">{t("admin.roleUser")}</option>
+                  <option value="admin">{t("admin.roleAdmin")}</option>
                 </select>
               </div>
             </div>
@@ -222,10 +222,10 @@ const AdminUsers = () => {
                 variant="outline"
                 onClick={() => setShowAddUser(false)}
               >
-                Bekor qilish
+                {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={loading}>
-                Qo'shish
+                {t("common.add")}
               </Button>
             </div>
           </form>
@@ -237,10 +237,10 @@ const AdminUsers = () => {
           <table className="w-full">
             <thead className="bg-secondary text-secondary-foreground">
               <tr>
-                <th className="px-4 py-2 text-left">Email</th>
-                <th className="px-4 py-2 text-left">To'liq ism</th>
-                <th className="px-4 py-2 text-left">Rol</th>
-                <th className="px-4 py-2 text-left">Qo'shilgan sana</th>
+                <th className="px-4 py-2 text-left">{t("admin.email")}</th>
+                <th className="px-4 py-2 text-left">{t("admin.fullName")}</th>
+                <th className="px-4 py-2 text-left">{t("admin.role")}</th>
+                <th className="px-4 py-2 text-left">{t("admin.addedDate")}</th>
                 <th className="px-4 py-2"></th>
               </tr>
             </thead>
@@ -257,7 +257,7 @@ const AdminUsers = () => {
                           : "bg-secondary text-secondary-foreground"
                       }`}
                     >
-                      {usr.role === "admin" ? "Admin" : "Foydalanuvchi"}
+                      {usr.role === "admin" ? t("admin.roleAdmin") : t("admin.roleUser")}
                     </span>
                   </td>
                   <td className="px-4 py-2">
@@ -286,10 +286,10 @@ const AdminUsers = () => {
         open={!!deleteUserId}
         onOpenChange={(open) => !open && setDeleteUserId(null)}
         onConfirm={handleDeleteUser}
-        title="Foydalanuvchini o'chirish"
-        description="Bu foydalanuvchi va uning barcha ma'lumotlari o'chiriladi. Davom etasizmi?"
-        confirmText="O'chirish"
-        cancelText="Bekor qilish"
+        title={t("admin.deleteTitle")}
+        description={t("admin.deleteDesc")}
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
       />
     </div>
   );

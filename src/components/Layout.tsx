@@ -22,7 +22,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   if (isAdmin) {
-    navItems.push({ to: "/admin/users", label: "Foydalanuvchilar", icon: Users });
+    navItems.push({ to: "/admin/users", label: t("nav.users"), icon: Users });
   }
 
   return (
@@ -38,7 +38,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={signOut}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Chiqish
+                {t("auth.logout")}
               </Button>
             </div>
           </div>

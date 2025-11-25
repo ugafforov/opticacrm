@@ -314,7 +314,7 @@ const Hisobotlar = () => {
 
       setReportData(groupedData);
     } catch (error: any) {
-      toast.error("Ma'lumotlarni yuklashda xatolik yuz berdi");
+      toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
     }
@@ -427,8 +427,8 @@ const Hisobotlar = () => {
 
       // Metadata
       const metadata = [
-        { "Ma'lumot": "Eksport qilgan", "Qiymat": user?.email || "Noma'lum" },
-        { "Ma'lumot": "Sana va vaqt", "Qiymat": dateTime },
+        { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
+        { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
       ];
 
       let data: any[] = [];
@@ -499,15 +499,15 @@ const Hisobotlar = () => {
       XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
       
       XLSX.writeFile(wb, `${sheetName}.xlsx`);
-      toast.success(t("reports.exportExcel"));
+      toast.success(t("toast.excelSuccess"));
     } catch (error: any) {
-      toast.error("Eksport qilishda xatolik yuz berdi");
+      toast.error(t("toast.exportError"));
     }
   };
 
   const exportToPDF = async (type: "period" | "section" | "detailed") => {
     if (!user) {
-      toast.error("Foydalanuvchi autentifikatsiya qilinmagan");
+      toast.error(t("toast.loginRequired"));
       return;
     }
 
@@ -647,17 +647,17 @@ const Hisobotlar = () => {
 
       const currentDate = new Date().toLocaleDateString("uz-UZ", { timeZone: "Asia/Tashkent" });
       doc.save(`Hisobotlar_${currentDate}.pdf`);
-      toast.success("PDF fayl yuklab olindi");
+      toast.success(t("toast.pdfSuccess"));
     } catch (error: any) {
       console.error("PDF eksport xatosi:", error);
-      toast.error("Eksport qilishda xatolik yuz berdi");
+      toast.error(t("toast.exportError"));
     }
   };
 
   const handlePrint = () => {
     const printContent = document.getElementById('printable-report');
     if (!printContent) {
-      toast.error("Chop etish uchun hisobot topilmadi");
+      toast.error(t("toast.printTableNotFound"));
       return;
     }
     
@@ -671,7 +671,7 @@ const Hisobotlar = () => {
     
     const doc = iframe.contentWindow?.document;
     if (!doc) {
-      toast.error("Chop etishda xatolik yuz berdi");
+      toast.error(t("toast.printError"));
       document.body.removeChild(iframe);
       return;
     }

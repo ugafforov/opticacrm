@@ -40,7 +40,7 @@ const Auth = () => {
         // Zod validation errors
         toast.error(error.errors[0].message);
       } else {
-        toast.error("Tizimga kirishda xatolik yuz berdi");
+        toast.error(t("toast.authError"));
       }
     } finally {
       setLoading(false);
@@ -69,7 +69,7 @@ const Auth = () => {
           </div>
 
           <div>
-            <Label htmlFor="password">{t("auth.password")} (kamida 8 ta belgi)</Label>
+            <Label htmlFor="password">{t("auth.password")} {t("auth.passwordHint")}</Label>
             <Input
               id="password"
               type="password"
