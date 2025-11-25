@@ -12,7 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Edit, Download, CalendarIcon, Printer } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -609,7 +609,7 @@ const LinzaRoyxati = () => {
                         onClick={() => handleEdit(r)}
                         className="text-primary hover:text-primary/90"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
                         variant="ghost"
