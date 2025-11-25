@@ -459,7 +459,7 @@ const Tekshiruv = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="space-y-2 border border-border rounded-lg p-4 flex flex-col justify-center">
               <Label htmlFor="mijoz">{t("exam.patient")}</Label>
               <Input
                 id="mijoz"
@@ -482,7 +482,7 @@ const Tekshiruv = () => {
                   htmlFor="refraksiyametriya"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  {t("exam.refractometry")} — 50,000 {t("common.sum")}
+                  {t("exam.refractometry")} — 50,000 сўм
                 </label>
               </div>
 
@@ -498,7 +498,7 @@ const Tekshiruv = () => {
                   htmlFor="tanometriya"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  {t("exam.tonometry")} — 15,000 {t("common.sum")}
+                  {t("exam.tonometry")} — 15,000 сўм
                 </label>
               </div>
             </div>
