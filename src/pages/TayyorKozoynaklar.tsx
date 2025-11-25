@@ -118,12 +118,25 @@ const TayyorKozoynaklar = () => {
     }
 
     try {
+      // Get the maximum tartib_raqam for this user
+      const { data: maxData, error: maxError } = await supabase
+        .from("tayyor_kozoynaklar")
+        .select("tartib_raqam")
+        .eq("user_id", user.id)
+        .order("tartib_raqam", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (maxError) throw maxError;
+
+      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
       const { error } = await supabase
         .from("tayyor_kozoynaklar")
         .insert({
           user_id: user.id,
           sana: formatUzbekistanDate(selectedDate),
-          tartib_raqam: kozoynaklar.length + 1,
+          tartib_raqam: nextTartibRaqam,
           kliyent: form.kliyent,
           kozoynak_turi: form.kozoynakTuri,
           summa: parseFloat(form.summa),

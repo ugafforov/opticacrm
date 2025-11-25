@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface LinzaRoyxat {
   id: string;
   sana: string;
+  tartibRaqam: number;
   mijoz: string;
   od: string;
   os: string;
@@ -97,6 +98,7 @@ const LinzaRoyxati = () => {
       const mapped = data?.map((item) => ({
         id: item.id,
         sana: item.sana,
+        tartibRaqam: item.tartib_raqam,
         mijoz: item.mijoz,
         od: item.od,
         os: item.os,
@@ -122,11 +124,25 @@ const LinzaRoyxati = () => {
     }
 
     try {
+      // Get the maximum tartib_raqam for this user
+      const { data: maxData, error: maxError } = await supabase
+        .from("linza_royxatlari")
+        .select("tartib_raqam")
+        .eq("user_id", user.id)
+        .order("tartib_raqam", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (maxError) throw maxError;
+
+      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
       const { error } = await supabase
         .from("linza_royxatlari")
         .insert({
           user_id: user.id,
           sana: formatUzbekistanDate(selectedDate),
+          tartib_raqam: nextTartibRaqam,
           mijoz: form.mijoz,
           od: form.od,
           os: form.os,
