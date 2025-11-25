@@ -49,7 +49,7 @@ interface LinzaRoyxat {
 }
 
 const LinzaRoyxati = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [royxatlar, setRoyxatlar] = useState<LinzaRoyxat[]>([]);
@@ -330,7 +330,7 @@ const LinzaRoyxati = () => {
   };
 
   const exportToPDF = () => {
-    const doc = setupPdfDoc();
+    const doc = setupPdfDoc('portrait', script);
     
     const startY = addPdfHeader(
       doc,
@@ -352,7 +352,7 @@ const LinzaRoyxati = () => {
       head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD/OS', t("lens.phone"), t("lens.lensType")]],
       body: tableData,
       styles: { 
-        font: 'helvetica', 
+        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },

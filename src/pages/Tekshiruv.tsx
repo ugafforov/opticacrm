@@ -49,7 +49,7 @@ interface Tekshiruv {
 }
 
 const Tekshiruv = () => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
@@ -326,7 +326,7 @@ const Tekshiruv = () => {
   };
 
   const exportToPDF = () => {
-    const doc = setupPdfDoc();
+    const doc = setupPdfDoc('portrait', script);
     
     const startY = addPdfHeader(
       doc,
@@ -348,7 +348,7 @@ const Tekshiruv = () => {
       head: [[t("exam.number"), t("common.date"), t("exam.patient"), t("exam.examinations"), t("exam.amount")]],
       body: tableData,
       styles: { 
-        font: 'helvetica', 
+        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
