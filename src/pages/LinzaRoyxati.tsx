@@ -809,16 +809,16 @@ const LinzaRoyxati = () => {
         onOpenChange={(open) => !open && setEditingItem(null)}
         title={t("edit.title")}
       >
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-3">
           <div>
-            <Label>{t("common.date")}</Label>
+            <Label className="text-xs">{t("common.date")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                  className="w-full justify-start text-left font-normal h-9 text-sm"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
                 </Button>
               </PopoverTrigger>
@@ -841,21 +841,39 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="edit-mijoz">{t("form.clientName")}</Label>
-            <Input
-              id="edit-mijoz"
-              value={editingItem?.mijoz || ""}
-              onChange={(e) =>
-                setEditingItem(editingItem ? { ...editingItem, mijoz: e.target.value } : null)
-              }
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-mijoz" className="text-xs">{t("form.clientName")}</Label>
+              <Input
+                id="edit-mijoz"
+                value={editingItem?.mijoz || ""}
+                onChange={(e) =>
+                  setEditingItem(editingItem ? { ...editingItem, mijoz: e.target.value } : null)
+                }
+                required
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-telefon" className="text-xs">{t("form.phone")}</Label>
+              <Input
+                id="edit-telefon"
+                type="tel"
+                value={editingItem?.telefon || "+998 "}
+                onChange={(e) => {
+                  setEditingItem(editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null);
+                }}
+                placeholder="+998 90 123 45 67"
+                required
+                className="h-9"
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="edit-od">{t("form.rightEye")}</Label>
+              <Label htmlFor="edit-od" className="text-xs">{t("form.rightEye")}</Label>
               <Input
                 id="edit-od"
                 value={editingItem?.od || ""}
@@ -863,10 +881,11 @@ const LinzaRoyxati = () => {
                   setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
                 }
                 required
+                className="h-9"
               />
             </div>
             <div>
-              <Label htmlFor="edit-os">{t("form.leftEye")}</Label>
+              <Label htmlFor="edit-os" className="text-xs">{t("form.leftEye")}</Label>
               <Input
                 id="edit-os"
                 value={editingItem?.os || ""}
@@ -874,26 +893,13 @@ const LinzaRoyxati = () => {
                   setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
                 }
                 required
+                className="h-9"
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
-            <Input
-              id="edit-telefon"
-              type="tel"
-              value={editingItem?.telefon || "+998 "}
-              onChange={(e) => {
-                setEditingItem(editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null);
-              }}
-              placeholder="+998 90 123 45 67"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="edit-linzaTuri">{t("form.lensTypeRegistry")}</Label>
+            <Label htmlFor="edit-linzaTuri" className="text-xs">{t("form.lensTypeRegistry")}</Label>
             <Input
               id="edit-linzaTuri"
               value={editingItem?.linzaTuri || ""}
@@ -901,14 +907,15 @@ const LinzaRoyxati = () => {
                 setEditingItem(editingItem ? { ...editingItem, linzaTuri: e.target.value } : null)
               }
               required
+              className="h-9"
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-4 border-t border-border">
-            <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="outline" onClick={() => setEditingItem(null)} size="sm">
               {t("common.cancel")}
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
+            <Button type="submit" className="bg-primary hover:bg-primary/90" size="sm">
               {t("common.save")}
             </Button>
           </div>

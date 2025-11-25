@@ -789,16 +789,16 @@ const TayyorKozoynaklar = () => {
         onOpenChange={(open) => !open && setEditingItem(null)}
         title={t("common.edit")}
       >
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-3">
           <div>
-            <Label>{t("common.date")}</Label>
+            <Label className="text-xs">{t("common.date")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                  className="w-full justify-start text-left font-normal h-9 text-sm"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
                 </Button>
               </PopoverTrigger>
@@ -821,22 +821,43 @@ const TayyorKozoynaklar = () => {
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="edit-kliyent">{t("ready.client")}</Label>
-            <Input
-              id="edit-kliyent"
-              value={editingItem?.kliyent || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem ? { ...editingItem, kliyent: e.target.value } : null
-                )
-              }
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-kliyent" className="text-xs">{t("ready.client")}</Label>
+              <Input
+                id="edit-kliyent"
+                value={editingItem?.kliyent || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, kliyent: e.target.value } : null
+                  )
+                }
+                required
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-summa" className="text-xs">{t("ready.amount")}</Label>
+              <Input
+                id="edit-summa"
+                type="number"
+                value={editingItem?.summa || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, summa: parseFloat(e.target.value) }
+                      : null
+                  )
+                }
+                required
+                className="h-9"
+              />
+            </div>
           </div>
 
           <div>
-            <Label htmlFor="edit-kozoynakTuri">{t("ready.type")}</Label>
+            <Label htmlFor="edit-kozoynakTuri" className="text-xs">{t("ready.type")}</Label>
             <Select
               value={editingItem?.kozoynakTuri || ""}
               onValueChange={(value) =>
@@ -845,7 +866,7 @@ const TayyorKozoynaklar = () => {
                 )
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -857,32 +878,16 @@ const TayyorKozoynaklar = () => {
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="edit-summa">{t("ready.amount")} ({t("common.sum")})</Label>
-            <Input
-              id="edit-summa"
-              type="number"
-              value={editingItem?.summa || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem
-                    ? { ...editingItem, summa: parseFloat(e.target.value) }
-                    : null
-                )
-              }
-              required
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setEditingItem(null)}
+              size="sm"
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit">{t("common.save")}</Button>
+            <Button type="submit" size="sm">{t("common.save")}</Button>
           </div>
         </form>
       </EditDialog>

@@ -928,16 +928,16 @@ const Buyurtmalar = () => {
         onOpenChange={(open) => !open && setEditingItem(null)}
         title={t("common.edit")}
       >
-        <form onSubmit={handleUpdate} className="space-y-4">
+        <form onSubmit={handleUpdate} className="space-y-3">
           <div>
-            <Label>{t("common.date")}</Label>
+            <Label className="text-xs">{t("common.date")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!editingItem?.sana ? "text-muted-foreground" : ""}`}
+                  className="w-full justify-start text-left font-normal h-9 text-sm"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
                 </Button>
               </PopoverTrigger>
@@ -960,38 +960,42 @@ const Buyurtmalar = () => {
             </Popover>
           </div>
 
-          <div>
-            <Label htmlFor="edit-mijoz">{t("orders.client")}</Label>
-            <Input
-              id="edit-mijoz"
-              value={editingItem?.mijoz || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem ? { ...editingItem, mijoz: e.target.value } : null
-                )
-              }
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
-            <Input
-              id="edit-telefon"
-              type="tel"
-              value={editingItem?.telefon || "+998 "}
-              onChange={(e) => {
-                setEditingItem(
-                  editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null
-                );
-              }}
-              placeholder="+998 90 123 45 67"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="edit-od">{t("form.rightEye")}</Label>
+              <Label htmlFor="edit-mijoz" className="text-xs">{t("orders.client")}</Label>
+              <Input
+                id="edit-mijoz"
+                value={editingItem?.mijoz || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, mijoz: e.target.value } : null
+                  )
+                }
+                required
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-telefon" className="text-xs">{t("form.phone")}</Label>
+              <Input
+                id="edit-telefon"
+                type="tel"
+                value={editingItem?.telefon || "+998 "}
+                onChange={(e) => {
+                  setEditingItem(
+                    editingItem ? { ...editingItem, telefon: formatPhoneNumber(e.target.value) } : null
+                  );
+                }}
+                placeholder="+998 90 123 45 67"
+                className="h-9"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-od" className="text-xs">{t("form.rightEye")}</Label>
               <Input
                 id="edit-od"
                 value={editingItem?.od || ""}
@@ -1000,10 +1004,11 @@ const Buyurtmalar = () => {
                     editingItem ? { ...editingItem, od: e.target.value } : null
                   )
                 }
+                className="h-9"
               />
             </div>
             <div>
-              <Label htmlFor="edit-os">{t("form.leftEye")}</Label>
+              <Label htmlFor="edit-os" className="text-xs">{t("form.leftEye")}</Label>
               <Input
                 id="edit-os"
                 value={editingItem?.os || ""}
@@ -1012,98 +1017,106 @@ const Buyurtmalar = () => {
                     editingItem ? { ...editingItem, os: e.target.value } : null
                   )
                 }
+                className="h-9"
               />
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="edit-oynaTuri">{t("form.lensType")}</Label>
-            <Select
-              value={editingItem?.oynaTuri || ""}
-              onValueChange={(value) =>
-                setEditingItem(
-                  editingItem ? { ...editingItem, oynaTuri: value } : null
-                )
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
-                <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
-                <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
-                <SelectItem value="420">{t("lens.420")}</SelectItem>
-                <SelectItem value="SR">{t("lens.sr")}</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-oynaTuri" className="text-xs">{t("form.lensType")}</Label>
+              <Select
+                value={editingItem?.oynaTuri || ""}
+                onValueChange={(value) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, oynaTuri: value } : null
+                  )
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
+                  <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
+                  <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
+                  <SelectItem value="420">{t("lens.420")}</SelectItem>
+                  <SelectItem value="SR">{t("lens.sr")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-oynaNarxi" className="text-xs">{t("orders.lensPrice")}</Label>
+              <Input
+                id="edit-oynaNarxi"
+                type="number"
+                value={editingItem?.oynaNarxi || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, oynaNarxi: parseFloat(e.target.value), jamiSumma: parseFloat(e.target.value) + (editingItem.opravaNarxi || 0) }
+                      : null
+                  )
+                }
+                required
+                className="h-9"
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="edit-oynaNarxi">{t("orders.lensPrice")} ({t("common.sum")})</Label>
-            <Input
-              id="edit-oynaNarxi"
-              type="number"
-              value={editingItem?.oynaNarxi || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem
-                    ? { ...editingItem, oynaNarxi: parseFloat(e.target.value), jamiSumma: parseFloat(e.target.value) + (editingItem.opravaNarxi || 0) }
-                    : null
-                )
-              }
-              required
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-opravaTuri" className="text-xs">{t("form.frameType")}</Label>
+              <Select
+                value={editingItem?.opravaTuri || ""}
+                onValueChange={(value) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, opravaTuri: value } : null
+                  )
+                }
+              >
+                <SelectTrigger className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
+                  <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
+                  <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
+                  <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-opravaNarxi" className="text-xs">{t("orders.framePrice")}</Label>
+              <Input
+                id="edit-opravaNarxi"
+                type="number"
+                value={editingItem?.opravaNarxi || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, opravaNarxi: parseFloat(e.target.value), jamiSumma: (editingItem.oynaNarxi || 0) + parseFloat(e.target.value) }
+                      : null
+                  )
+                }
+                required
+                className="h-9"
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="edit-opravaTuri">{t("form.frameType")}</Label>
-            <Select
-              value={editingItem?.opravaTuri || ""}
-              onValueChange={(value) =>
-                setEditingItem(
-                  editingItem ? { ...editingItem, opravaTuri: value } : null
-                )
-              }
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
-                <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
-                <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
-                <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="edit-opravaNarxi">{t("orders.framePrice")} ({t("common.sum")})</Label>
-            <Input
-              id="edit-opravaNarxi"
-              type="number"
-              value={editingItem?.opravaNarxi || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem
-                    ? { ...editingItem, opravaNarxi: parseFloat(e.target.value), jamiSumma: (editingItem.oynaNarxi || 0) + parseFloat(e.target.value) }
-                    : null
-                )
-              }
-              required
-            />
-          </div>
-
-          <div className="flex gap-2 justify-end">
+          <div className="flex gap-2 justify-end pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => setEditingItem(null)}
+              size="sm"
             >
               {t("common.cancel")}
             </Button>
-            <Button type="submit">{t("common.save")}</Button>
+            <Button type="submit" size="sm">{t("common.save")}</Button>
           </div>
         </form>
       </EditDialog>
