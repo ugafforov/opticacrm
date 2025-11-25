@@ -382,7 +382,7 @@ const Buyurtmalar = () => {
 
     autoTable(doc, {
       startY,
-      head: [['№', 'Sana', 'Mijoz', 'Telefon', 'OD/OS', 'Oyna', 'Oprava', 'Summa']],
+      head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD/OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
       body: tableData,
       styles: { 
         font: 'helvetica', 
@@ -509,7 +509,7 @@ const Buyurtmalar = () => {
             </div>
 
             <div>
-              <Label htmlFor="telefon">Telefon raqami</Label>
+              <Label htmlFor="telefon">{t("form.phone")}</Label>
               <Input
                 id="telefon"
                 type="tel"
@@ -747,7 +747,7 @@ const Buyurtmalar = () => {
                   </div>
                   {b.telefon && (
                     <div>
-                      <span className="text-muted-foreground">Telefon:</span>
+                      <span className="text-muted-foreground">{t("orders.phone")}:</span>
                       <span className="ml-2">{b.telefon}</span>
                     </div>
                   )}
@@ -786,7 +786,7 @@ const Buyurtmalar = () => {
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
-                  <th className="px-2 sm:px-4 py-2 text-left text-sm">Telefon</th>
+                  <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.phone")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
@@ -922,7 +922,7 @@ const Buyurtmalar = () => {
           </div>
 
           <div>
-            <Label htmlFor="edit-telefon">Telefon raqami</Label>
+            <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
             <Input
               id="edit-telefon"
               type="tel"
