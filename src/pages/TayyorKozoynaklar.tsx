@@ -563,7 +563,7 @@ const TayyorKozoynaklar = () => {
                 <th className="px-4 py-2 text-left">{t("ready.client")}</th>
                 <th className="px-4 py-2 text-left">{t("ready.type")}</th>
                 <th className="px-4 py-2 text-right">Summa</th>
-                <th className="px-4 py-2"></th>
+                <th className="px-4 py-2 text-right"></th>
               </tr>
             </thead>
             <tbody>
@@ -576,9 +576,9 @@ const TayyorKozoynaklar = () => {
                   <td className="px-4 py-2 text-right font-semibold">
                     {k.summa.toLocaleString()}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 text-right">
                     <TooltipProvider>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-end">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button

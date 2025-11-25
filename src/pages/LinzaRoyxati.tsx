@@ -590,7 +590,7 @@ const LinzaRoyxati = () => {
                 <th className="px-4 py-2 text-left">OD/OS</th>
                 <th className="px-4 py-2 text-left">Telefon</th>
                 <th className="px-4 py-2 text-left">Linza turi</th>
-                <th className="px-4 py-2"></th>
+                <th className="px-4 py-2 text-right"></th>
               </tr>
             </thead>
             <tbody>
@@ -602,9 +602,9 @@ const LinzaRoyxati = () => {
                   <td className="px-4 py-2">{r.od} / {r.os}</td>
                   <td className="px-4 py-2">{r.telefon}</td>
                   <td className="px-4 py-2">{r.linzaTuri}</td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 text-right">
                     <TooltipProvider>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-end">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button

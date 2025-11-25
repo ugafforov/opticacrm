@@ -587,7 +587,7 @@ const Tekshiruv = () => {
                 <th className="px-4 py-2 text-left">Mijoz</th>
                 <th className="px-4 py-2 text-left">Tekshiruvlar</th>
                 <th className="px-4 py-2 text-right">Summa</th>
-                <th className="px-4 py-2"></th>
+                <th className="px-4 py-2 text-right"></th>
               </tr>
             </thead>
             <tbody>
@@ -604,9 +604,9 @@ const Tekshiruv = () => {
                   <td className="px-4 py-2 text-right font-semibold">
                     {t.jamiSumma.toLocaleString()}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-4 py-2 text-right">
                     <TooltipProvider>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-end">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
