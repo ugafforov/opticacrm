@@ -47,7 +47,7 @@ interface TayyorKozoynak {
 }
 
 const TayyorKozoynaklar = () => {
-  const { t, script } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -326,7 +326,7 @@ const TayyorKozoynaklar = () => {
   };
 
   const exportToPDF = () => {
-    const doc = setupPdfDoc('portrait', script);
+    const doc = setupPdfDoc();
     
     const startY = addPdfHeader(
       doc,
@@ -348,7 +348,7 @@ const TayyorKozoynaklar = () => {
       head: [[t("orders.number"), t("common.date"), t("ready.client"), t("ready.type"), t("ready.amount")]],
       body: tableData,
       styles: { 
-        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+        font: 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },

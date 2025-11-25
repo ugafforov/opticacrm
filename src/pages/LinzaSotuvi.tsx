@@ -47,7 +47,7 @@ interface LinzaSotish {
 }
 
 const LinzaSotuvi = () => {
-  const { t, script } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
 
@@ -329,7 +329,7 @@ const LinzaSotuvi = () => {
   };
 
   const exportToPDF = () => {
-    const doc = setupPdfDoc('portrait', script);
+    const doc = setupPdfDoc();
     
     const startY = addPdfHeader(
       doc,
@@ -351,7 +351,7 @@ const LinzaSotuvi = () => {
       head: [[t("orders.number"), t("common.date"), t("lensSale.client"), t("lensSale.type"), t("lensSale.amount")]],
       body: tableData,
       styles: { 
-        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+        font: 'helvetica',
         fontSize: 9,
         cellPadding: 2,
       },
