@@ -545,27 +545,28 @@ const Hisobotlar = () => {
           foot: [[' Jami', `${totalTushum.toLocaleString()} ${t("common.currency")}`]],
           styles: { 
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-            fontSize: 9,
-            cellPadding: 3,
+            fontSize: 10,
+            cellPadding: 1.5,
+            lineWidth: 0.5,
+            lineColor: [200, 200, 200],
           },
           headStyles: { 
-            fillColor: [66, 66, 66],
+            fillColor: [231, 76, 60],
             textColor: 255,
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontStyle: 'normal',
+            lineWidth: 0.5,
           },
           footStyles: {
-            fillColor: [66, 66, 66],
+            fillColor: [192, 57, 43],
             textColor: 255,
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontStyle: 'normal',
-            fontSize: 10,
+            fontSize: 11,
+            lineWidth: 0.5,
           },
           alternateRowStyles: { 
             fillColor: [245, 245, 245] 
-          },
-          columnStyles: {
-            1: { halign: 'right' },
           },
         });
       } else if (type === "section") {
@@ -594,26 +595,27 @@ const Hisobotlar = () => {
           styles: { 
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontSize: 10,
-            cellPadding: 3,
+            cellPadding: 1.5,
+            lineWidth: 0.5,
+            lineColor: [200, 200, 200],
           },
           headStyles: { 
-            fillColor: [66, 66, 66],
+            fillColor: [142, 68, 173],
             textColor: 255,
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontStyle: 'normal',
+            lineWidth: 0.5,
           },
           footStyles: {
-            fillColor: [66, 66, 66],
+            fillColor: [123, 36, 163],
             textColor: 255,
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontStyle: 'normal',
             fontSize: 11,
+            lineWidth: 0.5,
           },
           alternateRowStyles: { 
             fillColor: [245, 245, 245] 
-          },
-          columnStyles: {
-            1: { halign: 'right' },
           },
         });
       } else {
@@ -638,14 +640,17 @@ const Hisobotlar = () => {
           body: allData,
           styles: { 
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-            fontSize: 8,
-            cellPadding: 2,
+            fontSize: 10,
+            cellPadding: 1.5,
+            lineWidth: 0.5,
+            lineColor: [200, 200, 200],
           },
           headStyles: { 
-            fillColor: [66, 66, 66],
+            fillColor: [39, 174, 96],
             textColor: 255,
             font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
             fontStyle: 'normal',
+            lineWidth: 0.5,
           },
           alternateRowStyles: { 
             fillColor: [245, 245, 245] 

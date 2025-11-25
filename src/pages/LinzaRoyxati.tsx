@@ -357,19 +357,22 @@ const LinzaRoyxati = () => {
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-        fontSize: 9,
-        cellPadding: 2,
-      },
-      headStyles: { 
-        fillColor: [66, 66, 66],
-        textColor: 255,
-        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-        fontStyle: 'normal',
-      },
-      alternateRowStyles: { 
-        fillColor: [245, 245, 245] 
-      },
-    });
+          fontSize: 10,
+          cellPadding: 1.5,
+          lineWidth: 0.5,
+          lineColor: [200, 200, 200],
+        },
+        headStyles: { 
+          fillColor: [52, 152, 219],
+          textColor: 255,
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+          fontStyle: 'normal',
+          lineWidth: 0.5,
+        },
+        alternateRowStyles: { 
+          fillColor: [245, 245, 245] 
+        },
+      });
 
     doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));

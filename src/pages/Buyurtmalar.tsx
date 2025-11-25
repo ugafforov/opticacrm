@@ -411,22 +411,25 @@ const Buyurtmalar = () => {
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-        fontSize: 8,
-        cellPadding: 2,
-      },
-      headStyles: { 
-        fillColor: [66, 66, 66],
-        textColor: 255,
-        font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-        fontStyle: 'normal',
-      },
-      alternateRowStyles: { 
-        fillColor: [245, 245, 245] 
-      },
-      columnStyles: {
-        7: { halign: 'center' },
-      },
-    });
+          fontSize: 10,
+          cellPadding: 1.5,
+          lineWidth: 0.5,
+          lineColor: [200, 200, 200],
+        },
+        headStyles: { 
+          fillColor: [41, 128, 185],
+          textColor: 255,
+          font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+          fontStyle: 'normal',
+          lineWidth: 0.5,
+        },
+        alternateRowStyles: { 
+          fillColor: [245, 245, 245] 
+        },
+        columnStyles: {
+          7: { halign: 'center' },
+        },
+      });
 
     doc.save(`Buyurtmalar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
