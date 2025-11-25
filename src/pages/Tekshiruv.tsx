@@ -484,7 +484,7 @@ const Tekshiruv = () => {
                     htmlFor="refraksiyametriya"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {t("exam.refractometry")} — 50,000 сўм
+                    {t("exam.refractometry")}
                   </label>
                 </div>
 
@@ -500,7 +500,7 @@ const Tekshiruv = () => {
                     htmlFor="tanometriya"
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {t("exam.tonometry")} — 15,000 сўм
+                    {t("exam.tonometry")}
                   </label>
                 </div>
               </div>
