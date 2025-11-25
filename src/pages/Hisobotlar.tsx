@@ -68,7 +68,7 @@ const Hisobotlar = () => {
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[0].color }} />
               <p className="text-sm text-foreground">
-                <span className="font-medium">{currentIncome.toLocaleString()}</span> so'm
+                <span className="font-medium">{currentIncome.toLocaleString()}</span> {t("common.sum")}
                 <span className="text-muted-foreground ml-1">({percentage}%)</span>
               </p>
             </div>
@@ -76,7 +76,7 @@ const Hisobotlar = () => {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[1].color }} />
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">{previousIncome.toLocaleString()}</span> so'm
+                  <span className="font-medium">{previousIncome.toLocaleString()}</span> {t("common.sum")}
                 </p>
               </div>
             )}
