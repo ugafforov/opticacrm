@@ -391,7 +391,6 @@ const TayyorKozoynaklar = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="sana">Sana</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
