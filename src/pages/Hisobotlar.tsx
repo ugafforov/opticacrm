@@ -549,12 +549,14 @@ const Hisobotlar = () => {
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'bold',
+            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            fontStyle: 'normal',
           },
           footStyles: {
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'bold',
+            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            fontStyle: 'normal',
             fontSize: 10,
           },
           alternateRowStyles: { 
@@ -593,12 +595,14 @@ const Hisobotlar = () => {
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'bold',
+            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            fontStyle: 'normal',
           },
           footStyles: {
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'bold',
+            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            fontStyle: 'normal',
             fontSize: 11,
           },
           alternateRowStyles: { 
@@ -634,7 +638,8 @@ const Hisobotlar = () => {
           headStyles: { 
             fillColor: [66, 66, 66],
             textColor: 255,
-            fontStyle: 'bold',
+            font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
+            fontStyle: 'normal',
           },
           alternateRowStyles: { 
             fillColor: [245, 245, 245] 
