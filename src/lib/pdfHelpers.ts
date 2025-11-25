@@ -1,21 +1,32 @@
 import jsPDF from "jspdf";
 import { formatUzbekistanDateTime } from "./utils";
+import robotoBase64 from "./fonts/roboto-regular";
 
 /**
- * Creates a new jsPDF document configured for Cyrillic text
- * Uses default fonts with Unicode support
+ * Creates a new jsPDF document configured for Cyrillic or Latin text
  * @param orientation - 'portrait' or 'landscape' (default: 'portrait')
- * @returns Configured jsPDF instance
+ * @param script - 'cyrillic' or 'latin' (default: 'latin') - determines which font to use
+ * @returns Configured jsPDF instance with appropriate font
  */
-export const setupPdfDoc = (orientation: 'portrait' | 'landscape' = 'portrait') => {
+export const setupPdfDoc = (
+  orientation: 'portrait' | 'landscape' = 'portrait',
+  script: 'cyrillic' | 'latin' = 'latin'
+) => {
   const doc = new jsPDF({
     orientation,
     unit: "mm",
     format: "a4",
   });
 
-  // Use default helvetica font which has broader Unicode support
-  doc.setFont("helvetica", "normal");
+  if (script === 'cyrillic') {
+    // Add and use Roboto font for Cyrillic support
+    doc.addFileToVFS('Roboto-Regular.ttf', robotoBase64);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
+    doc.setFont('Roboto', 'normal');
+  } else {
+    // Use default helvetica font for Latin
+    doc.setFont("helvetica", "normal");
+  }
 
   return doc;
 };
