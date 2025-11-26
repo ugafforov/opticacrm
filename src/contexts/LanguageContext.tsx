@@ -277,6 +277,8 @@ const translations = {
     "auth.welcome": "Хуш келибсиз",
     "auth.welcomeDesc": "Тизимга кириш учун маълумотларингизни киритинг",
     "auth.user": "Фойдаланувчи",
+    "auth.contactForCRM": "CRM тизимини сотиб олиш учун боғланинг",
+    "auth.developer": "Дастурчи",
 
     // Profile
     "profile.title": "Профил",
@@ -350,6 +352,11 @@ const translations = {
     "dateFilter.lastWeek": "Ўтган ҳафта",
     "dateFilter.thisMonth": "Ҳозирги ой",
     "dateFilter.lastMonth": "Ўтган ой",
+
+    // Footer
+    "footer.developedBy": "Ишлаб чиқувчи:",
+    "footer.contactForPurchase": "CRM тизимини сотиб олиш учун боғланинг",
+    "footer.allRightsReserved": "Барча ҳуқуқлар ҳимояланган",
   },
   latin: {
     // Navigation
@@ -621,6 +628,8 @@ const translations = {
     "auth.welcome": "Xush kelibsiz",
     "auth.welcomeDesc": "Tizimga kirish uchun ma'lumotlaringizni kiriting",
     "auth.user": "Foydalanuvchi",
+    "auth.contactForCRM": "CRM tizimini sotib olish uchun bog'laning",
+    "auth.developer": "Dasturchi",
 
     // Profile
     "profile.title": "Profil",
@@ -694,6 +703,11 @@ const translations = {
     "dateFilter.lastWeek": "O'tgan hafta",
     "dateFilter.thisMonth": "Hozirgi oy",
     "dateFilter.lastMonth": "O'tgan oy",
+
+    // Footer
+    "footer.developedBy": "Ishlab chiquvchi:",
+    "footer.contactForPurchase": "CRM tizimini sotib olish uchun bog'laning",
+    "footer.allRightsReserved": "Barcha huquqlar himoyalangan",
   },
 };
 
