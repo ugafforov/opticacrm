@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { formatDisplayDate, formatUzbekistanDateTime, formatUzbekistanDate } from "@/lib/utils";
-import { Clock, Phone, User, Eye, Calendar, Activity, Plus, TrendingUp } from "lucide-react";
+import { formatDisplayDate, formatUzbekistanDate } from "@/lib/utils";
+import { Clock, Phone, User, Eye, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
@@ -97,7 +97,6 @@ export const PatientCard = ({
     try {
       setSubmitting(true);
 
-      // Eski ma'lumotni tarixga qo'shish
       const { error: historyError } = await supabase
         .from("bemor_tarixi")
         .insert({
@@ -113,7 +112,6 @@ export const PatientCard = ({
 
       if (historyError) throw historyError;
 
-      // Asosiy yozuvni yangilash
       const { error: updateError } = await supabase
         .from("linza_royxatlari")
         .update({
@@ -135,10 +133,7 @@ export const PatientCard = ({
         sana: formatUzbekistanDate(new Date()),
       });
       
-      // Tarixni qayta yuklash
       await loadHistory();
-      
-      // Parent komponentni yangilash
       if (onUpdate) onUpdate();
       
     } catch (error) {
@@ -151,58 +146,59 @@ export const PatientCard = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User className="w-6 h-6 text-primary" />
-              <span className="text-xl">{t("lens.patientCard")}</span>
+      <DialogContent className="max-w-2xl max-h-[85vh]">
+        <DialogHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">{patientName}</DialogTitle>
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+                  <Phone className="w-3 h-3" />
+                  {patientPhone}
+                </div>
+              </div>
             </div>
             <Button 
               onClick={() => setShowAddForm(!showAddForm)}
               size="sm"
               variant={showAddForm ? "outline" : "default"}
-              className="gap-2"
+              className="gap-1.5 h-8 text-xs"
             >
-              <Plus className="w-4 h-4" />
+              {showAddForm ? <ChevronUp className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
               {t("lens.addNewRecord")}
             </Button>
-          </DialogTitle>
+          </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-100px)] pr-4">
-          <div className="space-y-5">
-            {/* Add New Record Form */}
+        <ScrollArea className="max-h-[calc(85vh-120px)]">
+          <div className="space-y-4 pr-3">
+            {/* Add Form */}
             {showAddForm && (
-              <Card className="p-5 bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-                <form onSubmit={handleAddNewRecord} className="space-y-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-                    <h4 className="font-semibold text-green-700 dark:text-green-300">
-                      {t("lens.addNewRecord")}
-                    </h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+              <Card className="p-4 bg-primary/5 border-primary/20 animate-fade-in">
+                <form onSubmit={handleAddNewRecord} className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="new-od" className="text-xs">OD ({t("form.rightEye")})</Label>
+                      <Label htmlFor="new-od" className="text-xs">OD</Label>
                       <Input
                         id="new-od"
                         value={form.od}
                         onChange={(e) => setForm({ ...form, od: e.target.value })}
                         required
-                        className="h-9"
+                        className="h-8 text-sm"
                         placeholder={currentOd}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="new-os" className="text-xs">OS ({t("form.leftEye")})</Label>
+                      <Label htmlFor="new-os" className="text-xs">OS</Label>
                       <Input
                         id="new-os"
                         value={form.os}
                         onChange={(e) => setForm({ ...form, os: e.target.value })}
                         required
-                        className="h-9"
+                        className="h-8 text-sm"
                         placeholder={currentOs}
                       />
                     </div>
@@ -213,19 +209,19 @@ export const PatientCard = ({
                         value={form.linzaTuri}
                         onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
                         required
-                        className="h-9"
+                        className="h-8 text-sm"
                         placeholder={currentLensType}
                       />
                     </div>
                   </div>
-
-                  <div className="flex gap-2 justify-end pt-2">
+                  <div className="flex gap-2 justify-end">
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => setShowAddForm(false)}
                       disabled={submitting}
+                      className="h-8 text-xs"
                     >
                       {t("common.cancel")}
                     </Button>
@@ -233,7 +229,7 @@ export const PatientCard = ({
                       type="submit"
                       size="sm"
                       disabled={submitting}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="h-8 text-xs"
                     >
                       {submitting ? t("common.loading") : t("common.save")}
                     </Button>
@@ -242,116 +238,79 @@ export const PatientCard = ({
               </Card>
             )}
 
-            {/* Patient Info Card */}
-            <Card className="p-5 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-primary/30">
-              <div className="flex items-start justify-between mb-4">
-                <div className="space-y-1">
-                  <h3 className="font-bold text-xl">{patientName}</h3>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    <span className="text-sm">{patientPhone}</span>
-                  </div>
-                </div>
-                <Badge className="text-xs px-3 py-1">
-                  <Activity className="w-3 h-3 mr-1" />
-                  {history.length + 1} {t("lens.visit").toLowerCase()}
+            {/* Current Data */}
+            <Card className="p-4 bg-gradient-to-br from-primary/5 to-transparent border-primary/20">
+              <div className="flex items-center gap-2 mb-3">
+                <Eye className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-sm">{t("lens.currentData")}</span>
+                <Badge variant="secondary" className="text-xs ml-auto">
+                  {formatDisplayDate(currentDate)}
                 </Badge>
               </div>
               
-              <Separator className="my-4" />
-              
-              {/* Current State */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Eye className="w-5 h-5 text-primary" />
-                  <h4 className="font-semibold">{t("lens.currentData")}</h4>
-                  <Badge variant="secondary" className="text-xs ml-auto">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    {formatDisplayDate(currentDate)}
-                  </Badge>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 rounded-lg bg-background/60 border border-border/50">
+                  <div className="text-xs text-muted-foreground">OD</div>
+                  <div className="font-bold text-xl text-primary mt-1">{currentOd}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Card className="p-4 text-center bg-background/50 border-primary/20">
-                    <div className="text-xs text-muted-foreground mb-1">OD</div>
-                    <div className="font-bold text-2xl text-primary">{currentOd}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{t("form.rightEye")}</div>
-                  </Card>
-                  <Card className="p-4 text-center bg-background/50 border-primary/20">
-                    <div className="text-xs text-muted-foreground mb-1">OS</div>
-                    <div className="font-bold text-2xl text-primary">{currentOs}</div>
-                    <div className="text-xs text-muted-foreground mt-1">{t("form.leftEye")}</div>
-                  </Card>
-                  <Card className="col-span-2 p-4 bg-background/50 border-primary/20">
-                    <div className="text-xs text-muted-foreground mb-1">{t("lens.lensType")}</div>
-                    <div className="font-medium text-lg">{currentLensType}</div>
-                  </Card>
+                <div className="text-center p-3 rounded-lg bg-background/60 border border-border/50">
+                  <div className="text-xs text-muted-foreground">OS</div>
+                  <div className="font-bold text-xl text-primary mt-1">{currentOs}</div>
+                </div>
+                <div className="col-span-3 p-3 rounded-lg bg-background/60 border border-border/50">
+                  <div className="text-xs text-muted-foreground mb-1">{t("lens.lensType")}</div>
+                  <div className="font-medium text-sm">{currentLensType}</div>
                 </div>
               </div>
             </Card>
 
-            {/* History Timeline */}
+            {/* History */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Clock className="w-5 h-5 text-primary" />
-                <h3 className="font-bold text-lg">{t("lens.changeHistory")}</h3>
-                <Badge variant="outline" className="ml-auto">
-                  {history.length} {t("lens.visit").toLowerCase()}
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="font-semibold text-sm">{t("lens.changeHistory")}</span>
+                <Badge variant="outline" className="text-xs ml-auto">
+                  {history.length}
                 </Badge>
               </div>
 
               {loading ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <div className="animate-pulse flex flex-col items-center gap-2">
-                    <Clock className="w-8 h-8 opacity-50" />
-                    <p>{t("common.loading")}</p>
-                  </div>
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  {t("common.loading")}
                 </div>
               ) : history.length === 0 ? (
-                <Card className="p-8 bg-muted/20">
-                  <div className="text-center text-muted-foreground">
-                    <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="font-medium">{t("lens.noHistory")}</p>
-                    <p className="text-sm mt-1">Bu bemorning birinchi tashrififi</p>
-                  </div>
+                <Card className="p-6 bg-muted/20 text-center">
+                  <Clock className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                  <p className="text-sm text-muted-foreground">{t("lens.noHistory")}</p>
                 </Card>
               ) : (
-                <div className="space-y-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-border">
+                <div className="space-y-2">
                   {history.map((item, index) => (
-                    <Card key={item.id} className="p-4 bg-card hover:shadow-md transition-shadow relative ml-6">
-                      {/* Timeline dot */}
-                      <div className="absolute -left-6 top-6 w-3 h-3 rounded-full bg-primary border-4 border-background"></div>
-                      
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <Badge variant="secondary" className="text-xs mb-1">
-                            {t("lens.visit")} #{history.length - index}
-                          </Badge>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                            <Calendar className="w-3 h-3" />
-                            <span>{formatDisplayDate(item.sana)}</span>
-                            {item.created_at && (
-                              <>
-                                <span>•</span>
-                                <Clock className="w-3 h-3" />
-                                <span>{formatUzbekistanDateTime(new Date(item.created_at))}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
+                    <Card 
+                      key={item.id} 
+                      className="p-3 hover:shadow-md transition-all duration-200 hover:scale-[1.01] cursor-default"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <Badge variant="secondary" className="text-xs">
+                          #{history.length - index}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDisplayDate(item.sana)}
+                        </span>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-3 bg-muted/30 rounded-md p-3">
-                        <div className="text-center">
-                          <div className="text-xs text-muted-foreground mb-1">OD</div>
-                          <div className="font-semibold">{item.od}</div>
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <div className="text-center p-2 rounded bg-muted/30">
+                          <div className="text-xs text-muted-foreground">OD</div>
+                          <div className="font-semibold mt-0.5">{item.od}</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-xs text-muted-foreground mb-1">OS</div>
-                          <div className="font-semibold">{item.os}</div>
+                        <div className="text-center p-2 rounded bg-muted/30">
+                          <div className="text-xs text-muted-foreground">OS</div>
+                          <div className="font-semibold mt-0.5">{item.os}</div>
                         </div>
-                        <div className="col-span-3 pt-2 border-t border-border/50">
-                          <div className="text-xs text-muted-foreground mb-1">{t("lens.lensType")}</div>
-                          <div className="text-sm font-medium">{item.linza_turi}</div>
+                        <div className="col-span-3 p-2 rounded bg-muted/30 mt-1">
+                          <div className="text-xs text-muted-foreground">{t("lens.lensType")}</div>
+                          <div className="text-xs font-medium mt-0.5 truncate">{item.linza_turi}</div>
                         </div>
                       </div>
                     </Card>
