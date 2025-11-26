@@ -39,23 +39,23 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="border-t border-border/30 bg-card/80 backdrop-blur-sm mt-auto">
+    <footer className="border-t border-primary/20 bg-primary/10 backdrop-blur-sm mt-auto animate-fade-in">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center gap-6">
           {/* Developer info */}
           <div className="text-center space-y-2">
-            <p className="text-base font-medium text-white">
+            <p className="text-base font-medium text-foreground">
               {t("footer.developer")}:{" "}
               <a 
                 href="https://t.me/u_gafforov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-white hover:text-primary transition-colors duration-300 hover:scale-105 inline-block"
+                className="font-bold text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 inline-block"
               >
                 Usmonjon G'afforov
               </a>
             </p>
-            <p className="text-sm text-white/90">
+            <p className="text-sm text-foreground/80">
               {t("footer.contactForPurchase")}
             </p>
           </div>
@@ -70,7 +70,7 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-white transition-all duration-300 hover:scale-125 ${link.color}`}
+                  className={`text-foreground transition-all duration-300 hover:scale-125 ${link.color}`}
                   title={link.label}
                 >
                   <Icon className="w-6 h-6" />
@@ -80,7 +80,7 @@ const Footer = () => {
           </div>
 
           {/* Copyright */}
-          <p className="text-sm text-white/70">
+          <p className="text-sm text-foreground/60">
             © {new Date().getFullYear()} {t("footer.allRightsReserved")}
           </p>
         </div>
