@@ -174,6 +174,7 @@ const translations = {
     "common.no": "Йўқ",
     "common.edit": "Таҳрирлаш",
     "common.save": "Сақлаш",
+    "common.saving": "Сақланмоқда...",
     "common.cancel": "Бекор қилиш",
     "common.from": "дан",
     "common.to": "гача",
@@ -275,6 +276,19 @@ const translations = {
     "auth.backToLogin": "Кириш саҳифасига қайтиш",
     "auth.welcome": "Хуш келибсиз",
     "auth.welcomeDesc": "Тизимга кириш учун маълумотларингизни киритинг",
+    "auth.user": "Фойдаланувчи",
+
+    // Profile
+    "profile.title": "Профил",
+    "profile.subtitle": "Шахсий маълумотларингизни бошқаринг",
+    "profile.personalInfo": "Шахсий маълумотлар",
+    "profile.updateInfo": "Маълумотларни янгилаш",
+    "profile.email": "Электрон почта",
+    "profile.emailNote": "Электрон почтани ўзгартириб бўлмайди",
+    "profile.fullName": "Толиқ исм",
+    "profile.fullNamePlaceholder": "Толиқ исмингизни киритинг",
+    "profile.save": "Сақлаш",
+    "profile.saveSuccess": "Профил янгиланди!",
 
     // Admin page
     "admin.title": "Фойдаланувчилар бошқаруви",
@@ -324,6 +338,9 @@ const translations = {
     "common.updateSuccess": "Янгиланди!",
     "common.sheet": "Маълумотлар",
     "common.metadata": "Маълумот",
+    
+    // Toast messages
+    "toast.error": "Хатолик юз берди",
     
     // Date filters
     "dateFilter.all": "Барчаси",
@@ -502,6 +519,7 @@ const translations = {
     "common.no": "Yo'q",
     "common.edit": "Tahrirlash",
     "common.save": "Saqlash",
+    "common.saving": "Saqlanmoqda...",
     "common.cancel": "Bekor qilish",
     "common.from": "dan",
     "common.to": "gacha",
@@ -602,6 +620,19 @@ const translations = {
     "auth.backToLogin": "Kirish sahifasiga qaytish",
     "auth.welcome": "Xush kelibsiz",
     "auth.welcomeDesc": "Tizimga kirish uchun ma'lumotlaringizni kiriting",
+    "auth.user": "Foydalanuvchi",
+
+    // Profile
+    "profile.title": "Profil",
+    "profile.subtitle": "Shaxsiy ma'lumotlaringizni boshqaring",
+    "profile.personalInfo": "Shaxsiy ma'lumotlar",
+    "profile.updateInfo": "Ma'lumotlarni yangilash",
+    "profile.email": "Elektron pochta",
+    "profile.emailNote": "Elektron pochtani o'zgartirib bo'lmaydi",
+    "profile.fullName": "To'liq ism",
+    "profile.fullNamePlaceholder": "To'liq ismingizni kiriting",
+    "profile.save": "Saqlash",
+    "profile.saveSuccess": "Profil yangilandi!",
 
     // Admin page
     "admin.title": "Foydalanuvchilar boshqaruvi",
@@ -651,6 +682,9 @@ const translations = {
     "common.updateSuccess": "Yangilandi!",
     "common.sheet": "Ma'lumotlar",
     "common.metadata": "Ma'lumot",
+    
+    // Toast messages
+    "toast.error": "Xatolik yuz berdi",
     
     // Date filters
     "dateFilter.all": "Barchasi",
