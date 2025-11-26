@@ -737,8 +737,13 @@ const LinzaRoyxati = () => {
                 
                  <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-muted-foreground">{t("lens.client")}:</span>
-                    <span className="ml-2 font-medium">{r.mijoz}</span>
+                     <span className="text-muted-foreground">{t("lens.client")}:</span>
+                    <button 
+                      onClick={() => setSelectedPatient(r)}
+                      className="ml-2 font-medium text-primary hover:underline cursor-pointer"
+                    >
+                      {r.mijoz}
+                    </button>
                   </div>
                   <div>
                     <span className="text-muted-foreground">OD / OS:</span>
@@ -792,7 +797,14 @@ const LinzaRoyxati = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </td>
-                    <td className="px-4 py-2">{r.mijoz}</td>
+                    <td className="px-4 py-2">
+                      <button 
+                        onClick={() => setSelectedPatient(r)}
+                        className="text-primary hover:underline cursor-pointer font-medium"
+                      >
+                        {r.mijoz}
+                      </button>
+                    </td>
                     <td className="px-4 py-2">{r.od} / {r.os}</td>
                     <td className="px-4 py-2">{r.telefon}</td>
                     <td className="px-4 py-2">{r.linzaTuri}</td>
