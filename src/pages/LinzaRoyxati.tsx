@@ -12,7 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
+import { PatientCard } from "@/components/PatientCard";
 import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
@@ -61,6 +62,7 @@ const LinzaRoyxati = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [selectedPatient, setSelectedPatient] = useState<LinzaRoyxat | null>(null);
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -139,33 +141,85 @@ const LinzaRoyxati = () => {
     }
 
     try {
-      // Get the maximum tartib_raqam for this user
-      const { data: maxData, error: maxError } = await supabase
+      // Telefon raqami bo'yicha mavjud bemorni qidirish
+      const phoneDigits = form.telefon.replace(/\D/g, "");
+      const { data: existingPatients, error: searchError } = await supabase
         .from("linza_royxatlari")
-        .select("tartib_raqam")
-        .eq("user_id", user.id)
-        .order("tartib_raqam", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .select("*")
+        .eq("user_id", user.id);
 
-      if (maxError) throw maxError;
+      if (searchError) throw searchError;
 
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+      // Telefon raqami bo'yicha aniq bemor topish
+      const existingPatient = existingPatients?.find(p => {
+        const patientPhone = p.telefon.replace(/\D/g, "");
+        return patientPhone === phoneDigits;
+      });
 
-      const { error } = await supabase
-        .from("linza_royxatlari")
-        .insert({
-          user_id: user.id,
-          sana: formatUzbekistanDate(selectedDate),
-          tartib_raqam: nextTartibRaqam,
-          mijoz: form.mijoz,
-          od: form.od,
-          os: form.os,
-          telefon: form.telefon,
-          linza_turi: form.linzaTuri,
-        });
+      if (existingPatient) {
+        // Bemor mavjud - eski ma'lumotni tarixga saqlash
+        const { error: historyError } = await supabase
+          .from("bemor_tarixi")
+          .insert({
+            bemor_id: existingPatient.id,
+            user_id: user.id,
+            sana: existingPatient.sana,
+            od: existingPatient.od,
+            os: existingPatient.os,
+            linza_turi: existingPatient.linza_turi,
+            telefon: existingPatient.telefon,
+            mijoz: existingPatient.mijoz,
+          });
 
-      if (error) throw error;
+        if (historyError) throw historyError;
+
+        // Mavjud yozuvni yangilash
+        const { error: updateError } = await supabase
+          .from("linza_royxatlari")
+          .update({
+            sana: formatUzbekistanDate(selectedDate),
+            mijoz: form.mijoz,
+            od: form.od,
+            os: form.os,
+            telefon: form.telefon,
+            linza_turi: form.linzaTuri,
+          })
+          .eq("id", existingPatient.id);
+
+        if (updateError) throw updateError;
+
+        toast.success(t("lens.updateSuccess"));
+      } else {
+        // Yangi bemor - yangi yozuv yaratish
+        const { data: maxData, error: maxError } = await supabase
+          .from("linza_royxatlari")
+          .select("tartib_raqam")
+          .eq("user_id", user.id)
+          .order("tartib_raqam", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (maxError) throw maxError;
+
+        const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
+        const { error } = await supabase
+          .from("linza_royxatlari")
+          .insert({
+            user_id: user.id,
+            sana: formatUzbekistanDate(selectedDate),
+            tartib_raqam: nextTartibRaqam,
+            mijoz: form.mijoz,
+            od: form.od,
+            os: form.os,
+            telefon: form.telefon,
+            linza_turi: form.linzaTuri,
+          });
+
+        if (error) throw error;
+
+        toast.success(t("lens.addSuccess"));
+      }
 
       await loadRoyxatlar();
 
@@ -177,10 +231,8 @@ const LinzaRoyxati = () => {
         telefon: "+998 ",
         linzaTuri: "",
       });
-
-      toast.success(t("lens.addSuccess"));
     } catch (error: any) {
-      console.error("Error adding linza royxat:", error);
+      console.error("Error adding/updating linza royxat:", error);
       toast.error(t("common.error"));
     }
   };
@@ -639,6 +691,21 @@ const LinzaRoyxati = () => {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setSelectedPatient(r)}
+                            className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 hover:scale-110 transition-all duration-200"
+                          >
+                            <History className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{t("lens.viewHistory")}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleEdit(r)}
                             className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
                           >
@@ -732,6 +799,21 @@ const LinzaRoyxati = () => {
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
                         <div className="flex gap-2 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setSelectedPatient(r)}
+                                className="h-8 w-8 p-0 text-blue-500 hover:text-blue-600 hover:bg-blue-50 hover:scale-110 transition-all duration-200"
+                              >
+                                <History className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{t("lens.viewHistory")}</p>
+                            </TooltipContent>
+                          </Tooltip>
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -933,6 +1015,18 @@ const LinzaRoyxati = () => {
           </div>
         </form>
       </EditDialog>
+
+      <PatientCard
+        open={selectedPatient !== null}
+        onOpenChange={(open) => !open && setSelectedPatient(null)}
+        patientId={selectedPatient?.id || ""}
+        patientName={selectedPatient?.mijoz || ""}
+        patientPhone={selectedPatient?.telefon || ""}
+        currentOd={selectedPatient?.od || ""}
+        currentOs={selectedPatient?.os || ""}
+        currentLensType={selectedPatient?.linzaTuri || ""}
+        currentDate={selectedPatient?.sana || ""}
+      />
     </div>
   );
 };

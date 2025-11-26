@@ -66,6 +66,15 @@ const translations = {
     "lens.search": "Қидириш...",
     "lens.noResults": "Қидирув бўйича натижа топилмади",
     "lens.empty": "Ҳозирча рўйхат бўш",
+    "lens.patientCard": "Бемор картаси",
+    "lens.currentData": "Ҳозирги маълумотлар",
+    "lens.lastVisit": "Охирги ташриф",
+    "lens.changeHistory": "Ўзгаришлар тарихи",
+    "lens.noHistory": "Таrix мавжуд эмас",
+    "lens.visit": "Ташриф",
+    "lens.viewHistory": "Таrixни кўриш",
+    "lens.updateSuccess": "Бемор маълумотлари янгиланди!",
+    "common.loading": "Юкланмоқда...",
     
     // Examination
     "exam.title": "Кўз текшируви",
@@ -367,6 +376,15 @@ const translations = {
     "lens.search": "Qidirish...",
     "lens.noResults": "Qidiruv bo'yicha natija topilmadi",
     "lens.empty": "Hozircha ro'yxat bo'sh",
+    "lens.patientCard": "Bemor kartasi",
+    "lens.currentData": "Hozirgi ma'lumotlar",
+    "lens.lastVisit": "Oxirgi tashrif",
+    "lens.changeHistory": "O'zgarishlar tarixi",
+    "lens.noHistory": "Tarix mavjud emas",
+    "lens.visit": "Tashrif",
+    "lens.viewHistory": "Tarixni ko'rish",
+    "lens.updateSuccess": "Bemor ma'lumotlari yangilandi!",
+    "common.loading": "Yuklanmoqda...",
     
     // Examination
     "exam.title": "Ko'z tekshiruvi",

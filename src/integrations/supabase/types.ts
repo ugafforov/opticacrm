@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      bemor_tarixi: {
+        Row: {
+          bemor_id: string
+          created_at: string
+          id: string
+          linza_turi: string
+          mijoz: string | null
+          od: string
+          os: string
+          sana: string
+          telefon: string | null
+          user_id: string
+        }
+        Insert: {
+          bemor_id: string
+          created_at?: string
+          id?: string
+          linza_turi: string
+          mijoz?: string | null
+          od: string
+          os: string
+          sana: string
+          telefon?: string | null
+          user_id: string
+        }
+        Update: {
+          bemor_id?: string
+          created_at?: string
+          id?: string
+          linza_turi?: string
+          mijoz?: string | null
+          od?: string
+          os?: string
+          sana?: string
+          telefon?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bemor_tarixi_bemor_id_fkey"
+            columns: ["bemor_id"]
+            isOneToOne: false
+            referencedRelation: "linza_royxatlari"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       buyurtmalar: {
         Row: {
           created_at: string
