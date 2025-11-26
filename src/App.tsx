@@ -14,6 +14,7 @@ import LinzaSotuvi from "./pages/LinzaSotuvi";
 import Hisobotlar from "./pages/Hisobotlar";
 import Chiqindilar from "./pages/Chiqindilar";
 import AdminUsers from "./pages/AdminUsers";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/hisobotlar" element={<ProtectedRoute><Layout><PageTransition><Hisobotlar /></PageTransition></Layout></ProtectedRoute>} />
           <Route path="/chiqindilar" element={<ProtectedRoute><Layout><PageTransition><Chiqindilar /></PageTransition></Layout></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute><Layout><PageTransition><AdminUsers /></PageTransition></Layout></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Layout><PageTransition><Profile /></PageTransition></Layout></ProtectedRoute>} />
           <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
         </Routes>
       </BrowserRouter>

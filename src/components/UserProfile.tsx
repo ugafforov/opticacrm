@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileProps {
   user: User | null;
@@ -20,6 +21,7 @@ interface UserProfileProps {
 
 const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState<string>("");
 
   useEffect(() => {
@@ -82,6 +84,13 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => navigate("/profile")}
+          className="cursor-pointer"
+        >
+          <UserIcon className="mr-2 h-4 w-4" />
+          <span>{t("profile.title")}</span>
+        </DropdownMenuItem>
         <DropdownMenuItem
           onClick={onSignOut}
           className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
