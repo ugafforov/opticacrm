@@ -89,6 +89,47 @@ const Chiqindilar = () => {
     return item.data || {};
   };
 
+  // Field mappings from camelCase to snake_case for each table type
+  const fieldMappings: Record<string, Record<string, string>> = {
+    buyurtmalar: {
+      jamiSumma: 'jami_summa',
+      oynaNarxi: 'oyna_narxi',
+      opravaNarxi: 'oprava_narxi',
+      opravaTuri: 'oprava_turi',
+      oynaTuri: 'oyna_tури',
+      tartibRaqam: 'tartib_raqam',
+    },
+    tekshiruvlar: {
+      jamiSumma: 'jami_summa',
+      tartibRaqam: 'tartib_raqam',
+    },
+    tayyorKozoynaklar: {
+      kozoynakTuri: 'kozoynak_turi',
+      tartibRaqam: 'tartib_raqam',
+    },
+    linzaSotuvlari: {
+      linzaTuri: 'linza_turi',
+      tartibRaqam: 'tartib_raqam',
+    },
+    linzaRoyxatlari: {
+      linzaTuri: 'linza_turi',
+      tartibRaqam: 'tartib_raqam',
+    },
+  };
+
+  // Transform camelCase field names to snake_case
+  const transformFieldNames = (data: any, type: string): any => {
+    const mapping = fieldMappings[type] || {};
+    const transformed: any = {};
+    
+    for (const [key, value] of Object.entries(data)) {
+      const newKey = mapping[key] || key;
+      transformed[newKey] = value;
+    }
+    
+    return transformed;
+  };
+
   const handleRestore = async (item: TrashItem) => {
     if (!user) return;
 
@@ -119,9 +160,12 @@ const Chiqindilar = () => {
         return;
       }
 
+      // Transform field names from camelCase to snake_case
+      const transformedData = transformFieldNames(data, item.type);
+
       // Final data for restoration (ensure user_id for RLS)
       const restoreData = {
-        ...data,
+        ...transformedData,
         user_id: user.id,
       };
 
