@@ -1,15 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, LogOut } from "lucide-react";
+import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { Button } from "./ui/button";
+import UserProfile from "./UserProfile";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { t } = useLanguage();
-  const { isAdmin, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: t("nav.orders"), icon: ShoppingCart },
@@ -34,12 +34,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <Glasses className="w-7 h-7 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110" />
               <span className="transition-all duration-500 group-hover:tracking-wide">{t("app.title")}</span>
             </h1>
-            <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+            <div className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: "0.1s" }}>
               <LanguageSwitcher />
-              <Button variant="outline" size="sm" onClick={signOut} className="hover-scale-sm">
-                <LogOut className="w-4 h-4 mr-2" />
-                {t("auth.logout")}
-              </Button>
+              <UserProfile user={user} onSignOut={signOut} />
             </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
