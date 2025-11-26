@@ -51,7 +51,7 @@ const Footer = () => {
                 href="https://t.me/u_gafforov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-white hover:text-white/80 transition-all duration-300 hover:scale-105 inline-block"
+                className="font-bold text-white hover:text-white/80 transition-colors duration-300"
               >
                 Usmonjon G'afforov
               </a>
