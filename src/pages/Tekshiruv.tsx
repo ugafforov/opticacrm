@@ -77,6 +77,16 @@ const Tekshiruv = () => {
   }, [user]);
 
   useEffect(() => {
+    // Til o'zgarganda, agar mijoz maydoni standart qiymatda bo'lsa, yangilash
+    const currentDefault = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+    const otherDefault = script === 'cyrillic' ? "Mijoz" : "Мижоз";
+    
+    if (form.mijoz === otherDefault || form.mijoz === "") {
+      setForm(prev => ({ ...prev, mijoz: currentDefault }));
+    }
+  }, [script]);
+
+  useEffect(() => {
     if (!user) return;
 
     const channel = supabase
