@@ -1038,6 +1038,7 @@ const LinzaRoyxati = () => {
         currentOs={selectedPatient?.os || ""}
         currentLensType={selectedPatient?.linzaTuri || ""}
         currentDate={selectedPatient?.sana || ""}
+        onUpdate={loadRoyxatlar}
       />
     </div>
   );

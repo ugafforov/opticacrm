@@ -75,6 +75,7 @@ const translations = {
     "lens.viewHistory": "Таrixни кўриш",
     "lens.updateSuccess": "Бемор маълумотлари янгиланди!",
     "lens.firstVisit": "Биринчи ташриф",
+    "lens.addNewRecord": "Янги текшируv қўшиш",
     "common.loading": "Юкланмоқда...",
     
     // Examination
@@ -386,6 +387,7 @@ const translations = {
     "lens.viewHistory": "Tarixni ko'rish",
     "lens.updateSuccess": "Bemor ma'lumotlari yangilandi!",
     "lens.firstVisit": "Birinchi tashrif",
+    "lens.addNewRecord": "Yangi tekshiruv qo'shish",
     "common.loading": "Yuklanmoqda...",
     
     // Examination
