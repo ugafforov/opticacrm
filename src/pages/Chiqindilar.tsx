@@ -93,8 +93,17 @@ const Chiqindilar = () => {
     if (!user) return;
 
     try {
-      const data = getItemData(item);
-      
+      const originalData = getItemData(item);
+
+      // Create a clean copy and remove frontend-only / conflicting fields
+      const data: any = { ...originalData };
+      delete data.id;
+      delete data.createdAt;
+      delete data.updatedAt;
+      delete data.created_at;
+      delete data.updated_at;
+      delete data.user_id;
+
       // Map type to correct table name
       const tableMap: Record<string, string> = {
         buyurtmalar: "buyurtmalar",
@@ -110,21 +119,18 @@ const Chiqindilar = () => {
         return;
       }
 
-      // Prepare data for restoration - use original item_id as the id
+      // Final data for restoration (ensure user_id for RLS)
       const restoreData = {
         ...data,
-        id: item.itemId, // Restore with original ID
-        user_id: user.id, // Ensure user_id is set
+        user_id: user.id,
       };
 
-      // Restore to original table
       const { error: restoreError } = await supabase
         .from(tableName as any)
         .insert(restoreData);
 
       if (restoreError) throw restoreError;
 
-      // Delete from trash
       const { error: deleteError } = await supabase
         .from("chiqindilar")
         .delete()
@@ -140,7 +146,6 @@ const Chiqindilar = () => {
       toast.error(t("common.error"));
     }
   };
-
   const handlePermanentDelete = async (id: string) => {
     try {
       const { error } = await supabase
