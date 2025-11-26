@@ -87,11 +87,61 @@ const Hisobotlar = () => {
     return null;
   };
 
+  // Boshlang'ich sanalarni o'rnatish
+  useEffect(() => {
+    const today = new Date();
+    setStartDate(today);
+    setEndDate(today);
+  }, []);
+
   useEffect(() => {
     if (user) {
       loadReportData();
     }
   }, [user, period, startDate, endDate, showComparison, selectedType]);
+
+  // Haftaning dushanba kunini olish
+  const getMonday = (date: Date): Date => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(date.getFullYear(), date.getMonth(), diff);
+  };
+
+  // Haftaning yakshanba kunini olish
+  const getSunday = (date: Date): Date => {
+    const monday = getMonday(date);
+    return new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  };
+
+  // Oy boshini olish
+  const getFirstDayOfMonth = (date: Date): Date => {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  };
+
+  // Oy oxirini olish
+  const getLastDayOfMonth = (date: Date): Date => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  };
+
+  // Period o'zgarganda sanalarni avtomatik o'rnatish
+  const handlePeriodChange = (newPeriod: "daily" | "weekly" | "monthly") => {
+    setPeriod(newPeriod);
+    const today = new Date();
+    
+    if (newPeriod === "daily") {
+      // Bugun - faqat bugungi kun
+      setStartDate(today);
+      setEndDate(today);
+    } else if (newPeriod === "weekly") {
+      // Bu hafta - dushanbadan yakshanbagacha
+      setStartDate(getMonday(today));
+      setEndDate(getSunday(today));
+    } else if (newPeriod === "monthly") {
+      // Bu oy - oy boshidan oxirigacha
+      setStartDate(getFirstDayOfMonth(today));
+      setEndDate(getLastDayOfMonth(today));
+    }
+  };
 
   const parseDate = (dateString: string): Date => {
     if (!dateString) return new Date();
@@ -852,7 +902,7 @@ const Hisobotlar = () => {
         </div>
 
         <div id="printable-report">
-        <Tabs value={period} onValueChange={(value) => setPeriod(value as any)} className="space-y-4">
+        <Tabs value={period} onValueChange={(value) => handlePeriodChange(value as "daily" | "weekly" | "monthly")} className="space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             {/* Chap tomon - Davr tanlash */}
             <TabsList className="grid grid-cols-3 w-full md:w-auto">
