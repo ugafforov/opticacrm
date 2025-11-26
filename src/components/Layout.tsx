@@ -47,20 +47,34 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.to;
               return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 hover-scale-sm animate-slide-in-right relative overflow-hidden group",
-                    isActive
-                      ? "gradient-primary text-white shadow-premium glow-primary"
-                      : "bg-card/50 text-foreground hover:bg-card hover:shadow-md backdrop-blur-sm border border-border/50"
+                <div key={item.to} className="flex items-center animate-slide-in-right" style={{ animationDelay: `${index * 0.05}s` }}>
+                  <Link
+                    to={item.to}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 relative group",
+                      isActive
+                        ? "gradient-primary text-white shadow-premium glow-primary"
+                        : "bg-background/50 text-foreground/80 hover:text-foreground hover:bg-card/80 hover:shadow-md backdrop-blur-sm border border-transparent hover:border-border/30"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "w-4 h-4 transition-all duration-300",
+                      isActive ? "drop-shadow-sm" : "opacity-70 group-hover:opacity-100 group-hover:scale-110"
+                    )} />
+                    <span className={cn(
+                      "transition-all duration-300",
+                      isActive ? "font-semibold" : "font-medium opacity-90 group-hover:opacity-100"
+                    )}>
+                      {item.label}
+                    </span>
+                    {!isActive && (
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    )}
+                  </Link>
+                  {index < navItems.length - 1 && (
+                    <div className="h-6 w-px bg-gradient-to-b from-transparent via-border/40 to-transparent mx-1" />
                   )}
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
-                  {item.label}
-                </Link>
+                </div>
               );
             })}
           </nav>
