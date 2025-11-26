@@ -105,21 +105,21 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4 relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
       
       {/* Language Switcher - Top Right */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-10 animate-fade-in" style={{ animationDelay: '0.3s' }}>
         <LanguageSwitcher />
       </div>
       
-      <Card className="w-full max-w-md relative backdrop-blur-sm bg-card/80 border-2 shadow-2xl">
+      <Card className="w-full max-w-md relative backdrop-blur-sm bg-card/80 border-2 shadow-2xl animate-scale-in">
         <div className="p-8 space-y-6">
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
-                <Sparkles className="w-8 h-8 text-primary-foreground" />
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg hover-scale">
+                <Sparkles className="w-8 h-8 text-primary-foreground animate-pulse" />
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -132,12 +132,12 @@ const Auth = () => {
 
           {/* Form */}
           <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <Label htmlFor="email" className="text-sm font-medium">
                 {t("auth.email")}
               </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div className="relative group">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <Input
                   id="email"
                   type="email"
@@ -145,19 +145,19 @@ const Auth = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="pl-10"
+                  className="pl-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   placeholder="pochta@example.com"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
               <Label htmlFor="password" className="text-sm font-medium">
                 {t("auth.password")}
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div className="relative group">
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -165,7 +165,7 @@ const Auth = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="pl-10 pr-10"
+                  className="pl-10 pr-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   placeholder="••••••••"
                   required
                   minLength={8}
@@ -173,7 +173,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -185,16 +185,17 @@ const Auth = () => {
             </div>
 
             {/* Remember me and Forgot password */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="remember"
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  className="transition-transform hover:scale-110"
                 />
                 <label
                   htmlFor="remember"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer transition-colors hover:text-primary"
                 >
                   {t("auth.rememberMe")}
                 </label>
@@ -202,7 +203,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+                className="text-sm text-primary hover:text-primary/80 font-medium transition-all duration-200 hover:scale-105"
               >
                 {t("auth.forgotPassword")}
               </button>
@@ -210,7 +211,8 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity shadow-lg"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] animate-fade-in"
+              style={{ animationDelay: '0.5s' }}
               disabled={loading}
             >
               {loading ? t("auth.loading") : t("auth.login")}
@@ -221,40 +223,40 @@ const Auth = () => {
 
       {/* Forgot Password Dialog */}
       <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-md animate-scale-in">
+          <DialogHeader className="animate-fade-in">
             <DialogTitle className="text-2xl">{t("auth.resetPassword")}</DialogTitle>
             <DialogDescription className="text-base">
               {t("auth.resetPasswordDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
-            <div className="space-y-2">
+            <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <Label htmlFor="reset-email">{t("auth.email")}</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <div className="relative group">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
                 <Input
                   id="reset-email"
                   type="email"
                   value={resetEmail}
                   onChange={(e) => setResetEmail(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 transition-all duration-300 focus:ring-2 focus:ring-primary/20"
                   placeholder="pochta@example.com"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
               <Button
                 variant="outline"
                 onClick={() => setShowForgotPassword(false)}
-                className="flex-1"
+                className="flex-1 transition-all duration-200 hover:scale-105"
               >
                 {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleForgotPassword}
                 disabled={resetLoading}
-                className="flex-1"
+                className="flex-1 transition-all duration-200 hover:scale-105"
               >
                 {resetLoading ? t("auth.loading") : t("auth.sendResetLink")}
               </Button>
