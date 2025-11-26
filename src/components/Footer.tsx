@@ -42,11 +42,11 @@ const Footer = () => {
   return (
     <footer className="border-t border-primary/20 gradient-primary mt-auto animate-fade-in">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8">
+        <div className="flex w-full flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
           {/* Developer info and contact */}
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-            <p className="text-sm font-medium text-white">
-              {t("footer.developer")}:{" "}
+            <p className="text-sm font-medium">
+              <span className="text-white/70">{t("footer.developer")}:</span>{" "}
               <a 
                 href="https://t.me/u_gafforov"
                 target="_blank"
