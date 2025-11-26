@@ -43,7 +43,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </div>
           <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {navItems.map((item) => {
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.to;
               return (
@@ -51,19 +51,15 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors duration-200 border",
+                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 hover-scale-sm animate-slide-in-right relative overflow-hidden group",
                     isActive
-                      ? "bg-primary text-primary-foreground border-primary shadow-premium"
-                      : "bg-card text-foreground/80 border-border/70 hover:bg-muted hover:text-foreground hover:border-border"
+                      ? "gradient-primary text-white shadow-premium glow-primary"
+                      : "bg-card/50 text-foreground hover:bg-card hover:shadow-md backdrop-blur-sm border border-border/50"
                   )}
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <Icon
-                    className={cn(
-                      "w-4 h-4",
-                      isActive ? "text-primary-foreground" : "text-foreground/70",
-                    )}
-                  />
-                  <span className={isActive ? "font-semibold" : "font-medium"}>{item.label}</span>
+                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
+                  {item.label}
                 </Link>
               );
             })}
