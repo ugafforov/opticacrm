@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,7 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [fullName, setFullName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -35,12 +36,13 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
 
     const { data } = await supabase
       .from("profiles")
-      .select("full_name")
+      .select("full_name, avatar_url")
       .eq("id", user.id)
       .single();
 
-    if (data?.full_name) {
-      setFullName(data.full_name);
+    if (data) {
+      if (data.full_name) setFullName(data.full_name);
+      if (data.avatar_url) setAvatarUrl(data.avatar_url);
     }
   };
 
@@ -63,15 +65,13 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 hover:opacity-80 transition-all duration-200 focus:outline-none group">
           <Avatar className="h-9 w-9 border-2 border-primary/20 transition-all duration-300 group-hover:border-primary/40 group-hover:scale-105">
+            {avatarUrl ? (
+              <AvatarImage src={avatarUrl} alt={fullName || "Avatar"} />
+            ) : null}
             <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-semibold text-sm">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
-          <div className="hidden md:flex flex-col items-start">
-            <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
-              {displayName}
-            </span>
-          </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 bg-card/95 backdrop-blur-md border-border/50" align="end">
