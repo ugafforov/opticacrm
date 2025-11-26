@@ -60,7 +60,7 @@ const Tekshiruv = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    mijoz: "",
+    mijoz: "Мижоз",
     refraksiyametriya: false,
     tanometriya: false,
   });
@@ -170,7 +170,7 @@ const Tekshiruv = () => {
 
       setSelectedDate(new Date());
       setForm({
-        mijoz: "",
+        mijoz: "Мижоз",
         refraksiyametriya: false,
         tanometriya: false,
       });

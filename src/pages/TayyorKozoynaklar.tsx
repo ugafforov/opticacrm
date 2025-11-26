@@ -69,7 +69,7 @@ const TayyorKozoynaklar = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    kliyent: "",
+    kliyent: "Мижоз",
     kozoynakTuri: "",
     summa: "",
   });
@@ -174,7 +174,7 @@ const TayyorKozoynaklar = () => {
 
       setSelectedDate(new Date());
       setForm({
-        kliyent: "",
+        kliyent: "Мижоз",
         kozoynakTuri: "",
         summa: "",
       });
