@@ -64,6 +64,9 @@ const LinzaSotuvi = () => {
     };
     return lensMap[lensType] || lensType;
   };
+  
+  const defaultClientName = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+  
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -72,7 +75,7 @@ const LinzaSotuvi = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    kliyent: "Мижоз",
+    kliyent: defaultClientName,
     linzaTuri: "",
     summa: "",
   });
@@ -177,7 +180,7 @@ const LinzaSotuvi = () => {
 
       setSelectedDate(new Date());
       setForm({
-        kliyent: "Мижоз",
+        kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
         linzaTuri: "",
         summa: "",
       });
