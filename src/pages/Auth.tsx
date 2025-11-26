@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { authSchema } from "@/lib/validation";
 import { Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 
@@ -106,6 +107,11 @@ const Auth = () => {
       {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
+      
+      {/* Language Switcher - Top Right */}
+      <div className="absolute top-6 right-6 z-10">
+        <LanguageSwitcher />
+      </div>
       
       <Card className="w-full max-w-md relative backdrop-blur-sm bg-card/80 border-2 shadow-2xl">
         <div className="p-8 space-y-6">
