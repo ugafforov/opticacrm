@@ -137,7 +137,7 @@ const Auth = () => {
                 {t("auth.email")}
               </Label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-primary/60 z-10 pointer-events-none transition-colors group-focus-within:text-primary" />
                 <Input
                   id="email"
                   type="email"
@@ -157,7 +157,7 @@ const Auth = () => {
                 {t("auth.password")}
               </Label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-primary/60 z-10 pointer-events-none transition-colors group-focus-within:text-primary" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -173,7 +173,7 @@ const Auth = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-110"
+                  className="absolute right-3 top-3 z-10 text-primary/60 hover:text-primary transition-all duration-200 hover:scale-110"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -234,7 +234,7 @@ const Auth = () => {
             <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               <Label htmlFor="reset-email">{t("auth.email")}</Label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-primary/60 z-10 pointer-events-none transition-colors group-focus-within:text-primary" />
                 <Input
                   id="reset-email"
                   type="email"
