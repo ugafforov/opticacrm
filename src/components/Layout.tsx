@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Eye, ShoppingCart, ClipboardList, Glasses, Contact, BarChart3, Trash2, Users, LogOut } from "lucide-react";
+import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, LogOut } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -30,9 +30,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <header className="glass sticky top-0 z-50 border-b border-border/50 shadow-premium animate-fade-in-down">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-primary flex items-center gap-2 animate-fade-in">
-              <Eye className="w-7 h-7 animate-float" />
-              {t("app.title")}
+            <h1 className="text-2xl font-bold text-primary flex items-center gap-2 animate-fade-in group cursor-default">
+              <Glasses className="w-7 h-7 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110" />
+              <span className="transition-all duration-500 group-hover:tracking-wide">{t("app.title")}</span>
             </h1>
             <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: "0.1s" }}>
               <LanguageSwitcher />
@@ -60,9 +60,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 >
                   <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
                   {item.label}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  )}
                 </Link>
               );
             })}
