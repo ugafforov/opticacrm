@@ -17,7 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { authSchema } from "@/lib/validation";
-import { Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, Sparkles, Phone, Send, Facebook, Instagram } from "lucide-react";
+import { FaXTwitter } from "react-icons/fa6";
 
 const Auth = () => {
   const { t } = useLanguage();
@@ -218,6 +219,52 @@ const Auth = () => {
               {loading ? t("auth.loading") : t("auth.login")}
             </Button>
           </form>
+
+          {/* Contact info */}
+          <div className="pt-6 mt-6 border-t border-border/50 text-center space-y-4 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <p className="text-sm text-muted-foreground">
+              {t("auth.contactForCRM")}
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <a
+                href="tel:+998940715559"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-green-500 transition-all duration-300 hover:scale-110"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>+998 94 071 55 59</span>
+              </a>
+              <a
+                href="https://t.me/u_gafforov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-blue-500 transition-all duration-300 hover:scale-110"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>Telegram</span>
+              </a>
+              <a
+                href="https://www.facebook.com/u.gafforov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-blue-600 transition-all duration-300 hover:scale-110"
+              >
+                <Facebook className="w-3.5 h-3.5" />
+                <span>Facebook</span>
+              </a>
+              <a
+                href="https://www.instagram.com/usmonjon_gafforov/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-pink-500 transition-all duration-300 hover:scale-110"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+                <span>Instagram</span>
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground/70">
+              {t("auth.developer")}: <span className="font-medium text-primary">Usmonjon G'afforov</span>
+            </p>
+          </div>
         </div>
       </Card>
 
