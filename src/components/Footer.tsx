@@ -1,6 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Phone, Send, Facebook, Instagram } from "lucide-react";
-import { FaXTwitter } from "react-icons/fa6";
+import { Phone } from "lucide-react";
+import { FaTelegramPlane, FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -9,52 +9,59 @@ const Footer = () => {
     {
       icon: Phone,
       href: "tel:+998940715559",
-      label: "+998 94 071 55 59",
-      color: "hover:text-green-500"
+      label: "Phone",
+      color: "hover:text-green-400"
     },
     {
-      icon: Send,
+      icon: FaTelegramPlane,
       href: "https://t.me/u_gafforov",
       label: "Telegram",
-      color: "hover:text-blue-500"
+      color: "hover:text-[#0088cc]"
     },
     {
-      icon: Facebook,
+      icon: FaFacebookF,
       href: "https://www.facebook.com/u.gafforov",
       label: "Facebook",
-      color: "hover:text-blue-600"
+      color: "hover:text-[#1877f2]"
     },
     {
-      icon: FaXTwitter,
+      icon: FaTwitter,
       href: "https://www.facebook.com/u.gafforov",
-      label: "X",
-      color: "hover:text-foreground",
-      isCustomIcon: true
+      label: "Twitter",
+      color: "hover:text-[#1da1f2]"
     },
     {
-      icon: Instagram,
+      icon: FaInstagram,
       href: "https://www.instagram.com/usmonjon_gafforov/",
       label: "Instagram",
-      color: "hover:text-pink-500"
+      color: "hover:text-[#e4405f]"
     }
   ];
 
   return (
-    <footer className="border-t border-border/50 bg-card/30 backdrop-blur-sm mt-auto">
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col items-center gap-4">
+    <footer className="border-t border-border/30 bg-card/80 backdrop-blur-sm mt-auto">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center gap-6">
           {/* Developer info */}
-          <div className="text-center space-y-1">
-            <p className="text-sm font-medium text-foreground">
-              {t("footer.developedBy")} <span className="font-semibold text-primary">Usmonjon G'afforov</span>
+          <div className="text-center space-y-2">
+            <p className="text-base font-medium text-white">
+              {t("footer.developer")}:{" "}
+              <a 
+                href="https://t.me/u_gafforov"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-white hover:text-primary transition-colors duration-300 hover:scale-105 inline-block"
+              >
+                Usmonjon G'afforov
+              </a>
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-white/90">
               {t("footer.contactForPurchase")}
             </p>
           </div>
 
           {/* Contact links */}
-          <div className="flex flex-wrap items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-6">
             {contactLinks.map((link) => {
               const Icon = link.icon;
               return (
@@ -63,22 +70,17 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`flex items-center gap-2 text-sm text-muted-foreground transition-all duration-300 hover:scale-110 ${link.color}`}
+                  className={`text-white transition-all duration-300 hover:scale-125 ${link.color}`}
                   title={link.label}
                 >
-                  {link.isCustomIcon ? (
-                    <Icon className="w-4 h-4" />
-                  ) : (
-                    <Icon className="w-4 h-4" />
-                  )}
-                  <span className="hidden sm:inline">{link.label}</span>
+                  <Icon className="w-6 h-6" />
                 </a>
               );
             })}
           </div>
 
           {/* Copyright */}
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-sm text-white/70">
             © {new Date().getFullYear()} {t("footer.allRightsReserved")}
           </p>
         </div>
