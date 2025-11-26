@@ -354,7 +354,7 @@ const translations = {
     "dateFilter.lastMonth": "Ўтган ой",
 
     // Footer
-    "footer.developedBy": "Ишлаб чиқувчи:",
+    "footer.developer": "Дастурчи",
     "footer.contactForPurchase": "CRM тизимини сотиб олиш учун боғланинг",
     "footer.allRightsReserved": "Барча ҳуқуқлар ҳимояланган",
   },
@@ -705,7 +705,7 @@ const translations = {
     "dateFilter.lastMonth": "O'tgan oy",
 
     // Footer
-    "footer.developedBy": "Ishlab chiquvchi:",
+    "footer.developer": "Dasturchi",
     "footer.contactForPurchase": "CRM tizimini sotib olish uchun bog'laning",
     "footer.allRightsReserved": "Barcha huquqlar himoyalangan",
   },
