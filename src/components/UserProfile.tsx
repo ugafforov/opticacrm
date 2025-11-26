@@ -34,11 +34,21 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
   const fetchProfile = async () => {
     if (!user) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select("full_name, avatar_url")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
+
+    // Agar profil yo'q bo'lsa, yaratish
+    if (!data && !error) {
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert({ id: user.id, full_name: null, avatar_url: null });
+      
+      if (insertError) console.error("Profile insert error:", insertError);
+      return;
+    }
 
     if (data) {
       if (data.full_name) setFullName(data.full_name);
@@ -47,15 +57,17 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
   };
 
   const getInitials = () => {
-    if (fullName) {
-      return fullName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
+    if (fullName && fullName.trim()) {
+      const words = fullName.trim().split(/\s+/);
+      if (words.length >= 2) {
+        return (words[0][0] + words[1][0]).toUpperCase();
+      }
+      return fullName.slice(0, 2).toUpperCase();
     }
-    return user?.email?.charAt(0).toUpperCase() || "U";
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
   };
 
   const displayName = fullName || user?.email || t("auth.user");
