@@ -27,7 +27,7 @@ const App = () => (
       <LanguageProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
             <Route path="/" element={<ProtectedRoute><Layout><PageTransition><Buyurtmalar /></PageTransition></Layout></ProtectedRoute>} />
