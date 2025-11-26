@@ -26,24 +26,24 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card sticky top-0 z-50">
+    <div className="min-h-screen">
+      <header className="glass sticky top-0 z-50 border-b border-border/50 shadow-premium animate-fade-in-down">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
-              <Eye className="w-7 h-7" />
+            <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent flex items-center gap-2 animate-fade-in">
+              <Eye className="w-7 h-7 text-primary animate-float" />
               {t("app.title")}
             </h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: "0.1s" }}>
               <LanguageSwitcher />
-              <Button variant="outline" size="sm" onClick={signOut}>
+              <Button variant="outline" size="sm" onClick={signOut} className="hover-scale-sm">
                 <LogOut className="w-4 h-4 mr-2" />
                 {t("auth.logout")}
               </Button>
             </div>
           </div>
-          <nav className="flex gap-2 overflow-x-auto pb-2">
-            {navItems.map((item) => {
+          <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {navItems.map((item, index) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.to;
               return (
@@ -51,21 +51,29 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
+                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 hover-scale-sm animate-slide-in-right relative overflow-hidden group",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                      ? "gradient-primary text-white shadow-premium glow-primary"
+                      : "bg-card/50 text-foreground hover:bg-card hover:shadow-md backdrop-blur-sm border border-border/50"
                   )}
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
                   {item.label}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                  )}
                 </Link>
               );
             })}
           </nav>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-6">{children}</main>
+      <main className="container mx-auto px-4 py-8 animate-fade-in-up">
+        <div className="backdrop-blur-sm">
+          {children}
+        </div>
+      </main>
     </div>
   );
 };
