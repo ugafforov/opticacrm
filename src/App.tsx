@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { PageTransition } from "./components/PageTransition";
-import { LanguageProvider } from "./contexts/LanguageContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Buyurtmalar from "./pages/Buyurtmalar";
 import LinzaRoyxati from "./pages/LinzaRoyxati";
 import Tekshiruv from "./pages/Tekshiruv";
