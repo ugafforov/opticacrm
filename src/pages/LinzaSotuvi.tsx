@@ -22,7 +22,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatUzbekistanDateTime, formatDisplayDate, formatPrice, parsePrice } from "@/lib/utils";
+import { PriceInput } from "@/components/PriceInput";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -518,11 +519,10 @@ const LinzaSotuvi = () => {
 
             <div>
               <Label htmlFor="summa">{t("lensSale.amount")} ({t("common.sum")})</Label>
-              <Input
+              <PriceInput
                 id="summa"
-                type="number"
                 value={form.summa}
-                onChange={(e) => setForm({ ...form, summa: e.target.value })}
+                onChange={(value) => setForm({ ...form, summa: value })}
                 required
               />
             </div>
@@ -541,7 +541,7 @@ const LinzaSotuvi = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("lensSale.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.currency")}
+              {t("orders.total")}: {formatPrice(totalSum)} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -684,7 +684,7 @@ const LinzaSotuvi = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("lensSale.amount")}:</span>
-                  <span className="text-lg font-bold">{s.summa.toLocaleString()} {t("common.currency")}</span>
+                  <span className="text-lg font-bold">{formatPrice(s.summa)} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -727,7 +727,7 @@ const LinzaSotuvi = () => {
                     <td className="px-4 py-2">{s.kliyent}</td>
                     <td className="px-4 py-2">{getLensTypeTranslation(s.linzaTuri)}</td>
                     <td className="px-4 py-2 text-center font-semibold">
-                      {s.summa.toLocaleString()} {t("common.currency")}
+                      {formatPrice(s.summa)} {t("common.currency")}
                     </td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
@@ -869,19 +869,17 @@ const LinzaSotuvi = () => {
 
             <div>
               <Label htmlFor="edit-summa" className="text-xs">{t("lensSale.amount")}</Label>
-              <Input
+              <PriceInput
                 id="edit-summa"
-                type="number"
                 value={editingItem?.summa || ""}
-                onChange={(e) =>
+                onChange={(value) =>
                   setEditingItem(
                     editingItem
-                      ? { ...editingItem, summa: parseFloat(e.target.value) }
+                      ? { ...editingItem, summa: parseFloat(value) || 0 }
                       : null
                   )
                 }
                 required
-                className="h-9"
               />
             </div>
           </div>
