@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatPhoneNumber, formatPrice } from "@/lib/utils";
+import { PriceInput } from "@/components/PriceInput";
+
+interface BuyurtmalarFormProps {
+  onSubmit: (data: BuyurtmaFormData, selectedDate: Date) => Promise<void>;
+}
+
+export interface BuyurtmaFormData {
+  mijoz: string;
+  telefon: string;
+  od: string;
+  os: string;
+  oynaTuri: string;
+  oynaNarxi: string;
+  opravaNarxi: string;
+  opravaTuri: string;
+}
+
+export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
+  const { t } = useLanguage();
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [form, setForm] = useState<BuyurtmaFormData>({
+    mijoz: "",
+    telefon: "+998 ",
+    od: "",
+    os: "",
+    oynaTuri: "",
+    oynaNarxi: "",
+    opravaNarxi: "",
+    opravaTuri: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(form, selectedDate);
+    
+    // Reset form
+    setSelectedDate(new Date());
+    setForm({
+      mijoz: "",
+      telefon: "+998 ",
+      od: "",
+      os: "",
+      oynaTuri: "",
+      oynaNarxi: "",
+      opravaNarxi: "",
+      opravaTuri: "",
+    });
+  };
+
+  const totalAmount = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
+
+  return (
+    <Card className="p-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(selectedDate, "dd-MM-yyyy")}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                disabled={(date) => date > new Date()}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="mijoz">{t("form.clientName")}</Label>
+            <Input
+              id="mijoz"
+              value={form.mijoz}
+              onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="telefon">{t("form.phone")}</Label>
+            <Input
+              id="telefon"
+              type="tel"
+              value={form.telefon}
+              onChange={(e) => setForm({ ...form, telefon: formatPhoneNumber(e.target.value) })}
+              placeholder="+998 90 123 45 67"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="od">{t("form.rightEye")}</Label>
+            <Input
+              id="od"
+              value={form.od}
+              onChange={(e) => setForm({ ...form, od: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="os">{t("form.leftEye")}</Label>
+            <Input
+              id="os"
+              value={form.os}
+              onChange={(e) => setForm({ ...form, os: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
+            <Select value={form.oynaTuri} onValueChange={(value) => setForm({ ...form, oynaTuri: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("form.select")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
+                <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
+                <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
+                <SelectItem value="420">{t("lens.420")}</SelectItem>
+                <SelectItem value="SR">{t("lens.sr")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
+            <PriceInput
+              id="oynaNarxi"
+              value={form.oynaNarxi}
+              onChange={(value) => setForm({ ...form, oynaNarxi: value })}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
+            <Select value={form.opravaTuri} onValueChange={(value) => setForm({ ...form, opravaTuri: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder={t("form.select")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
+                <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
+                <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
+                <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
+            <PriceInput
+              id="opravaNarxi"
+              value={form.opravaNarxi}
+              onChange={(value) => setForm({ ...form, opravaNarxi: value })}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-4 border-t border-border">
+          <div className="text-lg font-semibold">
+            {t("orders.totalAmount")}: {formatPrice(totalAmount)} {t("common.currency")}
+          </div>
+          <Button type="submit" className="bg-primary hover:bg-primary/90">
+            {t("orders.add")}
+          </Button>
+        </div>
+      </form>
+    </Card>
+  );
+};
