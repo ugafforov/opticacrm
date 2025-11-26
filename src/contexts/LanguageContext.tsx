@@ -225,8 +225,10 @@ const translations = {
     "trash.empty": "Чиқиндилар бўш",
     "trash.restore": "Тиклаш",
     "trash.deletePermanent": "Бутунлай ўчириш",
+    "trash.clearAll": "Барчасини тозалаш",
     "trash.restored": "Тикланди!",
     "trash.permanentDeleted": "Бутунлай ўчирилди!",
+    "trash.clearedAll": "Чиқиндилар тозаланди!",
     "trash.deletedAt": "Ўчирилган вақти",
     "trash.noName": "Номсиз",
     "trash.orders": "Буюртма",
@@ -238,6 +240,8 @@ const translations = {
     "trash.confirmDeleteDesc": "Бу маълумот бутунлай ўчирилади ва уни қайта тиклаб бўлмайди.",
     "trash.confirmRestore": "Тиклаш",
     "trash.confirmRestoreDesc": "Бу маълумотни тикламоқчимисиз?",
+    "trash.confirmClearAll": "Барча чиқиндиларни тозалашми?",
+    "trash.confirmClearAllDesc": "Барча ўчирилган маълумотлар бутунлай йўқ қилинади.",
     
     // Delete confirmation
     "delete.confirm": "Ўчиришни тасдиқлаш",
@@ -540,8 +544,10 @@ const translations = {
     "trash.empty": "Chiqindilar bo'sh",
     "trash.restore": "Tiklash",
     "trash.deletePermanent": "Butunlay o'chirish",
+    "trash.clearAll": "Barchasini tozalash",
     "trash.restored": "Tiklandi!",
     "trash.permanentDeleted": "Butunlay o'chirildi!",
+    "trash.clearedAll": "Chiqindilar tozalandi!",
     "trash.deletedAt": "O'chirilgan vaqti",
     "trash.noName": "Nomsiz",
     "trash.orders": "Buyurtma",
@@ -553,6 +559,8 @@ const translations = {
     "trash.confirmDeleteDesc": "Bu ma'lumot butunlay o'chiriladi va uni qayta tiklab bo'lmaydi.",
     "trash.confirmRestore": "Tiklash",
     "trash.confirmRestoreDesc": "Bu ma'lumotni tiklmoqchimisiz?",
+    "trash.confirmClearAll": "Barcha chiqindilarni tozalashmi?",
+    "trash.confirmClearAllDesc": "Barcha o'chirilgan ma'lumotlar butunlay yo'q qilinadi.",
     
     // Delete confirmation
     "delete.confirm": "O'chirishni tasdiqlash",

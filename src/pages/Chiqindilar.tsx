@@ -24,7 +24,7 @@ const Chiqindilar = () => {
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     itemId: string;
-    action: "restore" | "delete";
+    action: "restore" | "delete" | "clearAll";
   }>({ open: false, itemId: "", action: "delete" });
 
   useEffect(() => {
@@ -85,9 +85,8 @@ const Chiqindilar = () => {
   };
 
   const getItemData = (item: TrashItem) => {
-    if (item.data) return item.data;
-    const { id, type, deletedAt, ...rest } = item;
-    return rest;
+    // Always use the data field which contains the complete original record
+    return item.data || {};
   };
 
   const handleRestore = async (item: TrashItem) => {
@@ -111,10 +110,17 @@ const Chiqindilar = () => {
         return;
       }
 
+      // Prepare data for restoration - use original item_id as the id
+      const restoreData = {
+        ...data,
+        id: item.itemId, // Restore with original ID
+        user_id: user.id, // Ensure user_id is set
+      };
+
       // Restore to original table
       const { error: restoreError } = await supabase
         .from(tableName as any)
-        .insert(data);
+        .insert(restoreData);
 
       if (restoreError) throw restoreError;
 
@@ -153,6 +159,26 @@ const Chiqindilar = () => {
     }
   };
 
+  const handleClearAll = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("chiqindilar")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      await loadTrashItems();
+      toast.success(t("trash.clearedAll"));
+      setConfirmDialog({ open: false, itemId: "", action: "delete" });
+    } catch (error: any) {
+      console.error("Error clearing trash:", error);
+      toast.error(t("common.error"));
+    }
+  };
+
   const getItemLabel = (type: string) => {
     const labels: Record<string, string> = {
       buyurtmalar: t("trash.orders"),
@@ -166,9 +192,22 @@ const Chiqindilar = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("trash.title")}</h2>
-        <p className="text-muted-foreground">{t("trash.subtitle")}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t("trash.title")}</h2>
+          <p className="text-muted-foreground">{t("trash.subtitle")}</p>
+        </div>
+        {trashItems.length > 0 && (
+          <Button
+            variant="destructive"
+            onClick={() =>
+              setConfirmDialog({ open: true, itemId: "", action: "clearAll" })
+            }
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {t("trash.clearAll")}
+          </Button>
+        )}
       </div>
 
       {trashItems.length === 0 ? (
@@ -225,22 +264,30 @@ const Chiqindilar = () => {
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
         onConfirm={() => {
-          const item = trashItems.find((t) => t.id === confirmDialog.itemId);
-          if (!item) return;
-
-          if (confirmDialog.action === "restore") {
-            handleRestore(item);
+          if (confirmDialog.action === "clearAll") {
+            handleClearAll();
           } else {
-            handlePermanentDelete(confirmDialog.itemId);
+            const item = trashItems.find((t) => t.id === confirmDialog.itemId);
+            if (!item) return;
+
+            if (confirmDialog.action === "restore") {
+              handleRestore(item);
+            } else {
+              handlePermanentDelete(confirmDialog.itemId);
+            }
           }
         }}
         title={
-          confirmDialog.action === "restore"
+          confirmDialog.action === "clearAll"
+            ? t("trash.confirmClearAll")
+            : confirmDialog.action === "restore"
             ? t("trash.confirmRestore")
             : t("trash.confirmDelete")
         }
         description={
-          confirmDialog.action === "restore"
+          confirmDialog.action === "clearAll"
+            ? t("trash.confirmClearAllDesc")
+            : confirmDialog.action === "restore"
             ? t("trash.confirmRestoreDesc")
             : t("trash.confirmDeleteDesc")
         }
