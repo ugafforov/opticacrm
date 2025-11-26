@@ -266,6 +266,15 @@ const translations = {
     "auth.haveAccount": "Ҳисобингиз борми? Киринг",
     "auth.logout": "Чиқиш",
     "auth.passwordHint": "(камида 8 та белги)",
+    "auth.rememberMe": "Эсда сақлаш",
+    "auth.forgotPassword": "Паролни унутдингизми?",
+    "auth.resetPassword": "Паролни тиклаш",
+    "auth.resetPasswordDesc": "Электрон почтангизга тиклаш хабари юборамиз",
+    "auth.sendResetLink": "Тиклаш хабарини юбориш",
+    "auth.resetLinkSent": "Тиклаш хабари юборилди!",
+    "auth.backToLogin": "Кириш саҳифасига қайтиш",
+    "auth.welcome": "Хуш келибсиз",
+    "auth.welcomeDesc": "Тизимга кириш учун маълумотларингизни киритинг",
 
     // Admin page
     "admin.title": "Фойдаланувчилар бошқаруви",
@@ -584,6 +593,15 @@ const translations = {
     "auth.haveAccount": "Hisobingiz bormi? Kiring",
     "auth.logout": "Chiqish",
     "auth.passwordHint": "(kamida 8 ta belgi)",
+    "auth.rememberMe": "Esda saqlash",
+    "auth.forgotPassword": "Parolni unutdingizmi?",
+    "auth.resetPassword": "Parolni tiklash",
+    "auth.resetPasswordDesc": "Elektron pochtangizga tiklash xabari yuboramiz",
+    "auth.sendResetLink": "Tiklash xabarini yuborish",
+    "auth.resetLinkSent": "Tiklash xabari yuborildi!",
+    "auth.backToLogin": "Kirish sahifasiga qaytish",
+    "auth.welcome": "Xush kelibsiz",
+    "auth.welcomeDesc": "Tizimga kirish uchun ma'lumotlaringizni kiriting",
 
     // Admin page
     "admin.title": "Foydalanuvchilar boshqaruvi",
