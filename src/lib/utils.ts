@@ -109,3 +109,19 @@ export function formatPhoneNumber(value: string): string {
   
   return formatted;
 }
+
+/**
+ * Format price with thousand separators (200000 → "200 000")
+ */
+export function formatPrice(value: number | string): string {
+  const num = typeof value === 'string' ? parseFloat(value.replace(/\s/g, '')) : value;
+  if (isNaN(num) || num === 0) return '';
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+/**
+ * Parse formatted price string to number ("200 000" → 200000)
+ */
+export function parsePrice(formattedValue: string): number {
+  return parseFloat(formattedValue.replace(/\s/g, '')) || 0;
+}

@@ -22,7 +22,8 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate, formatPrice, parsePrice } from "@/lib/utils";
+import { PriceInput } from "@/components/PriceInput";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -591,11 +592,10 @@ const Buyurtmalar = () => {
 
             <div>
               <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
-              <Input
+              <PriceInput
                 id="oynaNarxi"
-                type="number"
                 value={form.oynaNarxi}
-                onChange={(e) => setForm({ ...form, oynaNarxi: e.target.value })}
+                onChange={(value) => setForm({ ...form, oynaNarxi: value })}
                 required
               />
             </div>
@@ -617,11 +617,10 @@ const Buyurtmalar = () => {
 
             <div>
               <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
-              <Input
+              <PriceInput
                 id="opravaNarxi"
-                type="number"
                 value={form.opravaNarxi}
-                onChange={(e) => setForm({ ...form, opravaNarxi: e.target.value })}
+                onChange={(value) => setForm({ ...form, opravaNarxi: value })}
                 required
               />
             </div>
@@ -629,7 +628,7 @@ const Buyurtmalar = () => {
 
           <div className="flex justify-between items-center pt-4 border-t border-border">
             <div className="text-lg font-semibold">
-              {t("orders.totalAmount")}: {((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0)).toLocaleString()} {t("common.currency")}
+              {t("orders.totalAmount")}: {formatPrice((parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0))} {t("common.currency")}
             </div>
             <Button type="submit" className="bg-primary hover:bg-primary/90">
               {t("orders.add")}
@@ -643,7 +642,7 @@ const Buyurtmalar = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <h3 className="text-lg font-semibold">{t("orders.list")}</h3>
             <div className="text-lg font-bold text-primary">
-              {t("orders.total")}: {totalSum.toLocaleString()} {t("common.currency")}
+              {t("orders.total")}: {formatPrice(totalSum)} {t("common.currency")}
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -800,7 +799,7 @@ const Buyurtmalar = () => {
                 
                 <div className="pt-2 border-t border-border flex justify-between items-center">
                   <span className="text-muted-foreground text-sm">{t("orders.totalAmount")}:</span>
-                  <span className="text-lg font-bold">{b.jamiSumma.toLocaleString()} {t("common.currency")}</span>
+                  <span className="text-lg font-bold">{formatPrice(b.jamiSumma)} {t("common.currency")}</span>
                 </div>
               </div>
             ))
@@ -848,7 +847,7 @@ const Buyurtmalar = () => {
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getLensTypeTranslation(b.oynaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getFrameTypeTranslation(b.opravaTuri)}</td>
-                    <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">{b.jamiSumma.toLocaleString()} {t("common.currency")}</td>
+                    <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">{formatPrice(b.jamiSumma)} {t("common.currency")}</td>
                     <td className="px-2 sm:px-4 py-2 text-right">
                       <TooltipProvider>
                         <div className="flex gap-1 justify-end">
@@ -1059,19 +1058,17 @@ const Buyurtmalar = () => {
 
             <div>
               <Label htmlFor="edit-oynaNarxi" className="text-xs">{t("orders.lensPrice")}</Label>
-              <Input
+              <PriceInput
                 id="edit-oynaNarxi"
-                type="number"
                 value={editingItem?.oynaNarxi || ""}
-                onChange={(e) =>
+                onChange={(value) =>
                   setEditingItem(
                     editingItem
-                      ? { ...editingItem, oynaNarxi: parseFloat(e.target.value), jamiSumma: parseFloat(e.target.value) + (editingItem.opravaNarxi || 0) }
+                      ? { ...editingItem, oynaNarxi: parseFloat(value) || 0, jamiSumma: (parseFloat(value) || 0) + (editingItem.opravaNarxi || 0) }
                       : null
                   )
                 }
                 required
-                className="h-9"
               />
             </div>
           </div>
@@ -1101,19 +1098,17 @@ const Buyurtmalar = () => {
 
             <div>
               <Label htmlFor="edit-opravaNarxi" className="text-xs">{t("orders.framePrice")}</Label>
-              <Input
+              <PriceInput
                 id="edit-opravaNarxi"
-                type="number"
                 value={editingItem?.opravaNarxi || ""}
-                onChange={(e) =>
+                onChange={(value) =>
                   setEditingItem(
                     editingItem
-                      ? { ...editingItem, opravaNarxi: parseFloat(e.target.value), jamiSumma: (editingItem.oynaNarxi || 0) + parseFloat(e.target.value) }
+                      ? { ...editingItem, opravaNarxi: parseFloat(value) || 0, jamiSumma: (editingItem.oynaNarxi || 0) + (parseFloat(value) || 0) }
                       : null
                   )
                 }
                 required
-                className="h-9"
               />
             </div>
           </div>
