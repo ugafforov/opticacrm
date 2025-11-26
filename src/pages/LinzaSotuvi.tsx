@@ -72,7 +72,7 @@ const LinzaSotuvi = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    kliyent: "",
+    kliyent: "Мижоз",
     linzaTuri: "",
     summa: "",
   });
@@ -177,7 +177,7 @@ const LinzaSotuvi = () => {
 
       setSelectedDate(new Date());
       setForm({
-        kliyent: "",
+        kliyent: "Мижоз",
         linzaTuri: "",
         summa: "",
       });
