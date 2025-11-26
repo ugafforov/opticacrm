@@ -30,8 +30,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <header className="glass sticky top-0 z-50 border-b border-border/50 shadow-premium animate-fade-in-down">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold gradient-primary bg-clip-text text-transparent flex items-center gap-2 animate-fade-in">
-              <Eye className="w-7 h-7 text-primary animate-float" />
+            <h1 className="text-2xl font-bold text-primary flex items-center gap-2 animate-fade-in">
+              <Eye className="w-7 h-7 animate-float" />
               {t("app.title")}
             </h1>
             <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: "0.1s" }}>
@@ -69,7 +69,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </nav>
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8 animate-fade-in-up">
+      <main className="container mx-auto px-4 py-8">
         <div className="backdrop-blur-sm">
           {children}
         </div>
