@@ -89,6 +89,16 @@ const LinzaSotuvi = () => {
   }, [user]);
 
   useEffect(() => {
+    // Til o'zgarganda, agar mijoz maydoni standart qiymatda bo'lsa, yangilash
+    const currentDefault = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+    const otherDefault = script === 'cyrillic' ? "Mijoz" : "Мижоз";
+    
+    if (form.kliyent === otherDefault || form.kliyent === "") {
+      setForm(prev => ({ ...prev, kliyent: currentDefault }));
+    }
+  }, [script]);
+
+  useEffect(() => {
     if (!user) return;
 
     const channel = supabase
