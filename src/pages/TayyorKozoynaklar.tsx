@@ -61,6 +61,9 @@ const TayyorKozoynaklar = () => {
     };
     return glassesMap[glassesType] || glassesType;
   };
+  
+  const defaultClientName = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+  
   const [kozoynaklar, setKozoynaklar] = useState<TayyorKozoynak[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -69,7 +72,7 @@ const TayyorKozoynaklar = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    kliyent: "Мижоз",
+    kliyent: defaultClientName,
     kozoynakTuri: "",
     summa: "",
   });
@@ -174,7 +177,7 @@ const TayyorKozoynaklar = () => {
 
       setSelectedDate(new Date());
       setForm({
-        kliyent: "Мижоз",
+        kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
         kozoynakTuri: "",
         summa: "",
       });

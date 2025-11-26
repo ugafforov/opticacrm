@@ -52,6 +52,9 @@ const Tekshiruv = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  
+  const defaultClientName = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+  
   const [tekshiruvlar, setTekshiruvlar] = useState<Tekshiruv[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -60,7 +63,7 @@ const Tekshiruv = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [form, setForm] = useState({
-    mijoz: "Мижоз",
+    mijoz: defaultClientName,
     refraksiyametriya: false,
     tanometriya: false,
   });
@@ -170,7 +173,7 @@ const Tekshiruv = () => {
 
       setSelectedDate(new Date());
       setForm({
-        mijoz: "Мижоз",
+        mijoz: script === 'cyrillic' ? "Мижоз" : "Mijoz",
         refraksiyametriya: false,
         tanometriya: false,
       });
