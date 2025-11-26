@@ -14,9 +14,10 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDisplayDate, formatUzbekistanDate } from "@/lib/utils";
-import { Clock, Phone, User, Eye, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Clock, Phone, User, Eye, Plus, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { EditDialog } from "@/components/EditDialog";
 
 interface PatientHistory {
   id: string;
@@ -62,6 +63,13 @@ export const PatientCard = ({
     os: "",
     linzaTuri: "",
     sana: formatUzbekistanDate(new Date()),
+  });
+  const [editingItem, setEditingItem] = useState<PatientHistory | null>(null);
+  const [editForm, setEditForm] = useState({
+    od: "",
+    os: "",
+    linzaTuri: "",
+    sana: "",
   });
 
   useEffect(() => {
@@ -138,6 +146,47 @@ export const PatientCard = ({
       
     } catch (error) {
       console.error("Error adding new record:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = (item: PatientHistory) => {
+    setEditingItem(item);
+    setEditForm({
+      od: item.od,
+      os: item.os,
+      linzaTuri: item.linza_turi,
+      sana: item.sana,
+    });
+  };
+
+  const handleUpdateHistory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingItem) return;
+
+    try {
+      setSubmitting(true);
+
+      const { error } = await supabase
+        .from("bemor_tarixi")
+        .update({
+          od: editForm.od,
+          os: editForm.os,
+          linza_turi: editForm.linzaTuri,
+          sana: editForm.sana,
+        })
+        .eq("id", editingItem.id);
+
+      if (error) throw error;
+
+      toast.success(t("lens.updateSuccess"));
+      setEditingItem(null);
+      await loadHistory();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error("Error updating history record:", error);
       toast.error(t("common.error"));
     } finally {
       setSubmitting(false);
@@ -294,9 +343,19 @@ export const PatientCard = ({
                         <Badge variant="secondary" className="text-xs">
                           #{history.length - index}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDisplayDate(item.sana)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {formatDisplayDate(item.sana)}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(item)}
+                            className="h-6 w-6 p-0 hover:bg-primary/10"
+                          >
+                            <Pencil className="w-3 h-3 text-primary" />
+                          </Button>
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-3 gap-2 text-sm">
@@ -321,6 +380,58 @@ export const PatientCard = ({
           </div>
         </ScrollArea>
       </DialogContent>
+
+      {/* Edit Dialog */}
+      <EditDialog
+        open={!!editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        title={t("lens.editRecord")}
+      >
+        <form onSubmit={handleUpdateHistory} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-od">OD</Label>
+              <Input
+                id="edit-od"
+                value={editForm.od}
+                onChange={(e) => setEditForm({ ...editForm, od: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-os">OS</Label>
+              <Input
+                id="edit-os"
+                value={editForm.os}
+                onChange={(e) => setEditForm({ ...editForm, os: e.target.value })}
+                required
+              />
+            </div>
+            <div className="col-span-2">
+              <Label htmlFor="edit-linza">{t("lens.lensType")}</Label>
+              <Input
+                id="edit-linza"
+                value={editForm.linzaTuri}
+                onChange={(e) => setEditForm({ ...editForm, linzaTuri: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setEditingItem(null)}
+              disabled={submitting}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              {submitting ? t("common.loading") : t("common.save")}
+            </Button>
+          </div>
+        </form>
+      </EditDialog>
     </Dialog>
   );
 };
