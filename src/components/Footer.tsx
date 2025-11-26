@@ -1,6 +1,7 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Phone } from "lucide-react";
-import { FaTelegramPlane, FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import { FaTelegramPlane, FaFacebookF, FaInstagram } from "react-icons/fa";
+import { SiX } from "react-icons/si";
 
 const Footer = () => {
   const { t } = useLanguage();
@@ -25,10 +26,10 @@ const Footer = () => {
       color: "hover:text-[#1877f2]"
     },
     {
-      icon: FaTwitter,
+      icon: SiX,
       href: "https://www.facebook.com/u.gafforov",
-      label: "Twitter",
-      color: "hover:text-[#1da1f2]"
+      label: "X",
+      color: "hover:text-foreground"
     },
     {
       icon: FaInstagram,
@@ -39,50 +40,52 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="border-t border-primary/20 bg-primary/10 backdrop-blur-sm mt-auto animate-fade-in">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col items-center gap-6">
-          {/* Developer info */}
-          <div className="text-center space-y-2">
-            <p className="text-base font-medium text-foreground">
+    <footer className="border-t border-primary/20 gradient-primary mt-auto animate-fade-in">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Developer info and contact */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p className="text-sm font-medium text-white">
               {t("footer.developer")}:{" "}
               <a 
                 href="https://t.me/u_gafforov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105 inline-block"
+                className="font-bold text-white hover:text-white/80 transition-all duration-300 hover:scale-105 inline-block"
               >
                 Usmonjon G'afforov
               </a>
             </p>
-            <p className="text-sm text-foreground/80">
-              {t("footer.contactForPurchase")}
+            <span className="hidden sm:inline text-white/40">|</span>
+            <p className="text-sm text-white/90">
+              {t("footer.contactForPurchase")}: <a href="tel:+998940715559" className="font-semibold hover:text-white transition-colors">+998 94 071 55 59</a>
             </p>
           </div>
 
-          {/* Contact links */}
-          <div className="flex items-center justify-center gap-6">
-            {contactLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`text-foreground transition-all duration-300 hover:scale-125 ${link.color}`}
-                  title={link.label}
-                >
-                  <Icon className="w-6 h-6" />
-                </a>
-              );
-            })}
+          {/* Contact links and copyright */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
+              {contactLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`text-white/90 transition-all duration-300 hover:scale-125 ${link.color}`}
+                    title={link.label}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                );
+              })}
+            </div>
+            <span className="hidden sm:inline text-white/40">|</span>
+            <p className="text-xs text-white/70 whitespace-nowrap">
+              © {new Date().getFullYear()}
+            </p>
           </div>
-
-          {/* Copyright */}
-          <p className="text-sm text-foreground/60">
-            © {new Date().getFullYear()} {t("footer.allRightsReserved")}
-          </p>
         </div>
       </div>
     </footer>
