@@ -355,6 +355,7 @@ const translations = {
 
     // Footer
     "footer.developer": "Дастурчи",
+    "footer.developerName": "Усмонжон Ғаффоров",
     "footer.contactForPurchase": "CRM тизимини сотиб олиш учун боғланинг",
     "footer.allRightsReserved": "Барча ҳуқуқлар ҳимояланган",
   },
@@ -706,6 +707,7 @@ const translations = {
 
     // Footer
     "footer.developer": "Dasturchi",
+    "footer.developerName": "Usmonjon G'afforov",
     "footer.contactForPurchase": "CRM tizimini sotib olish uchun bog'laning",
     "footer.allRightsReserved": "Barcha huquqlar himoyalangan",
   },

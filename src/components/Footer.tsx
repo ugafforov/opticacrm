@@ -53,7 +53,7 @@ const Footer = () => {
                 rel="noopener noreferrer"
                 className="font-bold text-white hover:text-white/80 transition-colors duration-300"
               >
-                Usmonjon G'afforov
+                {t("footer.developerName")}
               </a>
             </p>
             <span className="hidden sm:inline text-white/40">|</span>
