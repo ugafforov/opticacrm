@@ -42,9 +42,10 @@ const Footer = () => {
   return (
     <footer className="border-t border-primary/20 gradient-primary mt-auto animate-fade-in">
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           {/* Developer info */}
-          <p className="text-xs text-white/80">
+          <p className="text-sm text-white/90">
+            {t("footer.developer")}:{" "}
             <a 
               href="https://t.me/u_gafforov"
               target="_blank"
@@ -52,6 +53,17 @@ const Footer = () => {
               className="font-semibold text-white hover:text-white/70 transition-colors"
             >
               {t("footer.developerName")}
+            </a>
+          </p>
+
+          {/* CRM Purchase info */}
+          <p className="text-sm text-white/90">
+            {t("footer.contactForPurchase")}:{" "}
+            <a 
+              href="tel:+998940715559"
+              className="font-semibold text-white hover:text-white/70 transition-colors"
+            >
+              +998 94 071 55 59
             </a>
           </p>
 
@@ -65,9 +77,9 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-white/80 transition-all duration-300 hover:scale-110 ${link.color}`}
+                  className={`text-white/90 transition-all duration-300 hover:scale-110 ${link.color}`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-5 h-5" />
                 </a>
               );
             })}
