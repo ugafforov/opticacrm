@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -18,6 +17,7 @@ interface SelectWithOtherProps {
   id?: string;
 }
 
+// Native <select> based component to completely avoid portal/DOM issues
 export const SelectWithOther = ({
   value,
   onChange,
@@ -30,9 +30,9 @@ export const SelectWithOther = ({
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState("");
 
-  // Check if current value is a custom one (not in predefined options)
+  // Detect if current value is custom (not in predefined options)
   useEffect(() => {
-    const isCustom = value && !options.some(opt => opt.value === value) && value !== "__other__";
+    const isCustom = value && !options.some((opt) => opt.value === value) && value !== "__other__";
     if (isCustom) {
       setShowCustomInput(true);
       setCustomValue(value);
@@ -45,10 +45,12 @@ export const SelectWithOther = ({
     }
   }, [value, options]);
 
-  const handleSelectChange = (newValue: string) => {
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newValue = e.target.value;
     if (newValue === "__other__") {
       setShowCustomInput(true);
       setCustomValue("");
+      // Do not immediately change parent value, wait for text input
     } else {
       setShowCustomInput(false);
       setCustomValue("");
@@ -62,29 +64,28 @@ export const SelectWithOther = ({
     onChange(newValue);
   };
 
-  // Determine what to display in the Select
-  const isValueCustom = value && !options.some(opt => opt.value === value);
-  const displayValue = showCustomInput && !value ? "__other__" : (isValueCustom || showCustomInput) ? "__other__" : value;
+  // Determine what should be selected in the native <select>
+  const isValueCustom = value && !options.some((opt) => opt.value === value);
+  const selectValue = showCustomInput && !value ? "__other__" : isValueCustom ? "__other__" : value;
 
   return (
     <div className="space-y-2">
-      <Select value={displayValue} onValueChange={handleSelectChange}>
-        <SelectTrigger id={id}>
-          <SelectValue placeholder={placeholder}>
-            {showCustomInput && customValue ? customValue : undefined}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className="max-h-[300px]">
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-          <SelectItem value="__other__" className="border-t border-border mt-1 pt-1">
-            📝 {otherLabel}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <select
+        id={id}
+        value={selectValue}
+        onChange={handleSelectChange}
+        className="flex h-10 w-full rounded-xl border-2 border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary transition-all duration-300 hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+        <option value="__other__">📝 {otherLabel}</option>
+      </select>
 
       {showCustomInput && (
         <div className="animate-in fade-in-0 slide-in-from-top-2 duration-200">
