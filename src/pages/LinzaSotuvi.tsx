@@ -512,6 +512,7 @@ const LinzaSotuvi = () => {
                 placeholder={t("lensSale.select")}
                 otherLabel={t("form.other")}
                 customInputLabel={t("form.enterCustomValue")}
+                storageKey="custom-lens-sale-types"
               />
             </div>
 
@@ -903,6 +904,7 @@ const LinzaSotuvi = () => {
               ]}
               otherLabel={t("form.other")}
               customInputLabel={t("form.enterCustomValue")}
+              storageKey="custom-lens-sale-types"
             />
           </div>
 
