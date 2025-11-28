@@ -2,13 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectWithOther } from "@/components/SelectWithOther";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -498,17 +493,20 @@ const TayyorKozoynaklar = () => {
 
             <div>
               <Label htmlFor="kozoynakTuri">{t("ready.type")}</Label>
-              <Select value={form.kozoynakTuri} onValueChange={(value) => setForm({ ...form, kozoynakTuri: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("lensSale.select")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="quyoshdan-himoya">{t("ready.sunProtection")}</SelectItem>
-                  <SelectItem value="kompyuter-hameleon">{t("ready.computerChameleon")}</SelectItem>
-                  <SelectItem value="kompyuter">{t("ready.computer")}</SelectItem>
-                  <SelectItem value="zreniya">{t("ready.vision")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectWithOther
+                id="kozoynakTuri"
+                value={form.kozoynakTuri}
+                onChange={(value) => setForm({ ...form, kozoynakTuri: value })}
+                options={[
+                  { value: "quyoshdan-himoya", label: t("ready.sunProtection") },
+                  { value: "kompyuter-hameleon", label: t("ready.computerChameleon") },
+                  { value: "kompyuter", label: t("ready.computer") },
+                  { value: "zreniya", label: t("ready.vision") },
+                ]}
+                placeholder={t("lensSale.select")}
+                otherLabel={t("form.other")}
+                customInputLabel={t("form.enterCustomValue")}
+              />
             </div>
 
             <div>
@@ -880,24 +878,23 @@ const TayyorKozoynaklar = () => {
 
           <div>
             <Label htmlFor="edit-kozoynakTuri" className="text-xs">{t("ready.type")}</Label>
-            <Select
+            <SelectWithOther
+              id="edit-kozoynakTuri"
               value={editingItem?.kozoynakTuri || ""}
-              onValueChange={(value) =>
+              onChange={(value) =>
                 setEditingItem(
                   editingItem ? { ...editingItem, kozoynakTuri: value } : null
                 )
               }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="quyoshdan-himoya">{t("ready.sunProtection")}</SelectItem>
-                <SelectItem value="kompyuter-hameleon">{t("ready.computerChameleon")}</SelectItem>
-                <SelectItem value="kompyuter">{t("ready.computer")}</SelectItem>
-                <SelectItem value="zreniya">{t("ready.vision")}</SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "quyoshdan-himoya", label: t("ready.sunProtection") },
+                { value: "kompyuter-hameleon", label: t("ready.computerChameleon") },
+                { value: "kompyuter", label: t("ready.computer") },
+                { value: "zreniya", label: t("ready.vision") },
+              ]}
+              otherLabel={t("form.other")}
+              customInputLabel={t("form.enterCustomValue")}
+            />
           </div>
 
           <div className="flex gap-2 justify-end pt-2">
