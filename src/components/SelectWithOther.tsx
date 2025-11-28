@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface SelectOption {
   value: string;
@@ -16,7 +18,7 @@ interface SelectWithOtherProps {
   otherLabel?: string;
   customInputLabel?: string;
   id?: string;
-  storageKey?: string; // LocalStorage key for saving custom options
+  storageKey?: string;
 }
 
 export const SelectWithOther = ({
@@ -47,7 +49,7 @@ export const SelectWithOther = ({
     }
   }, [storageKey]);
 
-  // Check if current value is a custom one (not in predefined options)
+  // Check if current value is a custom one
   useEffect(() => {
     const isInPredefined = options.some(opt => opt.value === value);
     const isInSaved = savedCustomOptions.includes(value);
@@ -69,7 +71,6 @@ export const SelectWithOther = ({
     if (newValue === "__other__") {
       setShowCustomInput(true);
       setCustomValue("");
-      // Don't clear onChange - keep the current value
     } else {
       setShowCustomInput(false);
       setCustomValue("");
@@ -89,6 +90,20 @@ export const SelectWithOther = ({
       const updatedCustomOptions = [...new Set([...savedCustomOptions, customValue.trim()])];
       setSavedCustomOptions(updatedCustomOptions);
       localStorage.setItem(storageKey, JSON.stringify(updatedCustomOptions));
+    }
+  };
+
+  const handleDeleteCustomOption = (optionToDelete: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (storageKey) {
+      const updatedOptions = savedCustomOptions.filter(opt => opt !== optionToDelete);
+      setSavedCustomOptions(updatedOptions);
+      localStorage.setItem(storageKey, JSON.stringify(updatedOptions));
+      
+      // If currently selected value is being deleted, clear it
+      if (value === optionToDelete) {
+        onChange("");
+      }
     }
   };
 
@@ -113,11 +128,39 @@ export const SelectWithOther = ({
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[300px]">
-          {allOptions.map((option) => (
+          {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
           ))}
+          
+          {savedCustomOptions.length > 0 && (
+            <div className="border-t border-border my-1" />
+          )}
+          
+          {savedCustomOptions
+            .filter(customOpt => !options.some(opt => opt.value === customOpt))
+            .map((customOpt) => (
+              <SelectItem 
+                key={customOpt} 
+                value={customOpt}
+                className="group"
+              >
+                <div className="flex items-center justify-between w-full gap-2">
+                  <span className="flex-1">{customOpt}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                    onClick={(e) => handleDeleteCustomOption(customOpt, e)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </SelectItem>
+            ))}
+          
           <SelectItem value="__other__" className="border-t border-border mt-1 pt-1">
             📝 {otherLabel}
           </SelectItem>
