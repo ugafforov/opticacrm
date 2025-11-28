@@ -143,7 +143,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               placeholder={t("form.select")}
               otherLabel={t("form.other")}
               customInputLabel={t("form.enterCustomValue")}
-              storageKey="custom-lens-types"
             />
           </div>
 
@@ -172,7 +171,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               placeholder={t("form.select")}
               otherLabel={t("form.other")}
               customInputLabel={t("form.enterCustomValue")}
-              storageKey="custom-frame-types"
             />
           </div>
 
