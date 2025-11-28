@@ -2,13 +2,8 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SelectWithOther } from "@/components/SelectWithOther";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -501,20 +496,23 @@ const LinzaSotuvi = () => {
 
             <div>
               <Label htmlFor="linzaTuri">{t("lensSale.type")}</Label>
-              <Select value={form.linzaTuri} onValueChange={(value) => setForm({ ...form, linzaTuri: value })}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("lensSale.select")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="amerikanskiy">{t("lensSale.american")}</SelectItem>
-                  <SelectItem value="koreyskiy">{t("lensSale.korean")}</SelectItem>
-                  <SelectItem value="astigmatik">{t("lensSale.astigmatic")}</SelectItem>
-                  <SelectItem value="rangli-zreniya">{t("lensSale.coloredVision")}</SelectItem>
-                  <SelectItem value="chiroy-uchun">{t("lensSale.beauty")}</SelectItem>
-                  <SelectItem value="linza-suvi">{t("lensSale.solution")}</SelectItem>
-                  <SelectItem value="linza-konteyneri">{t("lensSale.container")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <SelectWithOther
+                id="linzaTuri"
+                value={form.linzaTuri}
+                onChange={(value) => setForm({ ...form, linzaTuri: value })}
+                options={[
+                  { value: "amerikanskiy", label: t("lensSale.american") },
+                  { value: "koreyskiy", label: t("lensSale.korean") },
+                  { value: "astigmatik", label: t("lensSale.astigmatic") },
+                  { value: "rangli-zreniya", label: t("lensSale.coloredVision") },
+                  { value: "chiroy-uchun", label: t("lensSale.beauty") },
+                  { value: "linza-suvi", label: t("lensSale.solution") },
+                  { value: "linza-konteyneri", label: t("lensSale.container") },
+                ]}
+                placeholder={t("lensSale.select")}
+                otherLabel={t("form.other")}
+                customInputLabel={t("form.enterCustomValue")}
+              />
             </div>
 
             <div>
@@ -886,27 +884,26 @@ const LinzaSotuvi = () => {
 
           <div>
             <Label htmlFor="edit-linzaTuri" className="text-xs">{t("lensSale.type")}</Label>
-            <Select
+            <SelectWithOther
+              id="edit-linzaTuri"
               value={editingItem?.linzaTuri || ""}
-              onValueChange={(value) =>
+              onChange={(value) =>
                 setEditingItem(
                   editingItem ? { ...editingItem, linzaTuri: value } : null
                 )
               }
-            >
-              <SelectTrigger className="h-9">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="amerikanskiy">{t("lensSale.american")}</SelectItem>
-                <SelectItem value="koreyskiy">{t("lensSale.korean")}</SelectItem>
-                <SelectItem value="astigmatik">{t("lensSale.astigmatic")}</SelectItem>
-                <SelectItem value="rangli-zreniya">{t("lensSale.coloredVision")}</SelectItem>
-                <SelectItem value="chiroy-uchun">{t("lensSale.beauty")}</SelectItem>
-                <SelectItem value="linza-suvi">{t("lensSale.solution")}</SelectItem>
-                <SelectItem value="linza-konteyneri">{t("lensSale.container")}</SelectItem>
-              </SelectContent>
-            </Select>
+              options={[
+                { value: "amerikanskiy", label: t("lensSale.american") },
+                { value: "koreyskiy", label: t("lensSale.korean") },
+                { value: "astigmatik", label: t("lensSale.astigmatic") },
+                { value: "rangli-zreniya", label: t("lensSale.coloredVision") },
+                { value: "chiroy-uchun", label: t("lensSale.beauty") },
+                { value: "linza-suvi", label: t("lensSale.solution") },
+                { value: "linza-konteyneri", label: t("lensSale.container") },
+              ]}
+              otherLabel={t("form.other")}
+              customInputLabel={t("form.enterCustomValue")}
+            />
           </div>
 
           <div className="flex gap-2 justify-end pt-2">

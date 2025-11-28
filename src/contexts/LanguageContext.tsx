@@ -192,6 +192,8 @@ const translations = {
     "form.frameType": "Оправа (рамка) тури",
     "form.framePrice": "Оправа нархи (сўм)",
     "form.select": "Танланг",
+    "form.other": "Бошқа...",
+    "form.enterCustomValue": "Ўзингиз киритинг",
     
     // Lens types
     "lens.3b1Brown": "3Б1 жигарранг",
@@ -545,6 +547,8 @@ const translations = {
     "form.frameType": "Oprava (ramka) turi",
     "form.framePrice": "Oprava narxi (so'm)",
     "form.select": "Tanlang",
+    "form.other": "Boshqa...",
+    "form.enterCustomValue": "O'zingiz kiriting",
     
     // Lens types
     "lens.3b1Brown": "3B1 jigarrang",

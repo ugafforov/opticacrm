@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,6 +10,7 @@ import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatPhoneNumber, formatPrice } from "@/lib/utils";
 import { PriceInput } from "@/components/PriceInput";
+import { SelectWithOther } from "@/components/SelectWithOther";
 
 interface BuyurtmalarFormProps {
   onSubmit: (data: BuyurtmaFormData, selectedDate: Date) => Promise<void>;
@@ -129,18 +129,21 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
-            <Select value={form.oynaTuri} onValueChange={(value) => setForm({ ...form, oynaTuri: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("form.select")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="3B1 jigarrang">{t("lens.3b1Brown")}</SelectItem>
-                <SelectItem value="3B1 qora">{t("lens.3b1Black")}</SelectItem>
-                <SelectItem value="4B1">{t("lens.4b1")}</SelectItem>
-                <SelectItem value="420">{t("lens.420")}</SelectItem>
-                <SelectItem value="SR">{t("lens.sr")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <SelectWithOther
+              id="oynaTuri"
+              value={form.oynaTuri}
+              onChange={(value) => setForm({ ...form, oynaTuri: value })}
+              options={[
+                { value: "3B1 jigarrang", label: t("lens.3b1Brown") },
+                { value: "3B1 qora", label: t("lens.3b1Black") },
+                { value: "4B1", label: t("lens.4b1") },
+                { value: "420", label: t("lens.420") },
+                { value: "SR", label: t("lens.sr") },
+              ]}
+              placeholder={t("form.select")}
+              otherLabel={t("form.other")}
+              customInputLabel={t("form.enterCustomValue")}
+            />
           </div>
 
           <div>
@@ -155,17 +158,20 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
 
           <div>
             <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
-            <Select value={form.opravaTuri} onValueChange={(value) => setForm({ ...form, opravaTuri: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("form.select")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dumaloq">{t("frame.round")}</SelectItem>
-                <SelectItem value="fabritsio">{t("frame.fabritsio")}</SelectItem>
-                <SelectItem value="alaniye">{t("frame.alaniye")}</SelectItem>
-                <SelectItem value="titanik">{t("frame.titanik")}</SelectItem>
-              </SelectContent>
-            </Select>
+            <SelectWithOther
+              id="opravaTuri"
+              value={form.opravaTuri}
+              onChange={(value) => setForm({ ...form, opravaTuri: value })}
+              options={[
+                { value: "dumaloq", label: t("frame.round") },
+                { value: "fabritsio", label: t("frame.fabritsio") },
+                { value: "alaniye", label: t("frame.alaniye") },
+                { value: "titanik", label: t("frame.titanik") },
+              ]}
+              placeholder={t("form.select")}
+              otherLabel={t("form.other")}
+              customInputLabel={t("form.enterCustomValue")}
+            />
           </div>
 
           <div>
