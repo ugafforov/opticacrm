@@ -41,29 +41,22 @@ const Footer = () => {
 
   return (
     <footer className="border-t border-primary/20 gradient-primary mt-auto animate-fade-in">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex w-full flex-col sm:flex-row items-center justify-between gap-4 sm:gap-8">
-          {/* Developer info and contact */}
-          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-            <p className="text-sm font-medium">
-              <span className="text-white/70">{t("footer.developer")}:</span>{" "}
-              <a 
-                href="https://t.me/u_gafforov"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold text-white hover:text-white/80 transition-colors duration-300"
-              >
-                {t("footer.developerName")}
-              </a>
-            </p>
-            <span className="hidden sm:inline text-white/40">|</span>
-            <p className="text-sm text-white/90">
-              {t("footer.contactForPurchase")}: <a href="tel:+998940715559" className="font-semibold hover:text-white transition-colors">+998 94 071 55 59</a>
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-4">
+          {/* Developer info */}
+          <p className="text-xs text-white/80">
+            <a 
+              href="https://t.me/u_gafforov"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-white hover:text-white/70 transition-colors"
+            >
+              {t("footer.developerName")}
+            </a>
+          </p>
 
           {/* Contact links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {contactLinks.map((link) => {
               const Icon = link.icon;
               return (
@@ -72,10 +65,9 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-white/90 transition-all duration-300 hover:scale-125 ${link.color}`}
-                  title={link.label}
+                  className={`text-white/80 transition-all duration-300 hover:scale-110 ${link.color}`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-4 h-4" />
                 </a>
               );
             })}
