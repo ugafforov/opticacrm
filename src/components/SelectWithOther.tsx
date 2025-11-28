@@ -2,8 +2,13 @@ import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { X, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export interface SelectOption {
   value: string;
@@ -93,8 +98,7 @@ export const SelectWithOther = ({
     }
   };
 
-  const handleDeleteCustomOption = (optionToDelete: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDeleteCustomOption = (optionToDelete: string) => {
     if (storageKey) {
       const updatedOptions = savedCustomOptions.filter(opt => opt !== optionToDelete);
       setSavedCustomOptions(updatedOptions);
@@ -119,53 +123,82 @@ export const SelectWithOther = ({
       .map(customOpt => ({ value: customOpt, label: customOpt }))
   ];
 
+  const customOptionsToShow = savedCustomOptions.filter(customOpt => !options.some(opt => opt.value === customOpt));
+
   return (
     <div className="space-y-2">
-      <Select value={displayValue} onValueChange={handleSelectChange}>
-        <SelectTrigger id={id}>
-          <SelectValue placeholder={placeholder}>
-            {showCustomInput && customValue ? customValue : undefined}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className="max-h-[300px]">
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-          
-          {savedCustomOptions.length > 0 && (
-            <div className="border-t border-border my-1" />
-          )}
-          
-          {savedCustomOptions
-            .filter(customOpt => !options.some(opt => opt.value === customOpt))
-            .map((customOpt) => (
-              <SelectItem 
-                key={customOpt} 
-                value={customOpt}
-                className="group"
-              >
-                <div className="flex items-center justify-between w-full gap-2">
-                  <span className="flex-1">{customOpt}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
-                    onClick={(e) => handleDeleteCustomOption(customOpt, e)}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
+      <div className="flex gap-2">
+        <div className="flex-1">
+          <Select value={displayValue} onValueChange={handleSelectChange}>
+            <SelectTrigger id={id}>
+              <SelectValue placeholder={placeholder}>
+                {showCustomInput && customValue ? customValue : undefined}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-h-[300px]">
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+              
+              {customOptionsToShow.length > 0 && (
+                <div className="border-t border-border my-1" />
+              )}
+              
+              {customOptionsToShow.map((customOpt) => (
+                <SelectItem key={customOpt} value={customOpt}>
+                  {customOpt}
+                </SelectItem>
+              ))}
+              
+              <SelectItem value="__other__" className="border-t border-border mt-1 pt-1">
+                📝 {otherLabel}
               </SelectItem>
-            ))}
-          
-          <SelectItem value="__other__" className="border-t border-border mt-1 pt-1">
-            📝 {otherLabel}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {customOptionsToShow.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                title="Manage saved options"
+              >
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80" align="end">
+              <div className="space-y-3">
+                <div className="font-medium text-sm">Saqlangan variantlar</div>
+                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                  {customOptionsToShow.map((customOpt) => (
+                    <div
+                      key={customOpt}
+                      className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-muted/50 transition-colors"
+                    >
+                      <span className="text-sm flex-1 truncate">{customOpt}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive shrink-0"
+                        onClick={() => handleDeleteCustomOption(customOpt)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
 
       {showCustomInput && (
         <div className="mt-2 animate-in fade-in-0 slide-in-from-top-2 duration-200">
