@@ -506,7 +506,6 @@ const TayyorKozoynaklar = () => {
                 placeholder={t("lensSale.select")}
                 otherLabel={t("form.other")}
                 customInputLabel={t("form.enterCustomValue")}
-                storageKey="custom-glasses-types"
               />
             </div>
 
@@ -895,7 +894,6 @@ const TayyorKozoynaklar = () => {
               ]}
               otherLabel={t("form.other")}
               customInputLabel={t("form.enterCustomValue")}
-              storageKey="custom-glasses-types"
             />
           </div>
 
