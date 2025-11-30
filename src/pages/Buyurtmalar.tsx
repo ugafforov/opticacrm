@@ -6,7 +6,6 @@ import { BuyurtmalarForm } from "@/components/buyurtmalar/BuyurtmalarForm";
 import { BuyurtmalarTable } from "@/components/buyurtmalar/BuyurtmalarTable";
 import { useBuyurtmalar, Buyurtma } from "@/hooks/useBuyurtmalar";
 import { useBuyurtmalarExport } from "@/hooks/useBuyurtmalarExport";
-import { useSearchFilter } from "@/hooks/useSearchFilter";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { useTablePagination } from "@/hooks/useTablePagination";
 import { Label } from "@/components/ui/label";
@@ -20,12 +19,22 @@ const Buyurtmalar = () => {
   const { buyurtmalar, loading, createBuyurtma, updateBuyurtma, deleteBuyurtma } = useBuyurtmalar();
   const [editingItem, setEditingItem] = useState<Buyurtma | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Search filter
-  const { searchQuery, setSearchQuery, filteredItems: searchFiltered } = useSearchFilter(
-    buyurtmalar,
-    ["mijoz", "sana", "telefon"]
-  );
+  // Search and filter with phone number optimization
+  const searchFiltered = buyurtmalar.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const searchDigits = searchQuery.replace(/\D/g, "");
+    const phoneDigits = item.telefon?.replace(/\D/g, "") || "";
+    
+    return (
+      item.mijoz.toLowerCase().includes(query) ||
+      item.sana.includes(query) ||
+      (searchDigits && phoneDigits.includes(searchDigits))
+    );
+  });
 
   // Date filter
   const { dateFilter, setDateFilter, filteredItems: dateFiltered } = useDateFilter(searchFiltered);
