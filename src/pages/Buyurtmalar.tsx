@@ -9,6 +9,11 @@ import { useBuyurtmalarExport } from "@/hooks/useBuyurtmalarExport";
 import { useSearchFilter } from "@/hooks/useSearchFilter";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { useTablePagination } from "@/hooks/useTablePagination";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { PriceInput } from "@/components/PriceInput";
+import { SelectWithOther } from "@/components/SelectWithOther";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
@@ -42,10 +47,26 @@ const Buyurtmalar = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingItem) {
-      await updateBuyurtma(editingItem);
+      const updatedItem = {
+        ...editingItem,
+        jamiSumma: editTotalAmount
+      };
+      await updateBuyurtma(updatedItem);
       setEditingItem(null);
     }
   };
+
+  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
+    if (!value || !editingItem) return;
+    const trimmed = value.trim();
+    if (/^\d+$/.test(trimmed)) {
+      setEditingItem({ ...editingItem, [field]: `${trimmed}.0` });
+    }
+  };
+
+  const editTotalAmount = editingItem 
+    ? (parseFloat(String(editingItem.oynaNarxi)) || 0) + (parseFloat(String(editingItem.opravaNarxi)) || 0)
+    : 0;
 
   if (loading) {
     return (
@@ -96,52 +117,126 @@ const Buyurtmalar = () => {
           onOpenChange={(open) => !open && setEditingItem(null)}
           title={t("common.edit")}
         >
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">{t("form.clientName")}</label>
-              <input
-                type="text"
-                value={editingItem.mijoz}
-                onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t("form.phone")}</label>
-              <input
-                type="tel"
-                value={editingItem.telefon || ""}
-                onChange={(e) => setEditingItem({ ...editingItem, telefon: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-            </div>
+          <form onSubmit={handleUpdate} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">{t("form.rightEye")}</label>
-                <input
-                  type="text"
-                  value={editingItem.od}
-                  onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
+                <Label htmlFor="edit-mijoz">{t("form.clientName")}</Label>
+                <Input
+                  id="edit-mijoz"
+                  value={editingItem.mijoz}
+                  onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
+                  required
                 />
               </div>
+
               <div>
-                <label className="text-sm font-medium">{t("form.leftEye")}</label>
-                <input
-                  type="text"
-                  value={editingItem.os}
-                  onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
+                <Label htmlFor="edit-telefon">{t("form.phone")}</Label>
+                <Input
+                  id="edit-telefon"
+                  type="tel"
+                  value={editingItem.telefon || ""}
+                  onChange={(e) => setEditingItem({ ...editingItem, telefon: e.target.value })}
+                  placeholder="+998 90 123 45 67"
                 />
               </div>
             </div>
-            <button
-              onClick={handleUpdate}
-              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              {t("common.save")}
-            </button>
-          </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-od">{t("form.rightEye")}</Label>
+                <Input
+                  id="edit-od"
+                  value={editingItem.od}
+                  onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
+                  onBlur={(e) => handleOdOsBlur('od', e.target.value)}
+                  placeholder="1.0"
+                  className="text-center"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-os">{t("form.leftEye")}</Label>
+                <Input
+                  id="edit-os"
+                  value={editingItem.os}
+                  onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
+                  onBlur={(e) => handleOdOsBlur('os', e.target.value)}
+                  placeholder="1.0"
+                  className="text-center"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-oynaTuri">{t("form.lensType")}</Label>
+                <SelectWithOther
+                  id="edit-oynaTuri"
+                  value={editingItem.oynaTuri}
+                  onChange={(value) => setEditingItem({ ...editingItem, oynaTuri: value })}
+                  options={[
+                    { value: "3B1 jigarrang", label: t("lens.3b1Brown") },
+                    { value: "3B1 qora", label: t("lens.3b1Black") },
+                    { value: "4B1", label: t("lens.4b1") },
+                    { value: "420", label: t("lens.420") },
+                    { value: "SR", label: t("lens.sr") },
+                  ]}
+                  placeholder={t("form.select")}
+                  otherLabel={t("form.other")}
+                  customInputLabel={t("form.enterCustomValue")}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-oynaNarxi">{t("form.lensPrice")}</Label>
+                <PriceInput
+                  id="edit-oynaNarxi"
+                  value={String(editingItem.oynaNarxi)}
+                  onChange={(value) => setEditingItem({ ...editingItem, oynaNarxi: parseFloat(value) || 0 })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-opravaTuri">{t("form.frameType")}</Label>
+                <SelectWithOther
+                  id="edit-opravaTuri"
+                  value={editingItem.opravaTuri}
+                  onChange={(value) => setEditingItem({ ...editingItem, opravaTuri: value })}
+                  options={[
+                    { value: "dumaloq", label: t("frame.round") },
+                    { value: "fabritsio", label: t("frame.fabritsio") },
+                    { value: "alaniye", label: t("frame.alaniye") },
+                    { value: "titanik", label: t("frame.titanik") },
+                  ]}
+                  placeholder={t("form.select")}
+                  otherLabel={t("form.other")}
+                  customInputLabel={t("form.enterCustomValue")}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-opravaNarxi">{t("form.framePrice")}</Label>
+                <PriceInput
+                  id="edit-opravaNarxi"
+                  value={String(editingItem.opravaNarxi)}
+                  onChange={(value) => setEditingItem({ ...editingItem, opravaNarxi: parseFloat(value) || 0 })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-border">
+              <div className="text-lg font-semibold">
+                {t("orders.totalAmount")}: {editTotalAmount.toLocaleString()} {t("common.currency")}
+              </div>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">
+                {t("common.save")}
+              </Button>
+            </div>
+          </form>
         </EditDialog>
       )}
     </div>
