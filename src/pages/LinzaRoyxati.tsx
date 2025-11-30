@@ -542,14 +542,14 @@ const LinzaRoyxati = () => {
           </div>
 
           <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-6 md:col-span-3">
+            <div className="col-span-6 md:col-span-2">
               <Label htmlFor="mijoz" className="text-xs">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
                 onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
                 required
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
 
@@ -564,7 +564,7 @@ const LinzaRoyxati = () => {
                 }}
                 placeholder="+998"
                 required
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
 
@@ -576,7 +576,7 @@ const LinzaRoyxati = () => {
                 onChange={(e) => setForm({ ...form, od: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('od', e.target.value)}
                 placeholder="1.0"
-                className="text-center h-9"
+                className="text-center h-9 text-sm px-1"
                 required
               />
             </div>
@@ -589,19 +589,19 @@ const LinzaRoyxati = () => {
                 onChange={(e) => setForm({ ...form, os: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('os', e.target.value)}
                 placeholder="1.0"
-                className="text-center h-9"
+                className="text-center h-9 text-sm px-1"
                 required
               />
             </div>
 
-            <div className="col-span-6 md:col-span-5">
+            <div className="col-span-6 md:col-span-6">
               <Label htmlFor="linzaTuri" className="text-xs">{t("form.lensTypeRegistry")}</Label>
               <Input
                 id="linzaTuri"
                 value={form.linzaTuri}
                 onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
                 required
-                className="h-9"
+                className="h-9 text-sm"
               />
             </div>
           </div>

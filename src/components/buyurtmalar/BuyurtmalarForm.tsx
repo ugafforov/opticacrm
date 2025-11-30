@@ -101,11 +101,11 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               value={form.mijoz}
               onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
               required
-              className="h-9"
+              className="h-9 text-sm"
             />
           </div>
 
-          <div className="col-span-6 md:col-span-2">
+          <div className="col-span-6 md:col-span-1">
             <Label htmlFor="telefon" className="text-xs">{t("form.phone")}</Label>
             <Input
               id="telefon"
@@ -113,7 +113,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               value={form.telefon}
               onChange={(e) => setForm({ ...form, telefon: formatPhoneNumber(e.target.value) })}
               placeholder="+998"
-              className="h-9"
+              className="h-9 text-sm"
             />
           </div>
 
@@ -125,7 +125,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => setForm({ ...form, od: e.target.value })}
               onBlur={(e) => handleOdOsBlur('od', e.target.value)}
               placeholder="1.0"
-              className="text-center h-9"
+              className="text-center h-9 text-sm px-1"
             />
           </div>
 
@@ -137,12 +137,12 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => setForm({ ...form, os: e.target.value })}
               onBlur={(e) => handleOdOsBlur('os', e.target.value)}
               placeholder="1.0"
-              className="text-center h-9"
+              className="text-center h-9 text-sm px-1"
             />
           </div>
 
           <div className="col-span-6 md:col-span-2">
-            <Label htmlFor="oynaTuri" className="text-xs">{t("form.lensType")}</Label>
+            <Label htmlFor="oynaTuri" className="text-xs whitespace-nowrap">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
               value={form.oynaTuri}
@@ -160,8 +160,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="col-span-6 md:col-span-1">
-            <Label htmlFor="oynaNarxi" className="text-xs">{t("form.lensPrice")}</Label>
+          <div className="col-span-6 md:col-span-2">
+            <Label htmlFor="oynaNarxi" className="text-xs whitespace-nowrap">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
               value={form.oynaNarxi}
@@ -171,7 +171,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </div>
 
           <div className="col-span-6 md:col-span-2">
-            <Label htmlFor="opravaTuri" className="text-xs">{t("form.frameType")}</Label>
+            <Label htmlFor="opravaTuri" className="text-xs whitespace-nowrap">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
               value={form.opravaTuri}
@@ -189,7 +189,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </div>
 
           <div className="col-span-6 md:col-span-1">
-            <Label htmlFor="opravaNarxi" className="text-xs">{t("form.framePrice")}</Label>
+            <Label htmlFor="opravaNarxi" className="text-xs whitespace-nowrap">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
               value={form.opravaNarxi}
