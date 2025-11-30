@@ -41,6 +41,17 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
     opravaTuri: "",
   });
 
+  const handleOdOsChange = (field: 'od' | 'os', value: string) => {
+    setForm({ ...form, [field]: value });
+  };
+
+  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
+    // If it's a whole number, add .0
+    if (value && /^\d+$/.test(value)) {
+      setForm({ ...form, [field]: value + '.0' });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await onSubmit(form, selectedDate);
@@ -107,21 +118,27 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="w-20">
             <Label htmlFor="od">{t("form.rightEye")}</Label>
             <Input
               id="od"
               value={form.od}
-              onChange={(e) => setForm({ ...form, od: e.target.value })}
+              onChange={(e) => handleOdOsChange('od', e.target.value)}
+              onBlur={(e) => handleOdOsBlur('od', e.target.value)}
+              className="text-center"
+              maxLength={4}
             />
           </div>
 
-          <div>
+          <div className="w-20">
             <Label htmlFor="os">{t("form.leftEye")}</Label>
             <Input
               id="os"
               value={form.os}
-              onChange={(e) => setForm({ ...form, os: e.target.value })}
+              onChange={(e) => handleOdOsChange('os', e.target.value)}
+              onBlur={(e) => handleOdOsBlur('os', e.target.value)}
+              className="text-center"
+              maxLength={4}
             />
           </div>
 
