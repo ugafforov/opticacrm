@@ -61,6 +61,14 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
 
   const totalAmount = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
 
+  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
+    if (!value) return;
+    const trimmed = value.trim();
+    if (/^\d+$/.test(trimmed)) {
+      setForm({ ...form, [field]: `${trimmed}.0` });
+    }
+  };
+
   return (
     <Card className="p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,8 +93,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-8 gap-3">
+          <div className="md:col-span-2">
             <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
@@ -96,7 +104,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <Label htmlFor="telefon">{t("form.phone")}</Label>
             <Input
               id="telefon"
@@ -113,6 +121,9 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="od"
               value={form.od}
               onChange={(e) => setForm({ ...form, od: e.target.value })}
+              onBlur={(e) => handleOdOsBlur('od', e.target.value)}
+              placeholder="1.0"
+              className="text-center"
             />
           </div>
 
@@ -122,12 +133,13 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="os"
               value={form.os}
               onChange={(e) => setForm({ ...form, os: e.target.value })}
+              onBlur={(e) => handleOdOsBlur('os', e.target.value)}
+              placeholder="1.0"
+              className="text-center"
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
+          <div className="md:col-span-2">
             <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
@@ -155,8 +167,10 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               required
             />
           </div>
+        </div>
 
-          <div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="md:col-span-2">
             <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
@@ -174,7 +188,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
