@@ -541,8 +541,8 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-6 md:col-span-2">
+          <div className="grid grid-cols-24 gap-2">
+            <div className="col-span-12 md:col-span-5">
               <Label htmlFor="mijoz" className="text-xs">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
@@ -553,7 +553,7 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div className="col-span-6 md:col-span-2">
+            <div className="col-span-12 md:col-span-5">
               <Label htmlFor="telefon" className="text-xs">{t("form.phone")}</Label>
               <Input
                 id="telefon"
@@ -568,7 +568,7 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div className="col-span-3 md:col-span-1">
+            <div className="col-span-6 md:col-span-2">
               <Label htmlFor="od" className="text-xs">OD</Label>
               <Input
                 id="od"
@@ -576,12 +576,12 @@ const LinzaRoyxati = () => {
                 onChange={(e) => setForm({ ...form, od: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('od', e.target.value)}
                 placeholder="1.0"
-                className="text-center h-9 text-sm px-1"
+                className="text-center h-9 text-sm px-0.5"
                 required
               />
             </div>
 
-            <div className="col-span-3 md:col-span-1">
+            <div className="col-span-6 md:col-span-2">
               <Label htmlFor="os" className="text-xs">OS</Label>
               <Input
                 id="os"
@@ -589,12 +589,12 @@ const LinzaRoyxati = () => {
                 onChange={(e) => setForm({ ...form, os: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('os', e.target.value)}
                 placeholder="1.0"
-                className="text-center h-9 text-sm px-1"
+                className="text-center h-9 text-sm px-0.5"
                 required
               />
             </div>
 
-            <div className="col-span-6 md:col-span-6">
+            <div className="col-span-12 md:col-span-10">
               <Label htmlFor="linzaTuri" className="text-xs">{t("form.lensTypeRegistry")}</Label>
               <Input
                 id="linzaTuri"
