@@ -307,6 +307,14 @@ const LinzaRoyxati = () => {
     }
   };
 
+  const handleEditOdOsBlur = (field: 'od' | 'os', value: string) => {
+    if (!value || !editingItem) return;
+    const trimmed = value.trim();
+    if (/^\d+$/.test(trimmed)) {
+      setEditingItem({ ...editingItem, [field]: `${trimmed}.0` });
+    }
+  };
+
   const filteredRoyxatlar = royxatlar.filter((r) => {
     const query = searchQuery.toLowerCase();
     const searchDigits = searchQuery.replace(/\D/g, "");
@@ -999,8 +1007,10 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
                 }
+                onBlur={(e) => handleEditOdOsBlur('od', e.target.value)}
+                placeholder="1.0"
+                className="h-9 text-center"
                 required
-                className="h-9"
               />
             </div>
             <div>
@@ -1011,8 +1021,10 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
                 }
+                onBlur={(e) => handleEditOdOsBlur('os', e.target.value)}
+                placeholder="1.0"
+                className="h-9 text-center"
                 required
-                className="h-9"
               />
             </div>
           </div>
