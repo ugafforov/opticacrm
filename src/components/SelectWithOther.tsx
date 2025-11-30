@@ -15,6 +15,10 @@ interface SelectWithOtherProps {
   otherLabel?: string;
   customInputLabel?: string;
   id?: string;
+  helperText?: string;
+  error?: string;
+  required?: boolean;
+  disabled?: boolean;
 }
 
 // Native <select> based component to completely avoid portal/DOM issues
@@ -22,10 +26,14 @@ export const SelectWithOther = ({
   value,
   onChange,
   options,
-  placeholder = "Select...",
-  otherLabel = "Other...",
-  customInputLabel = "Enter custom value",
+  placeholder = "Tanlang...",
+  otherLabel = "Boshqa...",
+  customInputLabel = "Qiymat kiriting",
   id,
+  helperText,
+  error,
+  required = false,
+  disabled = false,
 }: SelectWithOtherProps) => {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState("");
@@ -69,15 +77,24 @@ export const SelectWithOther = ({
   const selectValue = showCustomInput && !value ? "__other__" : isValueCustom ? "__other__" : value;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       <select
         id={id}
         value={selectValue}
         onChange={handleSelectChange}
-        className="flex h-10 w-full rounded-xl border-2 border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary transition-all duration-300 hover:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+        required={required}
+        disabled={disabled}
+        className={`flex h-10 w-full rounded-xl border-2 bg-background/50 backdrop-blur-sm px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 ${
+          error
+            ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+            : "border-input focus-visible:border-primary hover:border-primary/50"
+        }`}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={error ? `${id}-error` : helperText ? `${id}-helper` : undefined}
       >
         <option value="" disabled>
           {placeholder}
+          {required && " *"}
         </option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -87,18 +104,34 @@ export const SelectWithOther = ({
         <option value="__other__">📝 {otherLabel}</option>
       </select>
 
+      {helperText && !error && (
+        <p id={`${id}-helper`} className="text-xs text-muted-foreground">
+          {helperText}
+        </p>
+      )}
+
+      {error && (
+        <p id={`${id}-error`} className="text-xs text-destructive flex items-center gap-1">
+          <span className="text-base">⚠️</span>
+          {error}
+        </p>
+      )}
+
       {showCustomInput && (
-        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-200">
-          <Label htmlFor={`${id}-custom`} className="text-xs text-muted-foreground">
+        <div className="animate-in fade-in-0 slide-in-from-top-2 duration-200 pt-1">
+          <Label htmlFor={`${id}-custom`} className="text-xs text-muted-foreground mb-1.5 block">
             {customInputLabel}
+            {required && <span className="text-destructive ml-0.5">*</span>}
           </Label>
           <Input
             id={`${id}-custom`}
             value={customValue}
             onChange={handleCustomInputChange}
-            placeholder={customInputLabel}
+            placeholder={`Masalan: Premium linza`}
             autoFocus
-            className="mt-1"
+            required={required}
+            disabled={disabled}
+            className={error ? "border-destructive focus-visible:ring-destructive/20" : ""}
           />
         </div>
       )}
