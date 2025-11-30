@@ -541,19 +541,20 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-12 gap-3">
-            <div className="col-span-12 md:col-span-3">
-              <Label htmlFor="mijoz">{t("form.clientName")}</Label>
+          <div className="grid grid-cols-12 gap-2">
+            <div className="col-span-6 md:col-span-3">
+              <Label htmlFor="mijoz" className="text-xs">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
                 onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
                 required
+                className="h-9"
               />
             </div>
 
             <div className="col-span-6 md:col-span-2">
-              <Label htmlFor="telefon">{t("form.phone")}</Label>
+              <Label htmlFor="telefon" className="text-xs">{t("form.phone")}</Label>
               <Input
                 id="telefon"
                 type="tel"
@@ -561,44 +562,46 @@ const LinzaRoyxati = () => {
                 onChange={(e) => {
                   setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
                 }}
-                placeholder="+998 90 123 45 67"
+                placeholder="+998"
                 required
+                className="h-9"
               />
             </div>
 
             <div className="col-span-3 md:col-span-1">
-              <Label htmlFor="od">OD</Label>
+              <Label htmlFor="od" className="text-xs">OD</Label>
               <Input
                 id="od"
                 value={form.od}
                 onChange={(e) => setForm({ ...form, od: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('od', e.target.value)}
                 placeholder="1.0"
-                className="text-center"
+                className="text-center h-9"
                 required
               />
             </div>
 
             <div className="col-span-3 md:col-span-1">
-              <Label htmlFor="os">OS</Label>
+              <Label htmlFor="os" className="text-xs">OS</Label>
               <Input
                 id="os"
                 value={form.os}
                 onChange={(e) => setForm({ ...form, os: e.target.value })}
                 onBlur={(e) => handleOdOsBlur('os', e.target.value)}
                 placeholder="1.0"
-                className="text-center"
+                className="text-center h-9"
                 required
               />
             </div>
 
-            <div className="col-span-12 md:col-span-5">
-              <Label htmlFor="linzaTuri">{t("form.lensTypeRegistry")}</Label>
+            <div className="col-span-6 md:col-span-5">
+              <Label htmlFor="linzaTuri" className="text-xs">{t("form.lensTypeRegistry")}</Label>
               <Input
                 id="linzaTuri"
                 value={form.linzaTuri}
                 onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
                 required
+                className="h-9"
               />
             </div>
           </div>
