@@ -541,8 +541,8 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-12 md:col-span-3">
               <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
@@ -552,7 +552,7 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div className="col-span-6 md:col-span-2">
               <Label htmlFor="telefon">{t("form.phone")}</Label>
               <Input
                 id="telefon"
@@ -566,8 +566,8 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="od">{t("form.rightEye")}</Label>
+            <div className="col-span-3 md:col-span-1">
+              <Label htmlFor="od">OD</Label>
               <Input
                 id="od"
                 value={form.od}
@@ -579,8 +579,8 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="os">{t("form.leftEye")}</Label>
+            <div className="col-span-3 md:col-span-1">
+              <Label htmlFor="os">OS</Label>
               <Input
                 id="os"
                 value={form.os}
@@ -591,16 +591,16 @@ const LinzaRoyxati = () => {
                 required
               />
             </div>
-          </div>
 
-          <div>
-            <Label htmlFor="linzaTuri">{t("form.lensTypeRegistry")}</Label>
-            <Input
-              id="linzaTuri"
-              value={form.linzaTuri}
-              onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
-              required
-            />
+            <div className="col-span-12 md:col-span-5">
+              <Label htmlFor="linzaTuri">{t("form.lensTypeRegistry")}</Label>
+              <Input
+                id="linzaTuri"
+                value={form.linzaTuri}
+                onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
+                required
+              />
+            </div>
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border">
