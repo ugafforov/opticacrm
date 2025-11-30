@@ -61,14 +61,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
 
   const totalAmount = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
 
-  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
-    if (!value) return;
-    const trimmed = value.trim();
-    if (/^\d+$/.test(trimmed)) {
-      setForm({ ...form, [field]: `${trimmed}.0` });
-    }
-  };
-
   return (
     <Card className="p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -93,56 +85,50 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-12 md:col-span-2">
-            <Label htmlFor="mijoz" className="text-xs">{t("form.clientName")}</Label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
               value={form.mijoz}
               onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
               required
-              className="h-9 text-sm"
             />
           </div>
 
-          <div className="col-span-6 md:col-span-1">
-            <Label htmlFor="telefon" className="text-xs">{t("form.phone")}</Label>
+          <div>
+            <Label htmlFor="telefon">{t("form.phone")}</Label>
             <Input
               id="telefon"
               type="tel"
               value={form.telefon}
               onChange={(e) => setForm({ ...form, telefon: formatPhoneNumber(e.target.value) })}
-              placeholder="+998"
-              className="h-9 text-sm"
+              placeholder="+998 90 123 45 67"
             />
           </div>
 
-          <div className="col-span-3 md:col-span-1">
-            <Label htmlFor="od" className="text-xs">OD</Label>
+          <div>
+            <Label htmlFor="od">{t("form.rightEye")}</Label>
             <Input
               id="od"
               value={form.od}
               onChange={(e) => setForm({ ...form, od: e.target.value })}
-              onBlur={(e) => handleOdOsBlur('od', e.target.value)}
-              placeholder="1.0"
-              className="text-center h-9 text-sm px-1"
             />
           </div>
 
-          <div className="col-span-3 md:col-span-1">
-            <Label htmlFor="os" className="text-xs">OS</Label>
+          <div>
+            <Label htmlFor="os">{t("form.leftEye")}</Label>
             <Input
               id="os"
               value={form.os}
               onChange={(e) => setForm({ ...form, os: e.target.value })}
-              onBlur={(e) => handleOdOsBlur('os', e.target.value)}
-              placeholder="1.0"
-              className="text-center h-9 text-sm px-1"
             />
           </div>
+        </div>
 
-          <div className="col-span-6 md:col-span-2">
-            <Label htmlFor="oynaTuri" className="text-xs whitespace-nowrap">{t("form.lensType")}</Label>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
               value={form.oynaTuri}
@@ -160,8 +146,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="col-span-6 md:col-span-2">
-            <Label htmlFor="oynaNarxi" className="text-xs whitespace-nowrap">{t("form.lensPrice")}</Label>
+          <div>
+            <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
               value={form.oynaNarxi}
@@ -170,8 +156,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="col-span-6 md:col-span-2">
-            <Label htmlFor="opravaTuri" className="text-xs whitespace-nowrap">{t("form.frameType")}</Label>
+          <div>
+            <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
               value={form.opravaTuri}
@@ -188,8 +174,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="col-span-6 md:col-span-1">
-            <Label htmlFor="opravaNarxi" className="text-xs whitespace-nowrap">{t("form.framePrice")}</Label>
+          <div>
+            <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
               value={form.opravaNarxi}

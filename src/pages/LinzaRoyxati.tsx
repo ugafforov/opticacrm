@@ -71,14 +71,6 @@ const LinzaRoyxati = () => {
     linzaTuri: "",
   });
 
-  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
-    if (!value) return;
-    const trimmed = value.trim();
-    if (/^\d+$/.test(trimmed)) {
-      setForm({ ...form, [field]: `${trimmed}.0` });
-    }
-  };
-
   useEffect(() => {
     if (user) {
       loadRoyxatlar();
@@ -304,14 +296,6 @@ const LinzaRoyxati = () => {
     } catch (error: any) {
       console.error("Error updating linza royxat:", error);
       toast.error(t("common.error"));
-    }
-  };
-
-  const handleEditOdOsBlur = (field: 'od' | 'os', value: string) => {
-    if (!value || !editingItem) return;
-    const trimmed = value.trim();
-    if (/^\d+$/.test(trimmed)) {
-      setEditingItem({ ...editingItem, [field]: `${trimmed}.0` });
     }
   };
 
@@ -541,20 +525,19 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-12 gap-2">
-            <div className="col-span-6 md:col-span-2">
-              <Label htmlFor="mijoz" className="text-xs">{t("form.clientName")}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
                 id="mijoz"
                 value={form.mijoz}
                 onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
                 required
-                className="h-9 text-sm"
               />
             </div>
 
-            <div className="col-span-6 md:col-span-2">
-              <Label htmlFor="telefon" className="text-xs">{t("form.phone")}</Label>
+            <div>
+              <Label htmlFor="telefon">{t("form.phone")}</Label>
               <Input
                 id="telefon"
                 type="tel"
@@ -562,46 +545,39 @@ const LinzaRoyxati = () => {
                 onChange={(e) => {
                   setForm({ ...form, telefon: formatPhoneNumber(e.target.value) });
                 }}
-                placeholder="+998"
-                required
-                className="h-9 text-sm"
-              />
-            </div>
-
-            <div className="col-span-3 md:col-span-1">
-              <Label htmlFor="od" className="text-xs">OD</Label>
-              <Input
-                id="od"
-                value={form.od}
-                onChange={(e) => setForm({ ...form, od: e.target.value })}
-                onBlur={(e) => handleOdOsBlur('od', e.target.value)}
-                placeholder="1.0"
-                className="text-center h-9 text-sm px-1"
+                placeholder="+998 90 123 45 67"
                 required
               />
             </div>
 
-            <div className="col-span-3 md:col-span-1">
-              <Label htmlFor="os" className="text-xs">OS</Label>
-              <Input
-                id="os"
-                value={form.os}
-                onChange={(e) => setForm({ ...form, os: e.target.value })}
-                onBlur={(e) => handleOdOsBlur('os', e.target.value)}
-                placeholder="1.0"
-                className="text-center h-9 text-sm px-1"
-                required
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="od">{t("form.rightEye")}</Label>
+                <Input
+                  id="od"
+                  value={form.od}
+                  onChange={(e) => setForm({ ...form, od: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="os">{t("form.leftEye")}</Label>
+                <Input
+                  id="os"
+                  value={form.os}
+                  onChange={(e) => setForm({ ...form, os: e.target.value })}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="col-span-6 md:col-span-6">
-              <Label htmlFor="linzaTuri" className="text-xs">{t("form.lensTypeRegistry")}</Label>
+            <div>
+              <Label htmlFor="linzaTuri">{t("form.lensTypeRegistry")}</Label>
               <Input
                 id="linzaTuri"
                 value={form.linzaTuri}
                 onChange={(e) => setForm({ ...form, linzaTuri: e.target.value })}
                 required
-                className="h-9 text-sm"
               />
             </div>
           </div>
@@ -1010,10 +986,8 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
                 }
-                onBlur={(e) => handleEditOdOsBlur('od', e.target.value)}
-                placeholder="1.0"
-                className="h-9 text-center"
                 required
+                className="h-9"
               />
             </div>
             <div>
@@ -1024,10 +998,8 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
                 }
-                onBlur={(e) => handleEditOdOsBlur('os', e.target.value)}
-                placeholder="1.0"
-                className="h-9 text-center"
                 required
+                className="h-9"
               />
             </div>
           </div>

@@ -44,7 +44,7 @@ export const useAuth = () => {
       .select("role")
       .eq("user_id", userId)
       .eq("role", "admin")
-      .maybeSingle();
+      .single();
     
     setIsAdmin(!!data);
   };
