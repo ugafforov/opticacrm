@@ -93,8 +93,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-8 gap-3">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-12 md:col-span-3">
             <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
@@ -104,7 +104,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="col-span-6 md:col-span-2">
             <Label htmlFor="telefon">{t("form.phone")}</Label>
             <Input
               id="telefon"
@@ -115,8 +115,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="od">{t("form.rightEye")}</Label>
+          <div className="col-span-3 md:col-span-1">
+            <Label htmlFor="od">OD</Label>
             <Input
               id="od"
               value={form.od}
@@ -127,8 +127,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="os">{t("form.leftEye")}</Label>
+          <div className="col-span-3 md:col-span-1">
+            <Label htmlFor="os">OS</Label>
             <Input
               id="os"
               value={form.os}
@@ -139,7 +139,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="col-span-12 md:col-span-3">
             <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
@@ -158,7 +158,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-6 md:col-span-2">
             <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
@@ -167,10 +167,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               required
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="md:col-span-2">
+          <div className="col-span-12 md:col-span-6">
             <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
@@ -188,7 +186,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="md:col-span-2">
+          <div className="col-span-6 md:col-span-4">
             <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
