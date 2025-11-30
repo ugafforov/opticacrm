@@ -10,11 +10,25 @@ export const useSearchFilter = <T extends Record<string, any>>(
     if (!searchQuery.trim()) return items;
 
     const query = searchQuery.toLowerCase().trim();
+    const queryDigits = query.replace(/\D/g, "");
+    
     return items.filter((item) =>
       searchFields.some((field) => {
         const value = item[field];
         if (value === null || value === undefined) return false;
-        return String(value).toLowerCase().includes(query);
+        
+        const stringValue = String(value).toLowerCase();
+        
+        // Check for regular text match
+        if (stringValue.includes(query)) return true;
+        
+        // For phone number fields, also check digit-only match
+        if (queryDigits && field.toString().includes('telefon')) {
+          const valueDigits = stringValue.replace(/\D/g, "");
+          return valueDigits.includes(queryDigits);
+        }
+        
+        return false;
       })
     );
   }, [items, searchQuery, searchFields]);

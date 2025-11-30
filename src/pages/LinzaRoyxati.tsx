@@ -300,13 +300,14 @@ const LinzaRoyxati = () => {
   };
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
-    const query = searchQuery.toLowerCase();
-    const searchDigits = searchQuery.replace(/\D/g, "");
+    const query = searchQuery.toLowerCase().trim();
+    const searchDigits = query.replace(/\D/g, "");
     const phoneDigits = r.telefon.replace(/\D/g, "");
     
     const matchesSearch = (
       r.mijoz.toLowerCase().includes(query) ||
       r.sana.includes(query) ||
+      r.linzaTuri.toLowerCase().includes(query) ||
       (searchDigits && phoneDigits.includes(searchDigits))
     );
 
@@ -525,7 +526,7 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             <div>
               <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
@@ -550,25 +551,24 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="od">{t("form.rightEye")}</Label>
-                <Input
-                  id="od"
-                  value={form.od}
-                  onChange={(e) => setForm({ ...form, od: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="os">{t("form.leftEye")}</Label>
-                <Input
-                  id="os"
-                  value={form.os}
-                  onChange={(e) => setForm({ ...form, os: e.target.value })}
-                  required
-                />
-              </div>
+            <div>
+              <Label htmlFor="od">{t("form.rightEye")}</Label>
+              <Input
+                id="od"
+                value={form.od}
+                onChange={(e) => setForm({ ...form, od: e.target.value })}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="os">{t("form.leftEye")}</Label>
+              <Input
+                id="os"
+                value={form.os}
+                onChange={(e) => setForm({ ...form, os: e.target.value })}
+                required
+              />
             </div>
 
             <div>
