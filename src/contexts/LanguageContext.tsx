@@ -183,7 +183,7 @@ const translations = {
     "common.currency": "сўм",
     
     // Form labels - Orders
-    "form.clientName": "Мижоз фамилияси ва исми",
+    "form.clientName": "Мижоз",
     "form.phone": "Телефон рақами",
     "form.rightEye": "OD",
     "form.leftEye": "OS",
@@ -538,7 +538,7 @@ const translations = {
     "common.currency": "so'm",
     
     // Form labels - Orders
-    "form.clientName": "Mijoz familiyasi va ismi",
+    "form.clientName": "Mijoz",
     "form.phone": "Telefon raqami",
     "form.rightEye": "OD",
     "form.leftEye": "OS",

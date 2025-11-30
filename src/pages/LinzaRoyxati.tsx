@@ -71,6 +71,17 @@ const LinzaRoyxati = () => {
     linzaTuri: "",
   });
 
+  const handleOdOsChange = (field: 'od' | 'os', value: string) => {
+    setForm({ ...form, [field]: value });
+  };
+
+  const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
+    // If it's a whole number, add .0
+    if (value && /^\d+$/.test(value)) {
+      setForm({ ...form, [field]: value + '.0' });
+    }
+  };
+
   useEffect(() => {
     if (user) {
       loadRoyxatlar();
@@ -551,22 +562,28 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div>
+            <div className="w-20">
               <Label htmlFor="od">{t("form.rightEye")}</Label>
               <Input
                 id="od"
                 value={form.od}
-                onChange={(e) => setForm({ ...form, od: e.target.value })}
+                onChange={(e) => handleOdOsChange('od', e.target.value)}
+                onBlur={(e) => handleOdOsBlur('od', e.target.value)}
+                className="text-center"
+                maxLength={4}
                 required
               />
             </div>
 
-            <div>
+            <div className="w-20">
               <Label htmlFor="os">{t("form.leftEye")}</Label>
               <Input
                 id="os"
                 value={form.os}
-                onChange={(e) => setForm({ ...form, os: e.target.value })}
+                onChange={(e) => handleOdOsChange('os', e.target.value)}
+                onBlur={(e) => handleOdOsBlur('os', e.target.value)}
+                className="text-center"
+                maxLength={4}
                 required
               />
             </div>
@@ -978,7 +995,7 @@ const LinzaRoyxati = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className="w-20">
               <Label htmlFor="edit-od" className="text-xs">{t("form.rightEye")}</Label>
               <Input
                 id="edit-od"
@@ -986,11 +1003,17 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
                 }
+                onBlur={(e) => {
+                  if (editingItem && e.target.value && /^\d+$/.test(e.target.value)) {
+                    setEditingItem({ ...editingItem, od: e.target.value + '.0' });
+                  }
+                }}
                 required
-                className="h-9"
+                className="h-9 text-center"
+                maxLength={4}
               />
             </div>
-            <div>
+            <div className="w-20">
               <Label htmlFor="edit-os" className="text-xs">{t("form.leftEye")}</Label>
               <Input
                 id="edit-os"
@@ -998,8 +1021,14 @@ const LinzaRoyxati = () => {
                 onChange={(e) =>
                   setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
                 }
+                onBlur={(e) => {
+                  if (editingItem && e.target.value && /^\d+$/.test(e.target.value)) {
+                    setEditingItem({ ...editingItem, os: e.target.value + '.0' });
+                  }
+                }}
                 required
-                className="h-9"
+                className="h-9 text-center"
+                maxLength={4}
               />
             </div>
           </div>

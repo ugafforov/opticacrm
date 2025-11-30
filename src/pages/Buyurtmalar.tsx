@@ -116,22 +116,34 @@ const Buyurtmalar = () => {
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div>
+              <div className="w-20">
                 <label className="text-sm font-medium">{t("form.rightEye")}</label>
                 <input
                   type="text"
                   value={editingItem.od}
                   onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
+                  onBlur={(e) => {
+                    if (e.target.value && /^\d+$/.test(e.target.value)) {
+                      setEditingItem({ ...editingItem, od: e.target.value + '.0' });
+                    }
+                  }}
+                  className="w-full px-3 py-2 border rounded-md text-center"
+                  maxLength={4}
                 />
               </div>
-              <div>
+              <div className="w-20">
                 <label className="text-sm font-medium">{t("form.leftEye")}</label>
                 <input
                   type="text"
                   value={editingItem.os}
                   onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
+                  onBlur={(e) => {
+                    if (e.target.value && /^\d+$/.test(e.target.value)) {
+                      setEditingItem({ ...editingItem, os: e.target.value + '.0' });
+                    }
+                  }}
+                  className="w-full px-3 py-2 border rounded-md text-center"
+                  maxLength={4}
                 />
               </div>
             </div>
