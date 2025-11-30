@@ -175,6 +175,7 @@ const Auth = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-3 z-10 text-primary/60 hover:text-primary transition-all duration-200 hover:scale-110"
+                  aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
