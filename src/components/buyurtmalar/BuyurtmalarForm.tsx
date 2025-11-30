@@ -85,7 +85,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
           <div>
             <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
@@ -124,9 +124,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => setForm({ ...form, os: e.target.value })}
             />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
             <SelectWithOther
