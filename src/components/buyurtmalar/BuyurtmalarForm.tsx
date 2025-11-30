@@ -85,8 +85,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-          <div>
+        <div className="grid grid-cols-8 md:grid-cols-12 gap-2">
+          <div className="col-span-2 md:col-span-3">
             <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
@@ -96,7 +96,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-2">
             <Label htmlFor="telefon">{t("form.phone")}</Label>
             <Input
               id="telefon"
@@ -107,25 +107,27 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-1">
             <Label htmlFor="od">{t("form.rightEye")}</Label>
             <Input
               id="od"
               value={form.od}
               onChange={(e) => setForm({ ...form, od: e.target.value })}
+              className="text-center"
             />
           </div>
 
-          <div>
+          <div className="col-span-1">
             <Label htmlFor="os">{t("form.leftEye")}</Label>
             <Input
               id="os"
               value={form.os}
               onChange={(e) => setForm({ ...form, os: e.target.value })}
+              className="text-center"
             />
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-2">
             <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
@@ -144,7 +146,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-1 md:col-span-1">
             <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
@@ -154,7 +156,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-2">
             <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
@@ -172,7 +174,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="col-span-1 md:col-span-1">
             <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
