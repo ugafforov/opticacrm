@@ -143,13 +143,17 @@ const Buyurtmalar = () => {
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {editingItem.sana ? format(new Date(editingItem.sana), "dd.MM.yyyy") : t("form.selectDate")}
+                    {editingItem.sana && !isNaN(new Date(editingItem.sana).getTime()) 
+                      ? format(new Date(editingItem.sana), "dd.MM.yyyy") 
+                      : t("form.selectDate")}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={editingItem.sana ? new Date(editingItem.sana) : undefined}
+                    selected={editingItem.sana && !isNaN(new Date(editingItem.sana).getTime()) 
+                      ? new Date(editingItem.sana) 
+                      : undefined}
                     onSelect={(date) => {
                       if (date) {
                         setEditingItem({ ...editingItem, sana: format(date, "yyyy-MM-dd") });
