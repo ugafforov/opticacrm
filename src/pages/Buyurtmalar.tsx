@@ -9,6 +9,12 @@ import { useBuyurtmalarExport } from "@/hooks/useBuyurtmalarExport";
 import { useSearchFilter } from "@/hooks/useSearchFilter";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { useTablePagination } from "@/hooks/useTablePagination";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PriceInput } from "@/components/PriceInput";
+import { SelectWithOther } from "@/components/SelectWithOther";
+import { Button } from "@/components/ui/button";
+import { formatPhoneNumber } from "@/lib/utils";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
@@ -42,7 +48,9 @@ const Buyurtmalar = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingItem) {
-      await updateBuyurtma(editingItem);
+      // Recalculate total
+      const jamiSumma = editingItem.oynaNarxi + editingItem.opravaNarxi;
+      await updateBuyurtma({ ...editingItem, jamiSumma });
       setEditingItem(null);
     }
   };
@@ -96,30 +104,34 @@ const Buyurtmalar = () => {
           onOpenChange={(open) => !open && setEditingItem(null)}
           title={t("common.edit")}
         >
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">{t("form.clientName")}</label>
-              <input
-                type="text"
-                value={editingItem.mijoz}
-                onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-              />
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="edit-mijoz" className="text-sm">{t("form.clientName")}</Label>
+                <Input
+                  id="edit-mijoz"
+                  value={editingItem.mijoz}
+                  onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-telefon" className="text-sm">{t("form.phone")}</Label>
+                <Input
+                  id="edit-telefon"
+                  type="tel"
+                  value={editingItem.telefon || ""}
+                  onChange={(e) => setEditingItem({ ...editingItem, telefon: formatPhoneNumber(e.target.value) })}
+                  placeholder="+998 90 123 45 67"
+                />
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">{t("form.phone")}</label>
-              <input
-                type="tel"
-                value={editingItem.telefon || ""}
-                onChange={(e) => setEditingItem({ ...editingItem, telefon: e.target.value })}
-                className="w-full px-3 py-2 border rounded-md"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-2 gap-3">
               <div className="w-20">
-                <label className="text-sm font-medium">{t("form.rightEye")}</label>
-                <input
-                  type="text"
+                <Label htmlFor="edit-od" className="text-sm">{t("form.rightEye")}</Label>
+                <Input
+                  id="edit-od"
                   value={editingItem.od}
                   onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
                   onBlur={(e) => {
@@ -127,14 +139,15 @@ const Buyurtmalar = () => {
                       setEditingItem({ ...editingItem, od: e.target.value + '.0' });
                     }
                   }}
-                  className="w-full px-3 py-2 border rounded-md text-center"
+                  className="text-center"
                   maxLength={4}
+                  required
                 />
               </div>
               <div className="w-20">
-                <label className="text-sm font-medium">{t("form.leftEye")}</label>
-                <input
-                  type="text"
+                <Label htmlFor="edit-os" className="text-sm">{t("form.leftEye")}</Label>
+                <Input
+                  id="edit-os"
                   value={editingItem.os}
                   onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
                   onBlur={(e) => {
@@ -142,18 +155,81 @@ const Buyurtmalar = () => {
                       setEditingItem({ ...editingItem, os: e.target.value + '.0' });
                     }
                   }}
-                  className="w-full px-3 py-2 border rounded-md text-center"
+                  className="text-center"
                   maxLength={4}
+                  required
                 />
               </div>
             </div>
-            <button
-              onClick={handleUpdate}
-              className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              {t("common.save")}
-            </button>
-          </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="edit-oynaTuri" className="text-sm">{t("form.lensType")}</Label>
+                <SelectWithOther
+                  id="edit-oynaTuri"
+                  value={editingItem.oynaTuri}
+                  onChange={(value) => setEditingItem({ ...editingItem, oynaTuri: value })}
+                  options={[
+                    { value: "3B1 jigarrang", label: t("lens.3b1Brown") },
+                    { value: "3B1 qora", label: t("lens.3b1Black") },
+                    { value: "4B1", label: t("lens.4b1") },
+                    { value: "420", label: t("lens.420") },
+                    { value: "SR", label: t("lens.sr") },
+                  ]}
+                  placeholder={t("form.select")}
+                  otherLabel={t("form.other")}
+                  customInputLabel={t("form.enterCustomValue")}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-oynaNarxi" className="text-sm">{t("form.lensPrice")}</Label>
+                <PriceInput
+                  id="edit-oynaNarxi"
+                  value={editingItem.oynaNarxi.toString()}
+                  onChange={(value) => setEditingItem({ ...editingItem, oynaNarxi: parseFloat(value) || 0 })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="edit-opravaTuri" className="text-sm">{t("form.frameType")}</Label>
+                <SelectWithOther
+                  id="edit-opravaTuri"
+                  value={editingItem.opravaTuri}
+                  onChange={(value) => setEditingItem({ ...editingItem, opravaTuri: value })}
+                  options={[
+                    { value: "dumaloq", label: t("frame.round") },
+                    { value: "fabritsio", label: t("frame.fabritsio") },
+                    { value: "alaniye", label: t("frame.alaniye") },
+                    { value: "titanik", label: t("frame.titanik") },
+                  ]}
+                  placeholder={t("form.select")}
+                  otherLabel={t("form.other")}
+                  customInputLabel={t("form.enterCustomValue")}
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-opravaNarxi" className="text-sm">{t("form.framePrice")}</Label>
+                <PriceInput
+                  id="edit-opravaNarxi"
+                  value={editingItem.opravaNarxi.toString()}
+                  onChange={(value) => setEditingItem({ ...editingItem, opravaNarxi: parseFloat(value) || 0 })}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" onClick={() => setEditingItem(null)}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit">
+                {t("common.save")}
+              </Button>
+            </div>
+          </form>
         </EditDialog>
       )}
     </div>
