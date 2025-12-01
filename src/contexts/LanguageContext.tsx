@@ -1,3 +1,4 @@
+// Language Context Provider for multi-language support
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 type Script = "cyrillic" | "latin";
