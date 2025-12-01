@@ -96,8 +96,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </Popover>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
-          <div>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex-1 min-w-[180px]">
             <Label htmlFor="mijoz">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
@@ -107,7 +107,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
+          <div className="flex-1 min-w-[180px]">
             <Label htmlFor="telefon">{t("form.phone")}</Label>
             <Input
               id="telefon"
@@ -119,31 +119,31 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           </div>
 
           <div className="w-20">
-            <Label htmlFor="od">{t("form.rightEye")}</Label>
+            <Label htmlFor="od" className="text-xs">{t("form.rightEye")}</Label>
             <Input
               id="od"
               value={form.od}
               onChange={(e) => handleOdOsChange('od', e.target.value)}
               onBlur={(e) => handleOdOsBlur('od', e.target.value)}
-              className="text-center"
+              className="text-center h-10"
               maxLength={4}
             />
           </div>
 
           <div className="w-20">
-            <Label htmlFor="os">{t("form.leftEye")}</Label>
+            <Label htmlFor="os" className="text-xs">{t("form.leftEye")}</Label>
             <Input
               id="os"
               value={form.os}
               onChange={(e) => handleOdOsChange('os', e.target.value)}
               onBlur={(e) => handleOdOsBlur('os', e.target.value)}
-              className="text-center"
+              className="text-center h-10"
               maxLength={4}
             />
           </div>
 
-          <div>
-            <Label htmlFor="oynaTuri">{t("form.lensType")}</Label>
+          <div className="flex-1 min-w-[150px]">
+            <Label htmlFor="oynaTuri" className="text-sm">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
               value={form.oynaTuri}
@@ -161,8 +161,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="oynaNarxi">{t("form.lensPrice")}</Label>
+          <div className="flex-1 min-w-[150px]">
+            <Label htmlFor="oynaNarxi" className="text-sm">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
               value={form.oynaNarxi}
@@ -171,8 +171,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="opravaTuri">{t("form.frameType")}</Label>
+          <div className="flex-1 min-w-[150px]">
+            <Label htmlFor="opravaTuri" className="text-sm">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
               value={form.opravaTuri}
@@ -189,8 +189,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div>
-            <Label htmlFor="opravaNarxi">{t("form.framePrice")}</Label>
+          <div className="flex-1 min-w-[150px]">
+            <Label htmlFor="opravaNarxi" className="text-sm">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
               value={form.opravaNarxi}
