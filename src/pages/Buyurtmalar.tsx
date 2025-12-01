@@ -14,7 +14,11 @@ import { Label } from "@/components/ui/label";
 import { PriceInput } from "@/components/PriceInput";
 import { SelectWithOther } from "@/components/SelectWithOther";
 import { Button } from "@/components/ui/button";
-import { formatPhoneNumber } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn, formatPhoneNumber } from "@/lib/utils";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
@@ -125,6 +129,36 @@ const Buyurtmalar = () => {
                   placeholder="+998 90 123 45 67"
                 />
               </div>
+            </div>
+
+            <div>
+              <Label className="text-sm">{t("form.date")}</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal h-10",
+                      !editingItem.sana && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editingItem.sana ? format(new Date(editingItem.sana), "dd.MM.yyyy") : t("form.selectDate")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={editingItem.sana ? new Date(editingItem.sana) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setEditingItem({ ...editingItem, sana: format(date, "yyyy-MM-dd") });
+                      }
+                    }}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
