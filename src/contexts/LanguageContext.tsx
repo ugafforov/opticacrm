@@ -186,6 +186,8 @@ const translations = {
     // Form labels - Orders
     "form.clientName": "Мижоз",
     "form.phone": "Телефон рақами",
+    "form.date": "Сана",
+    "form.selectDate": "Сана танланг",
     "form.rightEye": "OD",
     "form.leftEye": "OS",
     "form.lensType": "Ойна тури",
@@ -541,6 +543,8 @@ const translations = {
     // Form labels - Orders
     "form.clientName": "Mijoz",
     "form.phone": "Telefon raqami",
+    "form.date": "Sana",
+    "form.selectDate": "Sana tanlang",
     "form.rightEye": "OD",
     "form.leftEye": "OS",
     "form.lensType": "Oyna turi",
