@@ -109,36 +109,14 @@ const Buyurtmalar = () => {
           title={t("common.edit")}
         >
           <form onSubmit={handleUpdate} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="edit-mijoz" className="text-sm">{t("form.clientName")}</Label>
-                <Input
-                  id="edit-mijoz"
-                  value={editingItem.mijoz}
-                  onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="edit-telefon" className="text-sm">{t("form.phone")}</Label>
-                <Input
-                  id="edit-telefon"
-                  type="tel"
-                  value={editingItem.telefon || ""}
-                  onChange={(e) => setEditingItem({ ...editingItem, telefon: formatPhoneNumber(e.target.value) })}
-                  placeholder="+998 90 123 45 67"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm">{t("form.date")}</Label>
+            <div className="border border-primary/30 bg-primary/5 rounded-md p-3 mb-4">
+              <Label className="text-sm font-medium text-primary">{t("form.date")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal h-10",
+                      "w-full justify-start text-left font-normal h-10 mt-1.5",
                       !editingItem.sana && "text-muted-foreground"
                     )}
                   >
@@ -163,6 +141,28 @@ const Buyurtmalar = () => {
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label htmlFor="edit-mijoz" className="text-sm">{t("form.clientName")}</Label>
+                <Input
+                  id="edit-mijoz"
+                  value={editingItem.mijoz}
+                  onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-telefon" className="text-sm">{t("form.phone")}</Label>
+                <Input
+                  id="edit-telefon"
+                  type="tel"
+                  value={editingItem.telefon || ""}
+                  onChange={(e) => setEditingItem({ ...editingItem, telefon: formatPhoneNumber(e.target.value) })}
+                  placeholder="+998 90 123 45 67"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
