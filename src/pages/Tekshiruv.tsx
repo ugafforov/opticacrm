@@ -839,13 +839,13 @@ const Tekshiruv = () => {
         title={t("common.edit")}
       >
         <form onSubmit={handleUpdate} className="space-y-3">
-          <div>
-            <Label className="text-xs">{t("common.date")}</Label>
+          <div className="border border-primary/30 bg-primary/5 rounded-md p-3 mb-4">
+            <Label className="text-xs font-medium text-primary">{t("common.date")}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal h-9 text-sm"
+                  className="w-full justify-start text-left font-normal h-9 text-sm mt-1.5"
                 >
                   <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
