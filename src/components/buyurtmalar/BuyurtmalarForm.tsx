@@ -46,8 +46,8 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
   };
 
   const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
-    // If it's a whole number, add .0
-    if (value && /^\d+$/.test(value)) {
+    // If it's a whole number (positive or negative), add .0
+    if (value && /^-?\d+$/.test(value)) {
       setForm({ ...form, [field]: value + '.0' });
     }
   };
@@ -126,7 +126,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => handleOdOsChange('od', e.target.value)}
               onBlur={(e) => handleOdOsBlur('od', e.target.value)}
               className="text-center h-10"
-              maxLength={4}
+              maxLength={5}
             />
           </div>
 
@@ -138,7 +138,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => handleOdOsChange('os', e.target.value)}
               onBlur={(e) => handleOdOsBlur('os', e.target.value)}
               className="text-center h-10"
-              maxLength={4}
+              maxLength={5}
             />
           </div>
 

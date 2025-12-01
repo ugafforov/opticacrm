@@ -872,6 +872,7 @@ const TayyorKozoynaklar = () => {
                   )
                 }
                 required
+                className="h-9"
               />
             </div>
           </div>
@@ -897,7 +898,7 @@ const TayyorKozoynaklar = () => {
             />
           </div>
 
-          <div className="flex gap-2 justify-end pt-2">
+          <div className="flex gap-2 justify-end pt-2 border-t">
             <Button
               type="button"
               variant="outline"

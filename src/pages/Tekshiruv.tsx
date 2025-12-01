@@ -885,7 +885,7 @@ const Tekshiruv = () => {
             />
           </div>
 
-          <div className="border border-border rounded-lg p-3 space-y-2">
+          <div className="border border-border rounded-md p-3 space-y-2 bg-muted/30">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="edit-refraksiyametriya"
@@ -927,7 +927,7 @@ const Tekshiruv = () => {
             </div>
           </div>
 
-          <div className="flex gap-2 justify-end pt-2">
+          <div className="flex gap-2 justify-end pt-2 border-t">
             <Button
               type="button"
               variant="outline"
