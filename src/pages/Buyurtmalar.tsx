@@ -135,12 +135,12 @@ const Buyurtmalar = () => {
                   value={editingItem.od}
                   onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
                   onBlur={(e) => {
-                    if (e.target.value && /^\d+$/.test(e.target.value)) {
+                    if (e.target.value && /^-?\d+$/.test(e.target.value)) {
                       setEditingItem({ ...editingItem, od: e.target.value + '.0' });
                     }
                   }}
                   className="text-center"
-                  maxLength={4}
+                  maxLength={5}
                   required
                 />
               </div>
@@ -151,12 +151,12 @@ const Buyurtmalar = () => {
                   value={editingItem.os}
                   onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
                   onBlur={(e) => {
-                    if (e.target.value && /^\d+$/.test(e.target.value)) {
+                    if (e.target.value && /^-?\d+$/.test(e.target.value)) {
                       setEditingItem({ ...editingItem, os: e.target.value + '.0' });
                     }
                   }}
                   className="text-center"
-                  maxLength={4}
+                  maxLength={5}
                   required
                 />
               </div>
