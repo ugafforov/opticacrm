@@ -174,7 +174,7 @@ const TayyorKozoynaklar = () => {
           tartib_raqam: nextTartibRaqam,
           kliyent: form.kliyent,
           kozoynak_turi: form.kozoynakTuri,
-          summa: parseFloat(form.summa),
+          summa: parseFloat(form.summa) || 0,
         });
 
       if (error) throw error;
@@ -515,7 +515,6 @@ const TayyorKozoynaklar = () => {
                 id="summa"
                 value={form.summa}
                 onChange={(value) => setForm({ ...form, summa: value })}
-                required
               />
             </div>
           </div>
@@ -871,7 +870,6 @@ const TayyorKozoynaklar = () => {
                       : null
                   )
                 }
-                required
                 className="h-9"
               />
             </div>
