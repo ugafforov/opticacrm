@@ -291,6 +291,7 @@ const LinzaRoyxati = () => {
       const { error } = await supabase
         .from("linza_royxatlari")
         .update({
+          sana: editingItem.sana,
           mijoz: editingItem.mijoz,
           od: editingItem.od,
           os: editingItem.os,

@@ -241,6 +241,7 @@ const Tekshiruv = () => {
       const { error } = await supabase
         .from("tekshiruvlar")
         .update({
+          sana: editingItem.sana,
           mijoz: editingItem.mijoz,
           refraksiyametriya: editingItem.refraksiyametriya,
           tanometriya: editingItem.tanometriya,

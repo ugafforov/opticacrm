@@ -238,6 +238,7 @@ const TayyorKozoynaklar = () => {
       const { error } = await supabase
         .from("tayyor_kozoynaklar")
         .update({
+          sana: editingItem.sana,
           kliyent: editingItem.kliyent,
           kozoynak_turi: editingItem.kozoynakTuri,
           summa: editingItem.summa,

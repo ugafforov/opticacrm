@@ -146,6 +146,7 @@ export const useBuyurtmalar = () => {
       const { error } = await supabase
         .from("buyurtmalar")
         .update({
+          sana: item.sana,
           mijoz: item.mijoz,
           telefon: item.telefon,
           od: item.od,
