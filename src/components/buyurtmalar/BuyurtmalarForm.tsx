@@ -167,7 +167,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="oynaNarxi"
               value={form.oynaNarxi}
               onChange={(value) => setForm({ ...form, oynaNarxi: value })}
-              required
             />
           </div>
 
@@ -195,7 +194,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="opravaNarxi"
               value={form.opravaNarxi}
               onChange={(value) => setForm({ ...form, opravaNarxi: value })}
-              required
             />
           </div>
         </div>

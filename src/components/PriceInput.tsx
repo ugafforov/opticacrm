@@ -23,7 +23,7 @@ export const PriceInput: React.FC<PriceInputProps> = ({
 
   useEffect(() => {
     // Format the value for display when it changes from outside
-    if (value) {
+    if (value !== "" && value !== null && value !== undefined) {
       const numValue = typeof value === 'string' ? parsePrice(value) : value;
       setDisplayValue(formatPrice(numValue));
     } else {
