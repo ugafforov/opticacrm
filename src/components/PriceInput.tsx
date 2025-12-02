@@ -25,9 +25,10 @@ export const PriceInput: React.FC<PriceInputProps> = ({
     // Format the value for display when it changes from outside
     if (value !== "" && value !== null && value !== undefined) {
       const numValue = typeof value === 'string' ? parsePrice(value) : value;
-      setDisplayValue(formatPrice(numValue));
+      const formatted = formatPrice(numValue);
+      setDisplayValue(formatted);
     } else {
-      setDisplayValue("");
+      setDisplayValue("0");
     }
   }, [value]);
 
@@ -38,8 +39,8 @@ export const PriceInput: React.FC<PriceInputProps> = ({
     const digitsOnly = inputValue.replace(/\D/g, "");
     
     if (digitsOnly === "") {
-      setDisplayValue("");
-      onChange("");
+      setDisplayValue("0");
+      onChange("0");
       return;
     }
 
