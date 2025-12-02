@@ -138,6 +138,7 @@ const Buyurtmalar = () => {
                       }
                     }}
                     initialFocus
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -225,7 +226,6 @@ const Buyurtmalar = () => {
                   id="edit-oynaNarxi"
                   value={editingItem.oynaNarxi.toString()}
                   onChange={(value) => setEditingItem({ ...editingItem, oynaNarxi: parseFloat(value) || 0 })}
-                  required
                 />
               </div>
             </div>
@@ -254,7 +254,6 @@ const Buyurtmalar = () => {
                   id="edit-opravaNarxi"
                   value={editingItem.opravaNarxi.toString()}
                   onChange={(value) => setEditingItem({ ...editingItem, opravaNarxi: parseFloat(value) || 0 })}
-                  required
                 />
               </div>
             </div>

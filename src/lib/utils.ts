@@ -112,10 +112,12 @@ export function formatPhoneNumber(value: string): string {
 
 /**
  * Format price with thousand separators (200000 → "200 000")
+ * Returns "0" for zero values
  */
 export function formatPrice(value: number | string): string {
   const num = typeof value === 'string' ? parseFloat(value.replace(/\s/g, '')) : value;
-  if (isNaN(num) || num === 0) return '';
+  if (isNaN(num)) return '0';
+  if (num === 0) return '0';
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
