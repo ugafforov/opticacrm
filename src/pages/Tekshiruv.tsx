@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PriceInput } from "@/components/PriceInput";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
@@ -64,7 +65,8 @@ const Tekshiruv = () => {
   const itemsPerPage = 10;
   const [form, setForm] = useState({
     mijoz: defaultClientName,
-    tekshiruvTuri: "" as string,
+    refraksiyametriya: false,
+    tanometriya: false,
     narx: "",
   });
   const [editingItem, setEditingItem] = useState<Tekshiruv | null>(null);
@@ -148,8 +150,6 @@ const Tekshiruv = () => {
     }
 
     const summa = parseInt(form.narx) || 0;
-    const isRefraksiyametriya = form.tekshiruvTuri === "refraksiyametriya";
-    const isTanometriya = form.tekshiruvTuri === "tanometriya";
 
     try {
       // Get the maximum tartib_raqam for this user
@@ -172,8 +172,8 @@ const Tekshiruv = () => {
           sana: formatUzbekistanDate(selectedDate),
           tartib_raqam: nextTartibRaqam,
           mijoz: form.mijoz,
-          refraksiyametriya: isRefraksiyametriya,
-          tanometriya: isTanometriya,
+          refraksiyametriya: form.refraksiyametriya,
+          tanometriya: form.tanometriya,
           jami_summa: summa,
         });
 
@@ -184,7 +184,8 @@ const Tekshiruv = () => {
       setSelectedDate(new Date());
       setForm({
         mijoz: script === 'cyrillic' ? "Мижоз" : "Mijoz",
-        tekshiruvTuri: "",
+        refraksiyametriya: false,
+        tanometriya: false,
         narx: "",
       });
 
@@ -494,21 +495,42 @@ const Tekshiruv = () => {
 
             <div className="space-y-2">
               <Label>{t("exam.examType")}</Label>
-              <Select
-                value={form.tekshiruvTuri}
-                onValueChange={(value) => {
-                  const defaultPrice = value === "refraksiyametriya" ? "50000" : value === "tanometriya" ? "15000" : "";
-                  setForm({ ...form, tekshiruvTuri: value, narx: defaultPrice });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("exam.selectExamType")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="refraksiyametriya">{t("exam.refractometry")}</SelectItem>
-                  <SelectItem value="tanometriya">{t("exam.tonometry")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="refraksiyametriya"
+                    checked={form.refraksiyametriya}
+                    onCheckedChange={(checked) => {
+                      const newRefrak = checked as boolean;
+                      const newSum = (newRefrak ? 50000 : 0) + (form.tanometriya ? 15000 : 0);
+                      setForm({ ...form, refraksiyametriya: newRefrak, narx: newSum.toString() });
+                    }}
+                  />
+                  <label
+                    htmlFor="refraksiyametriya"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {t("exam.refractometry")} — 50,000 {t("common.currency")}
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="tanometriya"
+                    checked={form.tanometriya}
+                    onCheckedChange={(checked) => {
+                      const newTano = checked as boolean;
+                      const newSum = (form.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
+                      setForm({ ...form, tanometriya: newTano, narx: newSum.toString() });
+                    }}
+                  />
+                  <label
+                    htmlFor="tanometriya"
+                    className="text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -523,7 +545,7 @@ const Tekshiruv = () => {
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border">
-            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!form.tekshiruvTuri}>
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!form.refraksiyametriya && !form.tanometriya}>
               {t("exam.add")}
             </Button>
           </div>
@@ -871,30 +893,54 @@ const Tekshiruv = () => {
           <div className="space-y-3">
             <div>
               <Label className="text-xs">{t("exam.examType")}</Label>
-              <Select
-                value={editingItem?.refraksiyametriya ? "refraksiyametriya" : editingItem?.tanometriya ? "tanometriya" : ""}
-                onValueChange={(value) => {
-                  if (editingItem) {
-                    const isRefrak = value === "refraksiyametriya";
-                    const isTano = value === "tanometriya";
-                    const defaultPrice = isRefrak ? 50000 : isTano ? 15000 : editingItem.jamiSumma;
-                    setEditingItem({
-                      ...editingItem,
-                      refraksiyametriya: isRefrak,
-                      tanometriya: isTano,
-                      jamiSumma: defaultPrice,
-                    });
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 mt-1">
-                  <SelectValue placeholder={t("exam.selectExamType")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="refraksiyametriya">{t("exam.refractometry")}</SelectItem>
-                  <SelectItem value="tanometriya">{t("exam.tonometry")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2 pt-1">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-refraksiyametriya"
+                    checked={editingItem?.refraksiyametriya || false}
+                    onCheckedChange={(checked) => {
+                      if (editingItem) {
+                        const newRefrak = checked as boolean;
+                        const newSum = (newRefrak ? 50000 : 0) + (editingItem.tanometriya ? 15000 : 0);
+                        setEditingItem({
+                          ...editingItem,
+                          refraksiyametriya: newRefrak,
+                          jamiSumma: newSum,
+                        });
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="edit-refraksiyametriya"
+                    className="text-xs font-medium leading-none cursor-pointer"
+                  >
+                    {t("exam.refractometry")} — 50,000 {t("common.currency")}
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-tanometriya"
+                    checked={editingItem?.tanometriya || false}
+                    onCheckedChange={(checked) => {
+                      if (editingItem) {
+                        const newTano = checked as boolean;
+                        const newSum = (editingItem.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
+                        setEditingItem({
+                          ...editingItem,
+                          tanometriya: newTano,
+                          jamiSumma: newSum,
+                        });
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor="edit-tanometriya"
+                    className="text-xs font-medium leading-none cursor-pointer"
+                  >
+                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div>
