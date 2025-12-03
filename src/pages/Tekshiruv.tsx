@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { PriceInput } from "@/components/PriceInput";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -64,8 +64,8 @@ const Tekshiruv = () => {
   const itemsPerPage = 10;
   const [form, setForm] = useState({
     mijoz: defaultClientName,
-    refraksiyametriya: false,
-    tanometriya: false,
+    tekshiruvTuri: "" as string,
+    narx: "",
   });
   const [editingItem, setEditingItem] = useState<Tekshiruv | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -147,9 +147,9 @@ const Tekshiruv = () => {
       return;
     }
 
-    let summa = 0;
-    if (form.refraksiyametriya) summa += 50000;
-    if (form.tanometriya) summa += 15000;
+    const summa = parseInt(form.narx) || 0;
+    const isRefraksiyametriya = form.tekshiruvTuri === "refraksiyametriya";
+    const isTanometriya = form.tekshiruvTuri === "tanometriya";
 
     try {
       // Get the maximum tartib_raqam for this user
@@ -172,8 +172,8 @@ const Tekshiruv = () => {
           sana: formatUzbekistanDate(selectedDate),
           tartib_raqam: nextTartibRaqam,
           mijoz: form.mijoz,
-          refraksiyametriya: form.refraksiyametriya,
-          tanometriya: form.tanometriya,
+          refraksiyametriya: isRefraksiyametriya,
+          tanometriya: isTanometriya,
           jami_summa: summa,
         });
 
@@ -184,8 +184,8 @@ const Tekshiruv = () => {
       setSelectedDate(new Date());
       setForm({
         mijoz: script === 'cyrillic' ? "Мижоз" : "Mijoz",
-        refraksiyametriya: false,
-        tanometriya: false,
+        tekshiruvTuri: "",
+        narx: "",
       });
 
       toast.success(t("exam.addSuccess"));
@@ -232,11 +232,6 @@ const Tekshiruv = () => {
     e.preventDefault();
     if (!editingItem || !user) return;
 
-    // Recalculate sum based on selected services
-    let summa = 0;
-    if (editingItem.refraksiyametriya) summa += 50000;
-    if (editingItem.tanometriya) summa += 15000;
-
     try {
       const { error } = await supabase
         .from("tekshiruvlar")
@@ -245,7 +240,7 @@ const Tekshiruv = () => {
           mijoz: editingItem.mijoz,
           refraksiyametriya: editingItem.refraksiyametriya,
           tanometriya: editingItem.tanometriya,
-          jami_summa: summa,
+          jami_summa: editingItem.jamiSumma,
         })
         .eq("id", editingItem.id);
 
@@ -486,8 +481,8 @@ const Tekshiruv = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2 border border-border rounded-lg p-4 flex flex-col justify-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="mijoz">{t("exam.patient")}</Label>
               <Input
                 id="mijoz"
@@ -497,51 +492,38 @@ const Tekshiruv = () => {
               />
             </div>
 
-            <div className="space-y-2 border border-border rounded-lg p-4">
+            <div className="space-y-2">
               <Label>{t("exam.examType")}</Label>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="refraksiyametriya"
-                    checked={form.refraksiyametriya}
-                    onCheckedChange={(checked) =>
-                      setForm({ ...form, refraksiyametriya: checked as boolean })
-                    }
-                  />
-                  <label
-                    htmlFor="refraksiyametriya"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {t("exam.refractometry")}
-                  </label>
-                </div>
+              <Select
+                value={form.tekshiruvTuri}
+                onValueChange={(value) => {
+                  const defaultPrice = value === "refraksiyametriya" ? "50000" : value === "tanometriya" ? "15000" : "";
+                  setForm({ ...form, tekshiruvTuri: value, narx: defaultPrice });
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("exam.selectExamType")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="refraksiyametriya">{t("exam.refractometry")}</SelectItem>
+                  <SelectItem value="tanometriya">{t("exam.tonometry")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="tanometriya"
-                    checked={form.tanometriya}
-                    onCheckedChange={(checked) =>
-                      setForm({ ...form, tanometriya: checked as boolean })
-                    }
-                  />
-                  <label
-                    htmlFor="tanometriya"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {t("exam.tonometry")}
-                  </label>
-                </div>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="narx">{t("exam.price")}</Label>
+              <PriceInput
+                id="narx"
+                value={form.narx}
+                onChange={(value) => setForm({ ...form, narx: value })}
+                placeholder="0"
+              />
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-4 border-t border-border">
-            <div className="text-lg font-semibold">
-              {t("orders.totalAmount")}:{" "}
-              {((form.refraksiyametriya ? 50000 : 0) + (form.tanometriya ? 15000 : 0)).toLocaleString()}{" "}
-              {t("common.currency")}
-            </div>
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
+          <div className="flex justify-end pt-4 border-t border-border">
+            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!form.tekshiruvTuri}>
               {t("exam.add")}
             </Button>
           </div>
@@ -886,45 +868,46 @@ const Tekshiruv = () => {
             />
           </div>
 
-          <div className="border border-border rounded-md p-3 space-y-2 bg-muted/30">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="edit-refraksiyametriya"
-                checked={editingItem?.refraksiyametriya || false}
-                onCheckedChange={(checked) =>
-                  setEditingItem(
-                    editingItem
-                      ? { ...editingItem, refraksiyametriya: checked as boolean }
-                      : null
-                  )
-                }
-              />
-              <label
-                htmlFor="edit-refraksiyametriya"
-                className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">{t("exam.examType")}</Label>
+              <Select
+                value={editingItem?.refraksiyametriya ? "refraksiyametriya" : editingItem?.tanometriya ? "tanometriya" : ""}
+                onValueChange={(value) => {
+                  if (editingItem) {
+                    const isRefrak = value === "refraksiyametriya";
+                    const isTano = value === "tanometriya";
+                    const defaultPrice = isRefrak ? 50000 : isTano ? 15000 : editingItem.jamiSumma;
+                    setEditingItem({
+                      ...editingItem,
+                      refraksiyametriya: isRefrak,
+                      tanometriya: isTano,
+                      jamiSumma: defaultPrice,
+                    });
+                  }
+                }}
               >
-                {t("exam.refractometry")}
-              </label>
+                <SelectTrigger className="h-9 mt-1">
+                  <SelectValue placeholder={t("exam.selectExamType")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="refraksiyametriya">{t("exam.refractometry")}</SelectItem>
+                  <SelectItem value="tanometriya">{t("exam.tonometry")}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="edit-tanometriya"
-                checked={editingItem?.tanometriya || false}
-                onCheckedChange={(checked) =>
+            <div>
+              <Label className="text-xs">{t("exam.price")}</Label>
+              <PriceInput
+                value={editingItem?.jamiSumma?.toString() || "0"}
+                onChange={(value) =>
                   setEditingItem(
-                    editingItem
-                      ? { ...editingItem, tanometriya: checked as boolean }
-                      : null
+                    editingItem ? { ...editingItem, jamiSumma: parseInt(value) || 0 } : null
                   )
                 }
+                className="h-9 mt-1"
               />
-              <label
-                htmlFor="edit-tanometriya"
-                className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {t("exam.tonometry")}
-              </label>
             </div>
           </div>
 
