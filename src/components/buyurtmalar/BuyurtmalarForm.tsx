@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { formatPhoneNumber, formatPrice } from "@/lib/utils";
+import { formatPhoneNumber, formatPrice, formatOdOs } from "@/lib/utils";
 import { PriceInput } from "@/components/PriceInput";
 import { SelectWithOther } from "@/components/SelectWithOther";
 
@@ -46,9 +46,9 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
   };
 
   const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
-    // If it's a whole number (positive or negative), add .0
-    if (value && /^-?\d+$/.test(value)) {
-      setForm({ ...form, [field]: value + '.0' });
+    const formatted = formatOdOs(value);
+    if (formatted !== value) {
+      setForm({ ...form, [field]: formatted });
     }
   };
 
@@ -118,7 +118,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
             />
           </div>
 
-          <div className="w-20">
+          <div className="flex-1 min-w-[100px]">
             <Label htmlFor="od" className="text-xs">{t("form.rightEye")}</Label>
             <Input
               id="od"
@@ -126,11 +126,11 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => handleOdOsChange('od', e.target.value)}
               onBlur={(e) => handleOdOsBlur('od', e.target.value)}
               className="text-center h-10"
-              maxLength={5}
+              maxLength={15}
             />
           </div>
 
-          <div className="w-20">
+          <div className="flex-1 min-w-[100px]">
             <Label htmlFor="os" className="text-xs">{t("form.leftEye")}</Label>
             <Input
               id="os"
@@ -138,7 +138,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               onChange={(e) => handleOdOsChange('os', e.target.value)}
               onBlur={(e) => handleOdOsBlur('os', e.target.value)}
               className="text-center h-10"
-              maxLength={5}
+              maxLength={15}
             />
           </div>
 

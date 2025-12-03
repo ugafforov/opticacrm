@@ -23,7 +23,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EditDialog } from "@/components/EditDialog";
 import { PatientCard } from "@/components/PatientCard";
-import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
+import { formatUzbekistanDate, getUzbekistanISOString, formatPhoneNumber, formatUzbekistanDateTime, formatDisplayDate, formatOdOs } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,9 +76,9 @@ const LinzaRoyxati = () => {
   };
 
   const handleOdOsBlur = (field: 'od' | 'os', value: string) => {
-    // If it's a whole number (positive or negative), add .0
-    if (value && /^-?\d+$/.test(value)) {
-      setForm({ ...form, [field]: value + '.0' });
+    const formatted = formatOdOs(value);
+    if (formatted !== value) {
+      setForm({ ...form, [field]: formatted });
     }
   };
 
@@ -563,7 +563,7 @@ const LinzaRoyxati = () => {
               />
             </div>
 
-            <div className="w-20">
+            <div className="flex-1 min-w-[100px]">
               <Label htmlFor="od" className="text-xs">{t("form.rightEye")}</Label>
               <Input
                 id="od"
@@ -571,12 +571,12 @@ const LinzaRoyxati = () => {
                 onChange={(e) => handleOdOsChange('od', e.target.value)}
                 onBlur={(e) => handleOdOsBlur('od', e.target.value)}
                 className="text-center"
-                maxLength={5}
+                maxLength={15}
                 required
               />
             </div>
 
-            <div className="w-20">
+            <div className="flex-1 min-w-[100px]">
               <Label htmlFor="os" className="text-xs">{t("form.leftEye")}</Label>
               <Input
                 id="os"
@@ -584,7 +584,7 @@ const LinzaRoyxati = () => {
                 onChange={(e) => handleOdOsChange('os', e.target.value)}
                 onBlur={(e) => handleOdOsBlur('os', e.target.value)}
                 className="text-center"
-                maxLength={5}
+                maxLength={15}
                 required
               />
             </div>
@@ -1005,13 +1005,16 @@ const LinzaRoyxati = () => {
                   setEditingItem(editingItem ? { ...editingItem, od: e.target.value } : null)
                 }
                 onBlur={(e) => {
-                  if (editingItem && e.target.value && /^-?\d+$/.test(e.target.value)) {
-                    setEditingItem({ ...editingItem, od: e.target.value + '.0' });
+                  if (editingItem) {
+                    const formatted = formatOdOs(e.target.value);
+                    if (formatted !== e.target.value) {
+                      setEditingItem({ ...editingItem, od: formatted });
+                    }
                   }
                 }}
                 required
                 className="h-9 text-center"
-                maxLength={5}
+                maxLength={15}
               />
             </div>
             <div>
@@ -1023,13 +1026,16 @@ const LinzaRoyxati = () => {
                   setEditingItem(editingItem ? { ...editingItem, os: e.target.value } : null)
                 }
                 onBlur={(e) => {
-                  if (editingItem && e.target.value && /^-?\d+$/.test(e.target.value)) {
-                    setEditingItem({ ...editingItem, os: e.target.value + '.0' });
+                  if (editingItem) {
+                    const formatted = formatOdOs(e.target.value);
+                    if (formatted !== e.target.value) {
+                      setEditingItem({ ...editingItem, os: formatted });
+                    }
                   }
                 }}
                 required
                 className="h-9 text-center"
-                maxLength={5}
+                maxLength={15}
               />
             </div>
             <div>

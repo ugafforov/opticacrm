@@ -18,7 +18,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { cn, formatPhoneNumber } from "@/lib/utils";
+import { cn, formatPhoneNumber, formatOdOs } from "@/lib/utils";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
@@ -167,35 +167,37 @@ const Buyurtmalar = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="w-20">
+              <div>
                 <Label htmlFor="edit-od" className="text-sm">{t("form.rightEye")}</Label>
                 <Input
                   id="edit-od"
                   value={editingItem.od}
                   onChange={(e) => setEditingItem({ ...editingItem, od: e.target.value })}
                   onBlur={(e) => {
-                    if (e.target.value && /^-?\d+$/.test(e.target.value)) {
-                      setEditingItem({ ...editingItem, od: e.target.value + '.0' });
+                    const formatted = formatOdOs(e.target.value);
+                    if (formatted !== e.target.value) {
+                      setEditingItem({ ...editingItem, od: formatted });
                     }
                   }}
                   className="text-center"
-                  maxLength={5}
+                  maxLength={15}
                   required
                 />
               </div>
-              <div className="w-20">
+              <div>
                 <Label htmlFor="edit-os" className="text-sm">{t("form.leftEye")}</Label>
                 <Input
                   id="edit-os"
                   value={editingItem.os}
                   onChange={(e) => setEditingItem({ ...editingItem, os: e.target.value })}
                   onBlur={(e) => {
-                    if (e.target.value && /^-?\d+$/.test(e.target.value)) {
-                      setEditingItem({ ...editingItem, os: e.target.value + '.0' });
+                    const formatted = formatOdOs(e.target.value);
+                    if (formatted !== e.target.value) {
+                      setEditingItem({ ...editingItem, os: formatted });
                     }
                   }}
                   className="text-center"
-                  maxLength={5}
+                  maxLength={15}
                   required
                 />
               </div>

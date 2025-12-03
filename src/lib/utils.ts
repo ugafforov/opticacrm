@@ -127,3 +127,31 @@ export function formatPrice(value: number | string): string {
 export function parsePrice(formattedValue: string): number {
   return parseFloat(formattedValue.replace(/\s/g, '')) || 0;
 }
+
+/**
+ * Format OD/OS eye values:
+ * - Add "+" prefix if no sign provided
+ * - Add ".0" suffix for whole numbers
+ * Examples: -1 → -1.0, +2 → +2.0, 3 → +3.0, +2.3 → +2.3, -1.25 → -1.25
+ */
+export function formatOdOs(value: string): string {
+  if (!value || value.trim() === '') return value;
+  
+  let trimmed = value.trim();
+  
+  // Check if it's a valid number pattern (with optional sign and decimal)
+  const numberMatch = trimmed.match(/^([+-])?(\d+)(\.(\d+))?$/);
+  if (!numberMatch) return trimmed;
+  
+  const sign = numberMatch[1];
+  const wholePart = numberMatch[2];
+  const decimalPart = numberMatch[4];
+  
+  // Add "+" if no sign provided
+  const finalSign = sign || '+';
+  
+  // Add ".0" if no decimal part
+  const finalDecimal = decimalPart !== undefined ? `.${decimalPart}` : '.0';
+  
+  return `${finalSign}${wholePart}${finalDecimal}`;
+}
