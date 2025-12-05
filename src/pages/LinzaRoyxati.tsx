@@ -411,14 +411,15 @@ const LinzaRoyxati = () => {
         r.tartibRaqam,
         formatDisplayDate(r.sana),
         r.mijoz,
-        `${r.od} / ${r.os}`,
+        r.od,
+        r.os,
         r.telefon,
         r.linzaTuri,
       ]);
 
       autoTable(doc, {
         startY,
-        head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD/OS', t("lens.phone"), t("lens.lensType")]],
+        head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD', 'OS', t("lens.phone"), t("lens.lensType")]],
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
@@ -763,9 +764,15 @@ const LinzaRoyxati = () => {
                       {r.mijoz}
                     </button>
                   </div>
-                  <div>
-                    <span className="text-muted-foreground">OD / OS:</span>
-                    <span className="ml-2">{r.od} / {r.os}</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-muted-foreground">OD:</span>
+                      <span className="ml-2">{r.od}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">OS:</span>
+                      <span className="ml-2">{r.os}</span>
+                    </div>
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("lens.phone")}:</span>
@@ -793,7 +800,8 @@ const LinzaRoyxati = () => {
                   <th className="px-4 py-2 text-left">{t("lens.number")}</th>
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.client")}</th>
-                  <th className="px-4 py-2 text-left">OD/OS</th>
+                  <th className="px-4 py-2 text-center">OD</th>
+                  <th className="px-4 py-2 text-center">OS</th>
                   <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.lensType")}</th>
                   <th className="px-4 py-2 text-right"></th>
@@ -823,7 +831,8 @@ const LinzaRoyxati = () => {
                         {r.mijoz}
                       </button>
                     </td>
-                    <td className="px-4 py-2">{r.od} / {r.os}</td>
+                    <td className="px-4 py-2 text-center">{r.od}</td>
+                    <td className="px-4 py-2 text-center">{r.os}</td>
                     <td className="px-4 py-2">{r.telefon}</td>
                     <td className="px-4 py-2">{r.linzaTuri}</td>
                     <td className="px-4 py-2 text-right">
