@@ -19,6 +19,7 @@ import {
 
 interface BuyurtmalarTableProps {
   buyurtmalar: Buyurtma[];
+  totalSum: number;
   onEdit: (item: Buyurtma) => void;
   onDelete: (id: string) => void;
   onExportExcel: () => void;
@@ -37,6 +38,7 @@ interface BuyurtmalarTableProps {
 
 export const BuyurtmalarTable = ({
   buyurtmalar,
+  totalSum,
   onEdit,
   onDelete,
   onExportExcel,
@@ -54,8 +56,6 @@ export const BuyurtmalarTable = ({
 }: BuyurtmalarTableProps) => {
   const { t } = useLanguage();
   const isMobile = useIsMobile();
-
-  const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
 
   return (
     <div className="bg-card rounded-lg p-4 border border-border">
