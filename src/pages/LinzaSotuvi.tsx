@@ -306,7 +306,7 @@ const LinzaSotuvi = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentSotuvlar = filteredSotuvlar.slice(startIndex, endIndex);
 
-  const totalSum = sotuvlar.reduce((sum, s) => sum + s.summa, 0);
+  const totalSum = filteredSotuvlar.reduce((sum, s) => sum + s.summa, 0);
 
   const exportToExcel = () => {
     const dateTime = formatUzbekistanDateTime();

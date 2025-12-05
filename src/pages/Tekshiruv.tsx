@@ -302,7 +302,7 @@ const Tekshiruv = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentTekshiruvlar = filteredTekshiruvlar.slice(startIndex, endIndex);
 
-  const totalSum = tekshiruvlar.reduce((sum, t) => sum + t.jamiSumma, 0);
+  const totalSum = filteredTekshiruvlar.reduce((sum, t) => sum + t.jamiSumma, 0);
 
   const exportToExcel = () => {
     const dateTime = formatUzbekistanDateTime();

@@ -78,6 +78,7 @@ const Buyurtmalar = () => {
 
       <BuyurtmalarTable
         buyurtmalar={paginatedItems}
+        totalSum={dateFiltered.reduce((sum, b) => sum + b.jamiSumma, 0)}
         onEdit={setEditingItem}
         onDelete={setDeleteId}
         onExportExcel={exportToExcel}

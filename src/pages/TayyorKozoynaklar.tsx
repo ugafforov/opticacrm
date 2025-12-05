@@ -303,7 +303,7 @@ const TayyorKozoynaklar = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentKozoynaklar = filteredKozoynaklar.slice(startIndex, endIndex);
 
-  const totalSum = kozoynaklar.reduce((sum, k) => sum + k.summa, 0);
+  const totalSum = filteredKozoynaklar.reduce((sum, k) => sum + k.summa, 0);
 
   const exportToExcel = () => {
     const dateTime = formatUzbekistanDateTime();
