@@ -3,7 +3,7 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, su
 
 export const useDateFilter = <T extends { sana: string; createdAt: string }>(items: T[]) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("today");
 
   const filteredItems = useMemo(() => {
     if (dateFilter === "all") return items;
