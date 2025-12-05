@@ -163,9 +163,15 @@ export const BuyurtmalarTable = ({
                       <span className="ml-2">{b.telefon}</span>
                     </div>
                   )}
-                  <div>
-                    <span className="text-muted-foreground">OD / OS:</span>
-                    <span className="ml-2">{b.od} / {b.os}</span>
+                <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-muted-foreground">OD:</span>
+                      <span className="ml-2">{b.od}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">OS:</span>
+                      <span className="ml-2">{b.os}</span>
+                    </div>
                   </div>
                   <div>
                     <span className="text-muted-foreground">{t("form.lensType")}:</span>
@@ -199,7 +205,8 @@ export const BuyurtmalarTable = ({
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.client")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("orders.phone")}</th>
-                  <th className="px-2 sm:px-4 py-2 text-left text-sm">OD/OS</th>
+                  <th className="px-2 sm:px-4 py-2 text-center text-sm">OD</th>
+                  <th className="px-2 sm:px-4 py-2 text-center text-sm">OS</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.lensType")}</th>
                   <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("form.frameType")}</th>
                   <th className="px-2 sm:px-4 py-2 text-center text-sm">{t("orders.totalAmount")}</th>
@@ -224,7 +231,8 @@ export const BuyurtmalarTable = ({
                     </td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{b.mijoz}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.telefon || "-"}</td>
-                    <td className="px-2 sm:px-4 py-2 text-sm whitespace-nowrap">{b.od} / {b.os}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm text-center whitespace-nowrap">{b.od}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm text-center whitespace-nowrap">{b.os}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getLensTypeTranslation(b.oynaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">{getFrameTypeTranslation(b.opravaTuri)}</td>
                     <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">

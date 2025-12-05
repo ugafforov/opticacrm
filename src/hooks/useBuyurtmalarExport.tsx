@@ -87,7 +87,8 @@ export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
         formatDisplayDate(b.sana),
         b.mijoz,
         b.telefon || "-",
-        `${b.od} / ${b.os}`,
+        b.od,
+        b.os,
         getLensTypeTranslation(b.oynaTuri),
         getFrameTypeTranslation(b.opravaTuri),
         `${b.jamiSumma.toLocaleString()} ${t("common.currency")}`,
@@ -95,7 +96,7 @@ export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
 
       autoTable(doc, {
         startY,
-        head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD/OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
+        head: [['№', t("common.date"), t("orders.client"), t("orders.phone"), 'OD', 'OS', t("form.lensType"), t("form.frameType"), t("orders.totalAmount")]],
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
@@ -115,7 +116,7 @@ export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
           fillColor: [245, 245, 245] 
         },
         columnStyles: {
-          7: { halign: 'center' },
+          8: { halign: 'center' },
         },
       });
 
