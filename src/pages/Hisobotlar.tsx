@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
+import { safeSum, safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
+import { withRetry } from "@/lib/retryUtils";
 
 interface ReportData {
   name: string;
