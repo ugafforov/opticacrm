@@ -47,6 +47,7 @@ interface LinzaRoyxat {
   os: string;
   telefon: string;
   linzaTuri: string;
+  tugilanYili: number | null;
 }
 
 const LinzaRoyxati = () => {
@@ -69,6 +70,7 @@ const LinzaRoyxati = () => {
     os: "",
     telefon: "+998 ",
     linzaTuri: "",
+    tugilanYili: "",
   });
 
   const handleOdOsChange = (field: 'od' | 'os', value: string) => {
@@ -132,6 +134,7 @@ const LinzaRoyxati = () => {
         os: item.os,
         telefon: item.telefon,
         linzaTuri: item.linza_turi,
+        tugilanYili: item.tugilan_yili,
       })) || [];
 
       setRoyxatlar(mapped);
@@ -180,6 +183,7 @@ const LinzaRoyxati = () => {
             linza_turi: existingPatient.linza_turi,
             telefon: existingPatient.telefon,
             mijoz: existingPatient.mijoz,
+            tugilan_yili: existingPatient.tugilan_yili,
           });
 
         if (historyError) throw historyError;
@@ -194,6 +198,7 @@ const LinzaRoyxati = () => {
             os: form.os,
             telefon: form.telefon,
             linza_turi: form.linzaTuri,
+            tugilan_yili: form.tugilanYili ? parseInt(form.tugilanYili) : null,
           })
           .eq("id", existingPatient.id);
 
@@ -225,6 +230,7 @@ const LinzaRoyxati = () => {
             os: form.os,
             telefon: form.telefon,
             linza_turi: form.linzaTuri,
+            tugilan_yili: form.tugilanYili ? parseInt(form.tugilanYili) : null,
           });
 
         if (error) throw error;
@@ -241,6 +247,7 @@ const LinzaRoyxati = () => {
         os: "",
         telefon: "+998 ",
         linzaTuri: "",
+        tugilanYili: "",
       });
     } catch (error: any) {
       console.error("Error adding/updating linza royxat:", error);
@@ -297,6 +304,7 @@ const LinzaRoyxati = () => {
           os: editingItem.os,
           telefon: editingItem.telefon,
           linza_turi: editingItem.linzaTuri,
+          tugilan_yili: editingItem.tugilanYili,
         })
         .eq("id", editingItem.id);
 
@@ -377,6 +385,7 @@ const LinzaRoyxati = () => {
       [t("lens.number")]: r.tartibRaqam,
       [t("common.date")]: formatDisplayDate(r.sana),
       [t("lens.client")]: r.mijoz,
+      [t("lens.birthYear")]: r.tugilanYili || "",
       [t("form.rightEye")]: r.od,
       [t("form.leftEye")]: r.os,
       [t("lens.phone")]: r.telefon,
@@ -411,6 +420,7 @@ const LinzaRoyxati = () => {
         r.tartibRaqam,
         formatDisplayDate(r.sana),
         r.mijoz,
+        r.tugilanYili || "",
         r.od,
         r.os,
         r.telefon,
@@ -419,7 +429,7 @@ const LinzaRoyxati = () => {
 
       autoTable(doc, {
         startY,
-        head: [[t("lens.number"), t("common.date"), t("lens.client"), 'OD', 'OS', t("lens.phone"), t("lens.lensType")]],
+        head: [[t("lens.number"), t("common.date"), t("lens.client"), t("lens.birthYear"), 'OD', 'OS', t("lens.phone"), t("lens.lensType")]],
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
@@ -539,7 +549,7 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
             <div>
               <Label htmlFor="mijoz">{t("form.clientName")}</Label>
               <Input
@@ -547,6 +557,19 @@ const LinzaRoyxati = () => {
                 value={form.mijoz}
                 onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
                 required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="tugilanYili">{t("lens.birthYear")}</Label>
+              <Input
+                id="tugilanYili"
+                type="number"
+                value={form.tugilanYili}
+                onChange={(e) => setForm({ ...form, tugilanYili: e.target.value })}
+                placeholder="1990"
+                min="1900"
+                max={new Date().getFullYear()}
               />
             </div>
 
@@ -764,6 +787,12 @@ const LinzaRoyxati = () => {
                       {r.mijoz}
                     </button>
                   </div>
+                  {r.tugilanYili && (
+                    <div>
+                      <span className="text-muted-foreground">{t("lens.birthYear")}:</span>
+                      <span className="ml-2">{r.tugilanYili}</span>
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <span className="text-muted-foreground">OD:</span>
@@ -800,6 +829,7 @@ const LinzaRoyxati = () => {
                   <th className="px-4 py-2 text-left">{t("lens.number")}</th>
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.client")}</th>
+                  <th className="px-4 py-2 text-left">{t("lens.birthYear")}</th>
                   <th className="px-4 py-2 text-center">OD</th>
                   <th className="px-4 py-2 text-center">OS</th>
                   <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
@@ -831,6 +861,7 @@ const LinzaRoyxati = () => {
                         {r.mijoz}
                       </button>
                     </td>
+                    <td className="px-4 py-2">{r.tugilanYili || "-"}</td>
                     <td className="px-4 py-2 text-center">{r.od}</td>
                     <td className="px-4 py-2 text-center">{r.os}</td>
                     <td className="px-4 py-2">{r.telefon}</td>
@@ -974,7 +1005,7 @@ const LinzaRoyxati = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <Label htmlFor="edit-mijoz" className="text-xs">{t("form.clientName")}</Label>
               <Input
@@ -984,6 +1015,22 @@ const LinzaRoyxati = () => {
                   setEditingItem(editingItem ? { ...editingItem, mijoz: e.target.value } : null)
                 }
                 required
+                className="h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-tugilanYili" className="text-xs">{t("lens.birthYear")}</Label>
+              <Input
+                id="edit-tugilanYili"
+                type="number"
+                value={editingItem?.tugilanYili || ""}
+                onChange={(e) =>
+                  setEditingItem(editingItem ? { ...editingItem, tugilanYili: e.target.value ? parseInt(e.target.value) : null } : null)
+                }
+                placeholder="1990"
+                min="1900"
+                max={new Date().getFullYear()}
                 className="h-9"
               />
             </div>

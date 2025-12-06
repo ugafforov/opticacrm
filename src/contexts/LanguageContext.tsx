@@ -77,6 +77,10 @@ const translations = {
     "lens.updateSuccess": "Бемор маълумотлари янгиланди!",
     "lens.firstVisit": "Биринчи ташриф",
     "lens.addNewRecord": "Янги текшируv қўшиш",
+    "lens.birthYear": "Туғилган йили",
+    "lens.editRecord": "Ёзувни таҳрирлаш",
+    "lens.deleteRecord": "Ёзувни ўчириш",
+    "lens.confirmDeleteRecord": "Бу ёзувни ўчирмоқчимисиз?",
     "common.loading": "Юкланмоқда...",
     
     // Examination
@@ -433,6 +437,10 @@ const translations = {
     "lens.updateSuccess": "Bemor ma'lumotlari yangilandi!",
     "lens.firstVisit": "Birinchi tashrif",
     "lens.addNewRecord": "Yangi tekshiruv qo'shish",
+    "lens.birthYear": "Tug'ilgan yili",
+    "lens.editRecord": "Yozuvni tahrirlash",
+    "lens.deleteRecord": "Yozuvni o'chirish",
+    "lens.confirmDeleteRecord": "Bu yozuvni o'chirmoqchimisiz?",
     "common.loading": "Yuklanmoqda...",
     
     // Examination
