@@ -364,6 +364,12 @@ const translations = {
     "dateFilter.thisMonth": "Ҳозирги ой",
     "dateFilter.lastMonth": "Ўтган ой",
 
+    // Network status
+    "network.lost": "Интернет алоқа йўқ",
+    "network.restored": "Интернет алоқа тикланди",
+    "network.checkConnection": "Интернетга уланишни текширинг",
+    "network.operationRequiresConnection": "Бу амал интернет алоқасини талаб қилади",
+
     // Footer
     "footer.developer": "Дастурчи",
     "footer.developerName": "Усмонжон Ғаффоров",
@@ -725,6 +731,12 @@ const translations = {
     "dateFilter.lastWeek": "O'tgan hafta",
     "dateFilter.thisMonth": "Hozirgi oy",
     "dateFilter.lastMonth": "O'tgan oy",
+
+    // Network status
+    "network.lost": "Internet aloqa yo'q",
+    "network.restored": "Internet aloqa tiklandi",
+    "network.checkConnection": "Internetga ulanishni tekshiring",
+    "network.operationRequiresConnection": "Bu amal internet aloqasini talab qiladi",
 
     // Footer
     "footer.developer": "Dasturchi",

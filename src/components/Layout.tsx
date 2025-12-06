@@ -1,8 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users } from "lucide-react";
+import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import LanguageSwitcher from "./LanguageSwitcher";
 import UserProfile from "./UserProfile";
 import Footer from "./Footer";
@@ -11,6 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const { t } = useLanguage();
   const { user, isAdmin, signOut } = useAuth();
+  const { isOnline } = useNetworkStatus();
 
   const navItems = [
     { to: "/", label: t("nav.orders"), icon: ShoppingCart },
@@ -36,6 +38,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <span className="transition-all duration-500 group-hover:tracking-wide">{t("app.title")}</span>
             </h1>
             <div className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              {!isOnline && (
+                <div className="flex items-center gap-1 text-destructive text-sm animate-pulse">
+                  <WifiOff className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t("network.lost")}</span>
+                </div>
+              )}
               <LanguageSwitcher />
               <UserProfile user={user} onSignOut={signOut} />
             </div>
