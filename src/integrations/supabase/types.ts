@@ -25,6 +25,7 @@ export type Database = {
           os: string
           sana: string
           telefon: string | null
+          tugilan_yili: number | null
           user_id: string
         }
         Insert: {
@@ -37,6 +38,7 @@ export type Database = {
           os: string
           sana: string
           telefon?: string | null
+          tugilan_yili?: number | null
           user_id: string
         }
         Update: {
@@ -49,6 +51,7 @@ export type Database = {
           os?: string
           sana?: string
           telefon?: string | null
+          tugilan_yili?: number | null
           user_id?: string
         }
         Relationships: [
@@ -156,6 +159,7 @@ export type Database = {
           sana: string
           tartib_raqam: number
           telefon: string
+          tugilan_yili: number | null
           updated_at: string
           user_id: string
         }
@@ -169,6 +173,7 @@ export type Database = {
           sana: string
           tartib_raqam?: number
           telefon: string
+          tugilan_yili?: number | null
           updated_at?: string
           user_id: string
         }
@@ -182,6 +187,7 @@ export type Database = {
           sana?: string
           tartib_raqam?: number
           telefon?: string
+          tugilan_yili?: number | null
           updated_at?: string
           user_id?: string
         }

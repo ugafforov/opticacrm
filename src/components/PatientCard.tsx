@@ -14,10 +14,11 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDisplayDate, formatUzbekistanDate } from "@/lib/utils";
-import { Clock, Phone, User, Eye, Plus, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Clock, Phone, User, Eye, Plus, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { EditDialog } from "@/components/EditDialog";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface PatientHistory {
   id: string;
@@ -65,6 +66,7 @@ export const PatientCard = ({
     sana: formatUzbekistanDate(new Date()),
   });
   const [editingItem, setEditingItem] = useState<PatientHistory | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     od: "",
     os: "",
@@ -187,6 +189,29 @@ export const PatientCard = ({
       if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Error updating history record:", error);
+      toast.error(t("common.error"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteHistory = async (id: string) => {
+    try {
+      setSubmitting(true);
+
+      const { error } = await supabase
+        .from("bemor_tarixi")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success(t("lens.deleteSuccess"));
+      setDeleteId(null);
+      await loadHistory();
+      if (onUpdate) onUpdate();
+    } catch (error) {
+      console.error("Error deleting history record:", error);
       toast.error(t("common.error"));
     } finally {
       setSubmitting(false);
@@ -343,7 +368,7 @@ export const PatientCard = ({
                         <Badge variant="secondary" className="text-xs">
                           #{history.length - index}
                         </Badge>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
                           <span className="text-xs text-muted-foreground">
                             {formatDisplayDate(item.sana)}
                           </span>
@@ -354,6 +379,14 @@ export const PatientCard = ({
                             className="h-6 w-6 p-0 hover:bg-primary/10"
                           >
                             <Pencil className="w-3 h-3 text-primary" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteId(item.id)}
+                            className="h-6 w-6 p-0 hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3 h-3 text-destructive" />
                           </Button>
                         </div>
                       </div>
@@ -432,6 +465,16 @@ export const PatientCard = ({
           </div>
         </form>
       </EditDialog>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        onConfirm={() => deleteId && handleDeleteHistory(deleteId)}
+        title={t("lens.deleteRecord")}
+        description={t("lens.confirmDeleteRecord")}
+        confirmText={t("common.yes")}
+        cancelText={t("common.no")}
+      />
     </Dialog>
   );
 };
