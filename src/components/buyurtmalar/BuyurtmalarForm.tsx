@@ -103,6 +103,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="mijoz"
               value={form.mijoz}
               onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
+              placeholder="Мижоз/Mijoz"
               required
             />
           </div>
