@@ -830,9 +830,9 @@ const LinzaRoyxati = () => {
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.client")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.birthYear")}</th>
+                  <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
                   <th className="px-4 py-2 text-center">OD</th>
                   <th className="px-4 py-2 text-center">OS</th>
-                  <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.lensType")}</th>
                   <th className="px-4 py-2 text-right"></th>
                 </tr>
@@ -862,9 +862,9 @@ const LinzaRoyxati = () => {
                       </button>
                     </td>
                     <td className="px-4 py-2">{r.tugilanYili || "-"}</td>
+                    <td className="px-4 py-2">{r.telefon}</td>
                     <td className="px-4 py-2 text-center">{r.od}</td>
                     <td className="px-4 py-2 text-center">{r.os}</td>
-                    <td className="px-4 py-2">{r.telefon}</td>
                     <td className="px-4 py-2">{r.linzaTuri}</td>
                     <td className="px-4 py-2 text-right">
                       <TooltipProvider>
