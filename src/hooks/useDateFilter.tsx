@@ -47,7 +47,9 @@ export const useDateFilter = <T extends { sana: string; createdAt: string }>(ite
     }
 
     return items.filter((item) => {
-      const itemDate = parseISO(item.createdAt);
+      // Parse DD-MM-YYYY format to Date object
+      const [day, month, year] = item.sana.split('-');
+      const itemDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       return isWithinInterval(itemDate, { start, end });
     });
   }, [items, dateFilter, selectedDate]);
