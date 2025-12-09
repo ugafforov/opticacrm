@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, isWithinInterval, parseISO } from "date-fns";
 
 export const useDateFilter = <T extends { sana: string; createdAt: string }>(items: T[]) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -13,13 +13,12 @@ export const useDateFilter = <T extends { sana: string; createdAt: string }>(ite
 
     switch (dateFilter) {
       case "today":
-        start = startOfDay(now);
-        end = endOfDay(now);
+        start = new Date(now.setHours(0, 0, 0, 0));
+        end = new Date(now.setHours(23, 59, 59, 999));
         break;
       case "yesterday":
-        const yesterday = subDays(now, 1);
-        start = startOfDay(yesterday);
-        end = endOfDay(yesterday);
+        start = subDays(new Date(now.setHours(0, 0, 0, 0)), 1);
+        end = subDays(new Date(now.setHours(23, 59, 59, 999)), 1);
         break;
       case "thisWeek":
         start = startOfWeek(now, { weekStartsOn: 1 });
@@ -40,16 +39,15 @@ export const useDateFilter = <T extends { sana: string; createdAt: string }>(ite
         end = endOfMonth(lastMonth);
         break;
       case "custom":
-        start = startOfDay(new Date(selectedDate));
-        end = endOfDay(new Date(selectedDate));
+        start = new Date(selectedDate.setHours(0, 0, 0, 0));
+        end = new Date(selectedDate.setHours(23, 59, 59, 999));
         break;
       default:
         return items;
     }
 
     return items.filter((item) => {
-      // Foydalanuvchi tanlagan sanani (sana) tekshirish - createdAt emas
-      const itemDate = parseISO(item.sana);
+      const itemDate = parseISO(item.createdAt);
       return isWithinInterval(itemDate, { start, end });
     });
   }, [items, dateFilter, selectedDate]);
