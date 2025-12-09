@@ -16,10 +16,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const navItems = [
     { to: "/", label: t("nav.orders"), icon: ShoppingCart },
-    { to: "/linza-royxati", label: t("nav.lensLists"), icon: Contact },
     { to: "/tekshiruv", label: t("nav.examination"), icon: Eye },
     { to: "/tayyor-kozoynaklar", label: t("nav.readyGlasses"), icon: Glasses },
     { to: "/linza-sotuvi", label: t("nav.lensSales"), icon: ClipboardList },
+    { to: "/linza-royxati", label: t("nav.lensLists"), icon: Contact },
     { to: "/hisobotlar", label: t("nav.reports"), icon: BarChart3 },
     { to: "/chiqindilar", label: t("nav.trash"), icon: Trash2 },
   ];
