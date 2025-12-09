@@ -615,11 +615,11 @@ const LinzaSotuvi = () => {
                 {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha sotuvlar yo'q"}
               </div>
             ) : (
-              currentSotuvlar.map((s) => (
+              currentSotuvlar.map((s, index) => (
               <div key={s.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {s.tartibRaqam}</div>
+                    <div className="font-semibold text-lg">№ {index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -707,9 +707,9 @@ const LinzaSotuvi = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentSotuvlar.map((s) => (
+                {currentSotuvlar.map((s, index) => (
                   <tr key={s.id} className="border-b border-border">
-                    <td className="px-4 py-2">{s.tartibRaqam}</td>
+                    <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>

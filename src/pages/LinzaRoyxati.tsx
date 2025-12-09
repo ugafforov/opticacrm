@@ -708,11 +708,11 @@ const LinzaRoyxati = () => {
                 {searchQuery ? t("lens.noResults") : t("lens.empty")}
               </div>
             ) : (
-              currentRoyxatlar.map((r) => (
+              currentRoyxatlar.map((r, index) => (
               <div key={r.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {r.tartibRaqam}</div>
+                    <div className="font-semibold text-lg">№ {index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -838,9 +838,9 @@ const LinzaRoyxati = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentRoyxatlar.map((r) => (
+                {currentRoyxatlar.map((r, index) => (
                   <tr key={r.id} className="border-b border-border">
-                    <td className="px-4 py-2">{r.tartibRaqam}</td>
+                    <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>

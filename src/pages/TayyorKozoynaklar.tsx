@@ -609,11 +609,11 @@ const TayyorKozoynaklar = () => {
                 {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha ko'zoynaklar yo'q"}
               </div>
             ) : (
-              currentKozoynaklar.map((k) => (
+              currentKozoynaklar.map((k, index) => (
               <div key={k.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {k.tartibRaqam}</div>
+                    <div className="font-semibold text-lg">№ {index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -701,9 +701,9 @@ const TayyorKozoynaklar = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentKozoynaklar.map((k) => (
+                {currentKozoynaklar.map((k, index) => (
                   <tr key={k.id} className="border-b border-border">
-                    <td className="px-4 py-2">{k.tartibRaqam}</td>
+                    <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>
