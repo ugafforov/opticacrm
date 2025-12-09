@@ -633,11 +633,11 @@ const Tekshiruv = () => {
                 {searchQuery ? t("exam.noResults") : t("exam.empty")}
               </div>
             ) : (
-              currentTekshiruvlar.map((exam) => (
+              currentTekshiruvlar.map((exam, index) => (
               <div key={exam.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {exam.tartibRaqam}</div>
+                    <div className="font-semibold text-lg">№ {index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -729,9 +729,9 @@ const Tekshiruv = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentTekshiruvlar.map((exam) => (
+                {currentTekshiruvlar.map((exam, index) => (
                   <tr key={exam.id} className="border-b border-border">
-                    <td className="px-4 py-2">{exam.tartibRaqam}</td>
+                    <td className="px-4 py-2">{index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>
