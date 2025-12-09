@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,10 +28,12 @@ export interface BuyurtmaFormData {
 }
 
 export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
-  const { t } = useLanguage();
+  const { t, script } = useLanguage();
+  const defaultClientName = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+  
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [form, setForm] = useState<BuyurtmaFormData>({
-    mijoz: "",
+    mijoz: defaultClientName,
     telefon: "+998 ",
     od: "",
     os: "",
@@ -40,6 +42,15 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
     opravaNarxi: "",
     opravaTuri: "",
   });
+
+  useEffect(() => {
+    const currentDefault = script === 'cyrillic' ? "Мижоз" : "Mijoz";
+    const otherDefault = script === 'cyrillic' ? "Mijoz" : "Мижоз";
+    
+    if (form.mijoz === otherDefault || form.mijoz === "") {
+      setForm(prev => ({ ...prev, mijoz: currentDefault }));
+    }
+  }, [script]);
 
   const handleOdOsChange = (field: 'od' | 'os', value: string) => {
     setForm({ ...form, [field]: value });
@@ -59,7 +70,7 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
     // Reset form
     setSelectedDate(new Date());
     setForm({
-      mijoz: "",
+      mijoz: defaultClientName,
       telefon: "+998 ",
       od: "",
       os: "",
@@ -103,7 +114,6 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
               id="mijoz"
               value={form.mijoz}
               onChange={(e) => setForm({ ...form, mijoz: e.target.value })}
-              placeholder="Мижоз/Mijoz"
               required
             />
           </div>
