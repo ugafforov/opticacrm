@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +22,21 @@ const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
 
+// Preload all pages in background after initial render
+const preloadPages = () => {
+  import("./pages/Buyurtmalar");
+  import("./pages/LinzaRoyxati");
+  import("./pages/Tekshiruv");
+  import("./pages/TayyorKozoynaklar");
+  import("./pages/LinzaSotuvi");
+  import("./pages/Hisobotlar");
+  import("./pages/Chiqindilar");
+  import("./pages/AdminUsers");
+  import("./pages/Profile");
+  import("./pages/NotFound");
+  import("./pages/Auth");
+};
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -39,19 +54,36 @@ const queryClient = new QueryClient({
   },
 });
 
-// Minimal inline loader - only shows briefly for uncached pages
-const InlineLoader = () => (
-  <div className="flex items-center justify-center py-12 animate-fade-in">
-    <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
-  </div>
-);
-
-// Wrapper to handle individual page suspense without full-page flash
+// Wrapper to handle individual page suspense
 const SuspensePage = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={<InlineLoader />}>
+  <Suspense fallback={null}>
     <PageTransition>{children}</PageTransition>
   </Suspense>
 );
+
+const AppRoutes = () => {
+  // Preload all pages after first render
+  useEffect(() => {
+    const timer = setTimeout(preloadPages, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Routes>
+      <Route path="/auth" element={<Suspense fallback={null}><PageTransition><Auth /></PageTransition></Suspense>} />
+      <Route path="/" element={<ProtectedRoute><Layout><SuspensePage><Buyurtmalar /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/linza-royxati" element={<ProtectedRoute><Layout><SuspensePage><LinzaRoyxati /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/tekshiruv" element={<ProtectedRoute><Layout><SuspensePage><Tekshiruv /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/tayyor-kozoynaklar" element={<ProtectedRoute><Layout><SuspensePage><TayyorKozoynaklar /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/linza-sotuvi" element={<ProtectedRoute><Layout><SuspensePage><LinzaSotuvi /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/hisobotlar" element={<ProtectedRoute><Layout><SuspensePage><Hisobotlar /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="*" element={<Suspense fallback={null}><PageTransition><NotFound /></PageTransition></Suspense>} />
+    </Routes>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -60,19 +92,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
-            <Route path="/auth" element={<Suspense fallback={<InlineLoader />}><PageTransition><Auth /></PageTransition></Suspense>} />
-            <Route path="/" element={<ProtectedRoute><Layout><SuspensePage><Buyurtmalar /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/linza-royxati" element={<ProtectedRoute><Layout><SuspensePage><LinzaRoyxati /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/tekshiruv" element={<ProtectedRoute><Layout><SuspensePage><Tekshiruv /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/tayyor-kozoynaklar" element={<ProtectedRoute><Layout><SuspensePage><TayyorKozoynaklar /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/linza-sotuvi" element={<ProtectedRoute><Layout><SuspensePage><LinzaSotuvi /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/hisobotlar" element={<ProtectedRoute><Layout><SuspensePage><Hisobotlar /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
-            <Route path="*" element={<Suspense fallback={<InlineLoader />}><PageTransition><NotFound /></PageTransition></Suspense>} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
