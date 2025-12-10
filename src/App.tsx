@@ -38,8 +38,8 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
+    <LanguageProvider>
+      <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -57,8 +57,8 @@ const App = () => (
             <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
           </Routes>
         </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
