@@ -837,23 +837,39 @@ const Hisobotlar = () => {
         <p className="text-muted-foreground">{t("reports.subtitle")}</p>
       </div>
 
-      <Card className="p-6">
-        <div className="mb-6 space-y-4">
-          <h3 className="text-lg font-semibold">{t("reports.dateRange")}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="p-6 bg-gradient-to-br from-card via-card to-secondary/20 border-border/50">
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <CalendarIcon className="h-5 w-5 text-primary" />
+            </div>
             <div>
-              <Label>{t("common.from")}</Label>
+              <h3 className="text-lg font-semibold text-foreground">{t("reports.dateRange")}</h3>
+              <p className="text-xs text-muted-foreground">Hisobot uchun sana oralig'ini tanlang</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Boshlanish sanasi */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("common.from")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-11 bg-background/50 hover:bg-background border-border/50 hover:border-primary/50 transition-colors",
                       !startDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="p-1.5 rounded-md bg-blue-500/10">
+                        <CalendarIcon className="h-3.5 w-3.5 text-blue-500" />
+                      </div>
+                      <span className="flex-1">
+                        {startDate ? format(startDate, "dd.MM.yyyy") : t("reports.selectDate")}
+                      </span>
+                    </div>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -867,19 +883,27 @@ const Hisobotlar = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div>
-              <Label>{t("common.to")}</Label>
+            
+            {/* Tugash sanasi */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("common.to")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-11 bg-background/50 hover:bg-background border-border/50 hover:border-primary/50 transition-colors",
                       !endDate && "text-muted-foreground"
                     )}
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="p-1.5 rounded-md bg-indigo-500/10">
+                        <CalendarIcon className="h-3.5 w-3.5 text-indigo-500" />
+                      </div>
+                      <span className="flex-1">
+                        {endDate ? format(endDate, "dd.MM.yyyy") : t("reports.selectDate")}
+                      </span>
+                    </div>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -894,24 +918,45 @@ const Hisobotlar = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="flex items-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setStartDate(undefined);
-                  setEndDate(undefined);
-                }}
-              >
-                {t("reports.reset")}
-              </Button>
-              <Button
-                variant={showComparison ? "default" : "outline"}
-                onClick={() => setShowComparison(!showComparison)}
-                disabled={!startDate || !endDate}
-                title={!startDate || !endDate ? t("reports.compareTooltip") : ""}
-              >
-                {t("reports.compare")}
-              </Button>
+            
+            {/* Amallar */}
+            <div className="space-y-2 lg:col-span-2">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Amallar</Label>
+              <div className="flex items-center gap-2 h-11">
+                <Button 
+                  variant="outline" 
+                  className="h-full px-4 bg-background/50 hover:bg-background border-border/50 hover:border-red-500/50 hover:text-red-500 transition-colors"
+                  onClick={() => {
+                    setStartDate(undefined);
+                    setEndDate(undefined);
+                  }}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {t("reports.reset")}
+                </Button>
+                <Button
+                  className={cn(
+                    "h-full px-4 transition-all",
+                    showComparison 
+                      ? "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md" 
+                      : "bg-background/50 hover:bg-background border border-border/50 hover:border-purple-500/50 text-foreground hover:text-purple-500"
+                  )}
+                  variant={showComparison ? "default" : "outline"}
+                  onClick={() => setShowComparison(!showComparison)}
+                  disabled={!startDate || !endDate}
+                  title={!startDate || !endDate ? t("reports.compareTooltip") : ""}
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  {t("reports.compare")}
+                  {showComparison && (
+                    <span className="ml-2 w-2 h-2 rounded-full bg-white animate-pulse" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
