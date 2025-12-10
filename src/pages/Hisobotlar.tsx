@@ -958,23 +958,49 @@ const Hisobotlar = () => {
             </div>
           </div>
 
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <div className="flex justify-between items-start">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-6 shadow-lg">
+            {/* Background decorations */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+            <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full" />
+            
+            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
-                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.currency")}</p>
+                <p className="text-sm text-blue-100 mb-2 flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {t("reports.totalIncome")}
+                </p>
+                <p className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                  {totalTushum.toLocaleString()}
+                  <span className="text-lg md:text-xl font-medium text-blue-200 ml-2">{t("common.currency")}</span>
+                </p>
               </div>
+              
               {showComparison && previousTotalTushum > 0 && (
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">{t("reports.change")}</p>
-                  <p className={cn(
-                    "text-2xl font-bold",
-                    totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
+                <div className="flex flex-col items-end gap-2">
+                  <div className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold",
+                    totalChange > 0 
+                      ? "bg-green-500/20 text-green-100" 
+                      : totalChange < 0 
+                        ? "bg-red-500/20 text-red-100" 
+                        : "bg-white/10 text-white"
                   )}>
+                    {totalChange > 0 ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    ) : totalChange < 0 ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+                      </svg>
+                    ) : null}
                     {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("reports.previous")} {previousTotalTushum.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-blue-200">
+                    {t("reports.previous")}: {previousTotalTushum.toLocaleString()} {t("common.currency")}
                   </p>
                 </div>
               )}
