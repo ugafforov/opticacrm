@@ -29,6 +29,7 @@ import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TableSkeleton, FormSkeleton } from "@/components/skeletons/TableSkeleton";
 import {
   Pagination,
   PaginationContent,
@@ -48,6 +49,17 @@ interface Tekshiruv {
   tanometriya: boolean;
   jamiSumma: number;
 }
+
+const mapToLocal = (item: any): Tekshiruv => ({
+  id: item.id,
+  sana: item.sana,
+  createdAt: item.created_at,
+  tartibRaqam: item.tartib_raqam,
+  mijoz: item.mijoz,
+  refraksiyametriya: item.refraksiyametriya,
+  tanometriya: item.tanometriya,
+  jamiSumma: item.jami_summa,
+});
 
 const Tekshiruv = () => {
   const { t, script } = useLanguage();
@@ -96,13 +108,48 @@ const Tekshiruv = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'tekshiruvlar',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadTekshiruvlar();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setTekshiruvlar(prev => {
+            if (prev.some(t => t.id === newItem.id)) return prev;
+            if (prev.some(t => t.id.startsWith('temp-') && t.mijoz === newItem.mijoz && t.sana === newItem.sana)) {
+              return prev.map(t => 
+                t.id.startsWith('temp-') && t.mijoz === newItem.mijoz && t.sana === newItem.sana 
+                  ? newItem : t
+              );
+            }
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'tekshiruvlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setTekshiruvlar(prev => prev.map(t => t.id === updatedItem.id ? updatedItem : t));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'tekshiruvlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setTekshiruvlar(prev => prev.filter(t => t.id !== payload.old.id));
         }
       )
       .subscribe();
@@ -122,17 +169,7 @@ const Tekshiruv = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        mijoz: item.mijoz,
-        refraksiyametriya: item.refraksiyametriya,
-        tanometriya: item.tanometriya,
-        jamiSumma: item.jami_summa,
-      })) || [];
-
+      const mapped = data?.map(mapToLocal) || [];
       setTekshiruvlar(mapped);
     } catch (error: any) {
       toast.error(t("toast.loadError"));
@@ -150,9 +187,34 @@ const Tekshiruv = () => {
     }
 
     const summa = parseInt(form.narx) || 0;
+    const tempId = `temp-${Date.now()}`;
+    const nextTartibRaqam = tekshiruvlar.length > 0 ? Math.max(...tekshiruvlar.map(t => t.tartibRaqam)) + 1 : 1;
+
+    // Optimistik yangilanish
+    const optimisticItem: Tekshiruv = {
+      id: tempId,
+      sana: formatUzbekistanDate(selectedDate),
+      createdAt: new Date().toISOString(),
+      tartibRaqam: nextTartibRaqam,
+      mijoz: form.mijoz,
+      refraksiyametriya: form.refraksiyametriya,
+      tanometriya: form.tanometriya,
+      jamiSumma: summa,
+    };
+
+    setTekshiruvlar(prev => [optimisticItem, ...prev]);
+    toast.success(t("exam.addSuccess"));
+
+    // Formani tozalash
+    setSelectedDate(new Date());
+    setForm({
+      mijoz: script === 'cyrillic' ? "Мижоз" : "Mijoz",
+      refraksiyametriya: false,
+      tanometriya: false,
+      narx: "",
+    });
 
     try {
-      // Get the maximum tartib_raqam for this user
       const { data: maxData, error: maxError } = await supabase
         .from("tekshiruvlar")
         .select("tartib_raqam")
@@ -163,34 +225,29 @@ const Tekshiruv = () => {
 
       if (maxError) throw maxError;
 
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+      const serverTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("tekshiruvlar")
         .insert({
           user_id: user.id,
           sana: formatUzbekistanDate(selectedDate),
-          tartib_raqam: nextTartibRaqam,
+          tartib_raqam: serverTartibRaqam,
           mijoz: form.mijoz,
           refraksiyametriya: form.refraksiyametriya,
           tanometriya: form.tanometriya,
           jami_summa: summa,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      await loadTekshiruvlar();
-
-      setSelectedDate(new Date());
-      setForm({
-        mijoz: script === 'cyrillic' ? "Мижоз" : "Mijoz",
-        refraksiyametriya: false,
-        tanometriya: false,
-        narx: "",
-      });
-
-      toast.success(t("exam.addSuccess"));
+      // Vaqtinchalik ID ni haqiqiy ID bilan almashtirish
+      setTekshiruvlar(prev => prev.map(t => t.id === tempId ? mapToLocal(data) : t));
     } catch (error: any) {
+      // Xatolik bo'lsa - optimistik yangilanishni bekor qilish
+      setTekshiruvlar(prev => prev.filter(t => t.id !== tempId));
       toast.error(t("toast.saveError"));
     }
   };
@@ -201,8 +258,13 @@ const Tekshiruv = () => {
     const itemToDelete = tekshiruvlar.find((t) => t.id === deleteId);
     if (!itemToDelete) return;
 
+    // Optimistik o'chirish
+    setTekshiruvlar(prev => prev.filter(t => t.id !== deleteId));
+    setDeleteId(null);
+    toast.success(t("exam.deleteSuccess"));
+
     try {
-      const { error: trashError } = await supabase.from("chiqindilar").insert([{
+      await supabase.from("chiqindilar").insert([{
         user_id: user.id,
         item_id: deleteId,
         type: "tekshiruvlar",
@@ -216,11 +278,9 @@ const Tekshiruv = () => {
         .eq("id", deleteId);
 
       if (error) throw error;
-
-      await loadTekshiruvlar();
-      setDeleteId(null);
-      toast.success(t("exam.deleteSuccess"));
     } catch (error: any) {
+      // Xatolik bo'lsa - qaytarish
+      setTekshiruvlar(prev => [itemToDelete, ...prev]);
       toast.error(t("toast.deleteError"));
     }
   };
@@ -232,6 +292,13 @@ const Tekshiruv = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !user) return;
+
+    const previousItem = tekshiruvlar.find(t => t.id === editingItem.id);
+    
+    // Optimistik yangilash
+    setTekshiruvlar(prev => prev.map(t => t.id === editingItem.id ? editingItem : t));
+    setEditingItem(null);
+    toast.success(t("common.updateSuccess"));
 
     try {
       const { error } = await supabase
@@ -246,11 +313,10 @@ const Tekshiruv = () => {
         .eq("id", editingItem.id);
 
       if (error) throw error;
-
-      await loadTekshiruvlar();
-      setEditingItem(null);
-      toast.success(t("common.updateSuccess"));
     } catch (error: any) {
+      if (previousItem) {
+        setTekshiruvlar(prev => prev.map(t => t.id === editingItem.id ? previousItem : t));
+      }
       toast.error(t("toast.updateError"));
     }
   };
@@ -452,6 +518,19 @@ const Tekshiruv = () => {
     }, 1000);
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t("exam.title")}</h2>
+          <p className="text-muted-foreground">{t("exam.subtitle")}</p>
+        </div>
+        <FormSkeleton />
+        <TableSkeleton rows={10} columns={6} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -501,34 +580,28 @@ const Tekshiruv = () => {
                     id="refraksiyametriya"
                     checked={form.refraksiyametriya}
                     onCheckedChange={(checked) => {
-                      const newRefrak = checked as boolean;
-                      const newSum = (newRefrak ? 50000 : 0) + (form.tanometriya ? 15000 : 0);
-                      setForm({ ...form, refraksiyametriya: newRefrak, narx: newSum.toString() });
+                      const newRef = checked as boolean;
+                      const newSum = (newRef ? 50000 : 0) + (form.tanometriya ? 15000 : 0);
+                      setForm({ ...form, refraksiyametriya: newRef, narx: newSum.toString() });
                     }}
                   />
-                  <label
-                    htmlFor="refraksiyametriya"
-                    className="text-sm font-medium leading-none cursor-pointer"
-                  >
-                    {t("exam.refractometry")} — 50,000 {t("common.currency")}
-                  </label>
+                  <Label htmlFor="refraksiyametriya" className="font-normal cursor-pointer">
+                    {t("exam.refractometry")} (50 000)
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="tanometriya"
                     checked={form.tanometriya}
                     onCheckedChange={(checked) => {
-                      const newTano = checked as boolean;
-                      const newSum = (form.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
-                      setForm({ ...form, tanometriya: newTano, narx: newSum.toString() });
+                      const newTan = checked as boolean;
+                      const newSum = (form.refraksiyametriya ? 50000 : 0) + (newTan ? 15000 : 0);
+                      setForm({ ...form, tanometriya: newTan, narx: newSum.toString() });
                     }}
                   />
-                  <label
-                    htmlFor="tanometriya"
-                    className="text-sm font-medium leading-none cursor-pointer"
-                  >
-                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
-                  </label>
+                  <Label htmlFor="tanometriya" className="font-normal cursor-pointer">
+                    {t("exam.tonometry")} (15 000)
+                  </Label>
                 </div>
               </div>
             </div>
@@ -544,26 +617,39 @@ const Tekshiruv = () => {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-border">
-            <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!form.refraksiyametriya && !form.tanometriya}>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground">
+              {t("exam.total")}: {filteredTekshiruvlar.length} {t("common.items")}
+            </span>
+            <Button type="submit" disabled={!form.refraksiyametriya && !form.tanometriya}>
               {t("exam.add")}
             </Button>
           </div>
         </form>
       </Card>
 
-      <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-lg font-semibold">{t("exam.list")}</h3>
-            <div className="text-lg font-bold text-primary">
-              {t("exam.total")}: {totalSum.toLocaleString()} {t("common.currency")}
-            </div>
+      <Card className="p-6">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between">
+          <div className="flex items-center gap-3">
+            <h3 className="font-semibold text-lg">{t("exam.list")}</h3>
+            <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
+              {totalSum.toLocaleString()} {t("common.sum")}
+            </span>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sana filtri" />
+          <div className="flex flex-wrap gap-2 items-center">
+            <div className="relative w-48">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder={t("common.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setCurrentPage(1); }}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
@@ -575,400 +661,236 @@ const Tekshiruv = () => {
                 <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
               </SelectContent>
             </Select>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
-              <Input
-                placeholder={t("exam.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
-                >
-                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToExcel}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Excel
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToPDF}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                PDF
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrint}
-                className="gap-2"
-              >
-                <Printer className="w-4 h-4" />
-                Print
-              </Button>
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={exportToExcel}>
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("common.exportExcel")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={exportToPDF}>
+                    <Download className="h-4 w-4 text-red-500" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("common.exportPdf")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon" onClick={handlePrint}>
+                    <Printer className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t("common.print")}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
-        
-        {isMobile ? (
-          <div className="space-y-4">
-            {currentTekshiruvlar.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? t("exam.noResults") : t("exam.empty")}
-              </div>
-            ) : (
-              currentTekshiruvlar.map((exam, index) => (
-              <div key={exam.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="text-sm text-muted-foreground cursor-help">
-                            {formatDisplayDate(exam.sana)}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{formatUzbekistanDateTime(new Date(exam.createdAt))}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex gap-2">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(exam)}
-                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Tahrirlash</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteId(exam.id)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>O'chirish</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">{t("exam.patient")}:</span>
-                    <span className="ml-2 font-medium">{exam.mijoz}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">{t("exam.examinations")}:</span>
-                    <span className="ml-2">
-                      {exam.refraksiyametriya && t("exam.refractometryShort")}
-                      {exam.refraksiyametriya && exam.tanometriya && ", "}
-                      {exam.tanometriya && t("exam.tonometryShort")}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="pt-2 border-t border-border flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">{t("exam.amount")}:</span>
-                  <span className="text-lg font-bold">{exam.jamiSumma.toLocaleString()} {t("common.currency")}</span>
-                </div>
-              </div>
-            ))
-            )}
-          </div>
-        ) : (
+
+        {/* Desktop Table */}
+        {!isMobile && (
           <div className="overflow-x-auto">
-            {currentTekshiruvlar.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchQuery ? t("exam.noResults") : t("exam.empty")}
-              </div>
-            ) : (
-              <table id="printable-table" className="w-full">
-              <thead className="bg-secondary text-secondary-foreground">
-                <tr>
-                  <th className="px-4 py-2 text-left">{t("exam.number")}</th>
-                  <th className="px-4 py-2 text-left">{t("common.date")}</th>
-                  <th className="px-4 py-2 text-left">{t("exam.patient")}</th>
-                  <th className="px-4 py-2 text-left">{t("exam.examinations")}</th>
-                  <th className="px-4 py-2 text-center">{t("exam.amount")}</th>
-                  <th className="px-4 py-2 text-right"></th>
+            <table id="printable-table" className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-2">{t("exam.number")}</th>
+                  <th className="text-left py-3 px-2">{t("common.date")}</th>
+                  <th className="text-left py-3 px-2">{t("exam.patient")}</th>
+                  <th className="text-left py-3 px-2">{t("exam.examinations")}</th>
+                  <th className="text-right py-3 px-2">{t("exam.amount")}</th>
+                  <th className="text-right py-3 px-2">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
-                {currentTekshiruvlar.map((exam, index) => (
-                  <tr key={exam.id} className="border-b border-border">
-                    <td className="px-4 py-2">{startIndex + index + 1}</td>
-                    <td className="px-4 py-2">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="cursor-help">{formatDisplayDate(exam.sana)}</span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{formatUzbekistanDateTime(new Date(exam.createdAt))}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                {currentTekshiruvlar.map((tek, index) => (
+                  <tr key={tek.id} className={`border-b hover:bg-muted/50 ${tek.id.startsWith('temp-') ? 'opacity-70' : ''}`}>
+                    <td className="py-3 px-2">{startIndex + index + 1}</td>
+                    <td className="py-3 px-2">{formatDisplayDate(tek.sana)}</td>
+                    <td className="py-3 px-2">{tek.mijoz}</td>
+                    <td className="py-3 px-2">
+                      {tek.refraksiyametriya && t("exam.refractometryAbbr")}
+                      {tek.refraksiyametriya && tek.tanometriya && ", "}
+                      {tek.tanometriya && t("exam.tonometryAbbr")}
                     </td>
-                    <td className="px-4 py-2">{exam.mijoz}</td>
-                    <td className="px-4 py-2">
-                      {exam.refraksiyametriya && t("exam.refractometryShort")}
-                      {exam.refraksiyametriya && exam.tanometriya && ", "}
-                      {exam.tanometriya && t("exam.tonometryShort")}
-                    </td>
-                    <td className="px-4 py-2 text-center font-semibold">
-                      {exam.jamiSumma.toLocaleString()} {t("common.currency")}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      <TooltipProvider>
-                        <div className="flex gap-2 justify-end">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(exam)}
-                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
-                              >
-                                <Pencil className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Tahrirlash</p>
-                            </TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setDeleteId(exam.id)}
-                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>O'chirish</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      </TooltipProvider>
+                    <td className="py-3 px-2 text-right">{tek.jamiSumma.toLocaleString()} {t("common.sum")}</td>
+                    <td className="py-3 px-2 text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => handleEdit(tek)} disabled={tek.id.startsWith('temp-')}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(tek.id)} disabled={tek.id.startsWith('temp-')}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            )}
           </div>
         )}
 
-        {totalPages > 1 && (
-          <div className="mt-4 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      onClick={() => setCurrentPage(page)}
-                      isActive={currentPage === page}
-                      className="cursor-pointer"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+        {/* Mobile Cards */}
+        {isMobile && (
+          <div className="space-y-3">
+            {currentTekshiruvlar.map((tek, index) => (
+              <Card key={tek.id} className={`p-4 ${tek.id.startsWith('temp-') ? 'opacity-70' : ''}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-medium">{tek.mijoz}</p>
+                    <p className="text-sm text-muted-foreground">{formatDisplayDate(tek.sana)}</p>
+                  </div>
+                  <span className="text-sm font-medium">{tek.jamiSumma.toLocaleString()} {t("common.sum")}</span>
+                </div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  {tek.refraksiyametriya && t("exam.refractometry")}
+                  {tek.refraksiyametriya && tek.tanometriya && ", "}
+                  {tek.tanometriya && t("exam.tonometry")}
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-xs text-muted-foreground">№{startIndex + index + 1}</span>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleEdit(tek)} disabled={tek.id.startsWith('temp-')}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setDeleteId(tek.id)} disabled={tek.id.startsWith('temp-')}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
-      </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination className="mt-4">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+                return (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(pageNum)}
+                      isActive={currentPage === pageNum}
+                      className="cursor-pointer"
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
+
+        {filteredTekshiruvlar.length === 0 && (
+          <p className="text-center text-muted-foreground py-8">{t("common.noData")}</p>
+        )}
+      </Card>
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         title={t("common.confirmDelete")}
-        description={t("common.confirmDeleteDesc")}
+        description={t("exam.deleteConfirm")}
       />
 
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
-        title={t("common.edit")}
+        onSubmit={handleUpdate}
+        title={t("exam.edit")}
       >
-        <form onSubmit={handleUpdate} className="space-y-3">
-          <div className="border border-primary/30 bg-primary/5 rounded-md p-3 mb-4">
-            <Label className="text-xs font-medium text-primary">{t("common.date")}</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal h-9 text-sm mt-1.5"
-                >
-                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
-                  {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={editingItem?.sana ? new Date(editingItem.sana.split('-').reverse().join('-')) : undefined}
-                  onSelect={(date) => {
-                    if (date && editingItem) {
-                      setEditingItem({
-                        ...editingItem,
-                        sana: formatUzbekistanDate(date)
-                      });
-                    }
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div>
-            <Label htmlFor="edit-mijoz" className="text-xs">{t("exam.patient")}</Label>
-            <Input
-              id="edit-mijoz"
-              value={editingItem?.mijoz || ""}
-              onChange={(e) =>
-                setEditingItem(
-                  editingItem ? { ...editingItem, mijoz: e.target.value } : null
-                )
-              }
-              required
-              className="h-9"
-            />
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs">{t("exam.examType")}</Label>
-              <div className="space-y-2 pt-1">
+        {editingItem && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t("common.date")}</Label>
+              <Input
+                type="text"
+                value={editingItem.sana}
+                onChange={(e) => setEditingItem({ ...editingItem, sana: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("exam.patient")}</Label>
+              <Input
+                value={editingItem.mijoz}
+                onChange={(e) => setEditingItem({ ...editingItem, mijoz: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{t("exam.examType")}</Label>
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="edit-refraksiyametriya"
-                    checked={editingItem?.refraksiyametriya || false}
+                    checked={editingItem.refraksiyametriya}
                     onCheckedChange={(checked) => {
-                      if (editingItem) {
-                        const newRefrak = checked as boolean;
-                        const newSum = (newRefrak ? 50000 : 0) + (editingItem.tanometriya ? 15000 : 0);
-                        setEditingItem({
-                          ...editingItem,
-                          refraksiyametriya: newRefrak,
-                          jamiSumma: newSum,
-                        });
-                      }
+                      const newRef = checked as boolean;
+                      const newSum = (newRef ? 50000 : 0) + (editingItem.tanometriya ? 15000 : 0);
+                      setEditingItem({ ...editingItem, refraksiyametriya: newRef, jamiSumma: newSum });
                     }}
                   />
-                  <label
-                    htmlFor="edit-refraksiyametriya"
-                    className="text-xs font-medium leading-none cursor-pointer"
-                  >
-                    {t("exam.refractometry")} — 50,000 {t("common.currency")}
-                  </label>
+                  <Label htmlFor="edit-refraksiyametriya" className="font-normal cursor-pointer">
+                    {t("exam.refractometry")} (50 000)
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="edit-tanometriya"
-                    checked={editingItem?.tanometriya || false}
+                    checked={editingItem.tanometriya}
                     onCheckedChange={(checked) => {
-                      if (editingItem) {
-                        const newTano = checked as boolean;
-                        const newSum = (editingItem.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
-                        setEditingItem({
-                          ...editingItem,
-                          tanometriya: newTano,
-                          jamiSumma: newSum,
-                        });
-                      }
+                      const newTan = checked as boolean;
+                      const newSum = (editingItem.refraksiyametriya ? 50000 : 0) + (newTan ? 15000 : 0);
+                      setEditingItem({ ...editingItem, tanometriya: newTan, jamiSumma: newSum });
                     }}
                   />
-                  <label
-                    htmlFor="edit-tanometriya"
-                    className="text-xs font-medium leading-none cursor-pointer"
-                  >
-                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
-                  </label>
+                  <Label htmlFor="edit-tanometriya" className="font-normal cursor-pointer">
+                    {t("exam.tonometry")} (15 000)
+                  </Label>
                 </div>
               </div>
             </div>
-
-            <div>
-              <Label className="text-xs">{t("exam.price")}</Label>
+            <div className="space-y-2">
+              <Label>{t("exam.price")}</Label>
               <PriceInput
-                value={editingItem?.jamiSumma?.toString() || "0"}
-                onChange={(value) =>
-                  setEditingItem(
-                    editingItem ? { ...editingItem, jamiSumma: parseInt(value) || 0 } : null
-                  )
-                }
-                className="h-9 mt-1"
+                value={editingItem.jamiSumma.toString()}
+                onChange={(value) => setEditingItem({ ...editingItem, jamiSumma: parseInt(value) || 0 })}
               />
             </div>
           </div>
-
-          <div className="flex gap-2 justify-end pt-2 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setEditingItem(null)}
-              size="sm"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button type="submit" size="sm">{t("common.save")}</Button>
-          </div>
-        </form>
+        )}
       </EditDialog>
     </div>
   );
