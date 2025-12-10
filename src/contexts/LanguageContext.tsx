@@ -370,6 +370,15 @@ const translations = {
     "network.checkConnection": "Интернетга уланишни текширинг",
     "network.operationRequiresConnection": "Бу амал интернет алоқасини талаб қилади",
 
+    // Connection indicator
+    "connection.offline": "Интернет алоқаси йўқ",
+    "connection.poor": "Алоқа жуда секин",
+    "connection.slow": "Алоқа секин",
+    "connection.good": "Алоқа яхши",
+    "connection.excellent": "Алоқа аъло",
+    "connection.checking": "Текширилмоқда...",
+    "connection.latency": "Кечикиш",
+
     // Footer
     "footer.developer": "Дастурчи",
     "footer.developerName": "Усмонжон Ғаффоров",
@@ -737,6 +746,15 @@ const translations = {
     "network.restored": "Internet aloqa tiklandi",
     "network.checkConnection": "Internetga ulanishni tekshiring",
     "network.operationRequiresConnection": "Bu amal internet aloqasini talab qiladi",
+
+    // Connection indicator
+    "connection.offline": "Internet aloqasi yo'q",
+    "connection.poor": "Aloqa juda sekin",
+    "connection.slow": "Aloqa sekin",
+    "connection.good": "Aloqa yaxshi",
+    "connection.excellent": "Aloqa a'lo",
+    "connection.checking": "Tekshirilmoqda...",
+    "connection.latency": "Kechikish",
 
     // Footer
     "footer.developer": "Dasturchi",

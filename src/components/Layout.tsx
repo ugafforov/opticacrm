@@ -4,6 +4,7 @@ import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { ConnectionIndicator } from "./ConnectionIndicator";
 import LanguageSwitcher from "./LanguageSwitcher";
 import UserProfile from "./UserProfile";
 import Footer from "./Footer";
@@ -78,6 +79,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
       </main>
       <Footer />
+      <ConnectionIndicator />
     </div>
   );
 };
