@@ -226,10 +226,10 @@ const Auth = () => {
             <p className="text-sm text-muted-foreground">
               {t("auth.contactForCRM")}
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <a
                 href="tel:+998940715559"
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-green-500 transition-all duration-300 hover:scale-110"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-green-500 transition-all duration-300 hover:scale-110 min-h-6 py-1"
               >
                 <Phone className="w-4 h-4" />
                 <span>+998 94 071 55 59</span>
@@ -238,7 +238,7 @@ const Auth = () => {
                 href="https://t.me/u_gafforov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-[#0088cc] transition-all duration-300 hover:scale-110"
+                className="text-muted-foreground hover:text-[#0088cc] transition-all duration-300 hover:scale-110 min-w-6 min-h-6 flex items-center justify-center"
                 aria-label="Telegram"
               >
                 <Send className="w-4 h-4" />
@@ -247,7 +247,7 @@ const Auth = () => {
                 href="https://www.facebook.com/u.gafforov"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-[#1877f2] transition-all duration-300 hover:scale-110"
+                className="text-muted-foreground hover:text-[#1877f2] transition-all duration-300 hover:scale-110 min-w-6 min-h-6 flex items-center justify-center"
                 aria-label="Facebook"
               >
                 <Facebook className="w-4 h-4" />
@@ -256,7 +256,7 @@ const Auth = () => {
                 href="https://x.com/Usmonj0n"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-110"
+                className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-110 min-w-6 min-h-6 flex items-center justify-center"
                 aria-label="X (Twitter)"
               >
                 <FaXTwitter className="w-4 h-4" />
@@ -265,7 +265,7 @@ const Auth = () => {
                 href="https://www.instagram.com/usmonjon_gafforov/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-[#e4405f] transition-all duration-300 hover:scale-110"
+                className="text-muted-foreground hover:text-[#e4405f] transition-all duration-300 hover:scale-110 min-w-6 min-h-6 flex items-center justify-center"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
