@@ -32,6 +32,7 @@ interface BuyurtmalarTableProps {
   currentPage: number;
   setCurrentPage: (page: number) => void;
   totalPages: number;
+  startIndex: number;
   getLensTypeTranslation: (type: string) => string;
   getFrameTypeTranslation: (type: string) => string;
 }
@@ -51,6 +52,7 @@ export const BuyurtmalarTable = ({
   currentPage,
   setCurrentPage,
   totalPages,
+  startIndex,
   getLensTypeTranslation,
   getFrameTypeTranslation,
 }: BuyurtmalarTableProps) => {
@@ -118,7 +120,7 @@ export const BuyurtmalarTable = ({
               <div key={b.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {index + 1}</div>
+                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -216,7 +218,7 @@ export const BuyurtmalarTable = ({
               <tbody>
                 {buyurtmalar.map((b, index) => (
                   <tr key={b.id} className="border-b border-border hover:bg-muted/50">
-                    <td className="px-2 sm:px-4 py-2 text-sm">{index + 1}</td>
+                    <td className="px-2 sm:px-4 py-2 text-sm">{startIndex + index + 1}</td>
                     <td className="px-2 sm:px-4 py-2 text-sm">
                       <TooltipProvider>
                         <Tooltip>
