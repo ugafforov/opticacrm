@@ -1023,6 +1023,20 @@ const Hisobotlar = () => {
                   const percentage = maxTotal > 0 ? (section.total / maxTotal) * 100 : 0;
                   const totalPercentage = totalTushum > 0 ? (section.total / totalTushum) * 100 : 0;
                   
+                  // Gradient ranglar har bir bo'lim uchun
+                  const gradients: Record<string, string> = {
+                    "Buyurtmalar": "linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)",
+                    "Буюртмалар": "linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)",
+                    "Tekshiruv": "linear-gradient(90deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)",
+                    "Текширув": "linear-gradient(90deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)",
+                    "Tayyor ko'zoynaklar": "linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%)",
+                    "Тайёр кўзойнаклар": "linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%)",
+                    "Linza sotuvi": "linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)",
+                    "Линза сотуви": "linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)",
+                  };
+                  
+                  const gradient = gradients[section.name] || `linear-gradient(90deg, ${section.color} 0%, ${section.color}aa 100%)`;
+                  
                   return (
                     <motion.div 
                       key={section.name} 
@@ -1035,7 +1049,7 @@ const Hisobotlar = () => {
                         <div className="flex items-center gap-2">
                           <motion.div 
                             className="w-3 h-3 rounded-full shrink-0" 
-                            style={{ backgroundColor: section.color }}
+                            style={{ background: gradient }}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
@@ -1057,16 +1071,31 @@ const Hisobotlar = () => {
                           </span>
                         </div>
                       </div>
-                      <div className="relative h-3 bg-secondary rounded-full overflow-hidden">
+                      <div className="relative h-3 bg-secondary rounded-full overflow-hidden shadow-inner">
                         <motion.div 
-                          className="absolute inset-y-0 left-0 rounded-full"
-                          style={{ backgroundColor: section.color }}
+                          className="absolute inset-y-0 left-0 rounded-full shadow-sm"
+                          style={{ background: gradient }}
                           initial={{ width: 0 }}
                           animate={{ width: `${percentage}%` }}
                           transition={{ 
                             duration: 0.8, 
                             delay: index * 0.15,
                             ease: [0.25, 0.46, 0.45, 0.94]
+                          }}
+                        />
+                        {/* Shimmer effekt */}
+                        <motion.div 
+                          className="absolute inset-y-0 left-0 rounded-full opacity-30"
+                          style={{ 
+                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
+                            width: `${percentage}%`
+                          }}
+                          initial={{ x: "-100%" }}
+                          animate={{ x: "100%" }}
+                          transition={{ 
+                            duration: 1.5, 
+                            delay: index * 0.15 + 0.8,
+                            ease: "easeInOut"
                           }}
                         />
                       </div>
