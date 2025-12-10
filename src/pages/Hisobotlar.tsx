@@ -58,36 +58,65 @@ const Hisobotlar = () => {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [exportFormat, setExportFormat] = useState<"excel" | "pdf">("excel");
 
+  // Zamonaviy tooltip
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const currentIncome = payload[0].value;
       const percentage = total ? ((currentIncome / total) * 100).toFixed(1) : "0";
       const previousIncome = payload[1]?.value;
+      const change = previousIncome ? ((currentIncome - previousIncome) / previousIncome * 100).toFixed(1) : null;
 
       return (
-        <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
-          <p className="font-semibold text-foreground mb-2">{label}</p>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[0].color }} />
-              <p className="text-sm text-foreground">
-                <span className="font-medium">{currentIncome.toLocaleString()}</span> {t("common.sum")}
-                <span className="text-muted-foreground ml-1">({percentage}%)</span>
-              </p>
+        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl p-4 min-w-[180px]">
+          <p className="font-semibold text-foreground mb-3 text-sm border-b border-border pb-2">{label}</p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(135deg, #3b82f6, #60a5fa)" }} />
+                <span className="text-xs text-muted-foreground">{showComparison ? t("reports.currentPeriod") : t("reports.income")}</span>
+              </div>
+              <span className="text-sm font-bold text-foreground">{currentIncome.toLocaleString()}</span>
             </div>
             {showComparison && previousIncome !== undefined && (
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[1].color }} />
-                <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">{previousIncome.toLocaleString()}</span> {t("common.sum")}
-                </p>
-              </div>
+              <>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(135deg, #8b5cf6, #a78bfa)" }} />
+                    <span className="text-xs text-muted-foreground">{t("reports.previousPeriod")}</span>
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">{previousIncome.toLocaleString()}</span>
+                </div>
+                {change && (
+                  <div className="pt-2 border-t border-border mt-2">
+                    <div className={cn(
+                      "flex items-center justify-center gap-1 text-xs font-semibold py-1 px-2 rounded-full",
+                      parseFloat(change) > 0 ? "bg-green-500/10 text-green-600" : parseFloat(change) < 0 ? "bg-red-500/10 text-red-600" : "bg-muted text-muted-foreground"
+                    )}>
+                      {parseFloat(change) > 0 ? "↑" : parseFloat(change) < 0 ? "↓" : "→"} {Math.abs(parseFloat(change))}%
+                    </div>
+                  </div>
+                )}
+              </>
             )}
+            <div className="text-xs text-muted-foreground text-center pt-1">
+              Jami: {percentage}%
+            </div>
           </div>
         </div>
       );
     }
     return null;
+  };
+
+  // Y-axis formatter - raqamlarni qisqartirish
+  const formatYAxis = (value: number) => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(0)}K`;
+    }
+    return value.toString();
   };
 
   // Boshlang'ich sanalarni o'rnatish
@@ -955,20 +984,62 @@ const Hisobotlar = () => {
           {/* Diagrammalar - bir qatorda 50/50 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Ustun diagramma - 50% */}
-            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
-              <h4 className="text-base font-semibold text-foreground mb-4">{t("reports.income")}</h4>
+            <div className="bg-gradient-to-br from-card to-card/80 rounded-xl border border-border p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-base font-semibold text-foreground">{t("reports.income")}</h4>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="w-3 h-3 rounded" style={{ background: "linear-gradient(135deg, #3b82f6, #60a5fa)" }} />
+                  <span>{t("reports.income")}</span>
+                </div>
+              </div>
+              
+              {/* Gradient definition for bars */}
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#60a5fa" />
+                  </linearGradient>
+                  <linearGradient id="barGradientPrev" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
               <TabsContent value="daily" className="mt-0">
-                <div className="h-[350px] w-full">
+                <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                      <Legend />
-                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={formatYAxis}
+                      />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
+                      <Bar 
+                        dataKey="tushum" 
+                        fill="url(#barGradient)" 
+                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={60}
+                      />
                       {showComparison && (
-                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                        <Bar 
+                          dataKey="oldatgiTushum" 
+                          fill="url(#barGradientPrev)" 
+                          name={t("reports.previousPeriod")} 
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={60}
+                        />
                       )}
                     </BarChart>
                   </ResponsiveContainer>
@@ -976,17 +1047,38 @@ const Hisobotlar = () => {
               </TabsContent>
 
               <TabsContent value="weekly" className="mt-0">
-                <div className="h-[350px] w-full">
+                <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                      <Legend />
-                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={formatYAxis}
+                      />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
+                      <Bar 
+                        dataKey="tushum" 
+                        fill="url(#barGradient)" 
+                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={60}
+                      />
                       {showComparison && (
-                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                        <Bar 
+                          dataKey="oldatgiTushum" 
+                          fill="url(#barGradientPrev)" 
+                          name={t("reports.previousPeriod")} 
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={60}
+                        />
                       )}
                     </BarChart>
                   </ResponsiveContainer>
@@ -994,17 +1086,38 @@ const Hisobotlar = () => {
               </TabsContent>
 
               <TabsContent value="monthly" className="mt-0">
-                <div className="h-[350px] w-full">
+                <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                      <Legend />
-                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={{ stroke: "hsl(var(--border))" }}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={formatYAxis}
+                      />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
+                      <Bar 
+                        dataKey="tushum" 
+                        fill="url(#barGradient)" 
+                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
+                        radius={[6, 6, 0, 0]}
+                        maxBarSize={60}
+                      />
                       {showComparison && (
-                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                        <Bar 
+                          dataKey="oldatgiTushum" 
+                          fill="url(#barGradientPrev)" 
+                          name={t("reports.previousPeriod")} 
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={60}
+                        />
                       )}
                     </BarChart>
                   </ResponsiveContainer>
