@@ -23,7 +23,6 @@ import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TableSkeleton, FormSkeleton } from "@/components/skeletons/TableSkeleton";
 import {
   Pagination,
   PaginationContent,
@@ -42,16 +41,6 @@ interface LinzaSotish {
   linzaTuri: string;
   summa: number;
 }
-
-const mapToLocal = (item: any): LinzaSotish => ({
-  id: item.id,
-  sana: item.sana,
-  createdAt: item.created_at,
-  tartibRaqam: item.tartib_raqam,
-  kliyent: item.kliyent,
-  linzaTuri: item.linza_turi,
-  summa: item.summa,
-});
 
 const LinzaSotuvi = () => {
   const { t, script } = useLanguage();
@@ -113,48 +102,13 @@ const LinzaSotuvi = () => {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'linza_sotuvlari',
           filter: `user_id=eq.${user.id}`
         },
-        (payload) => {
-          const newItem = mapToLocal(payload.new);
-          setSotuvlar(prev => {
-            if (prev.some(s => s.id === newItem.id)) return prev;
-            if (prev.some(s => s.id.startsWith('temp-') && s.kliyent === newItem.kliyent && s.sana === newItem.sana)) {
-              return prev.map(s => 
-                s.id.startsWith('temp-') && s.kliyent === newItem.kliyent && s.sana === newItem.sana 
-                  ? newItem : s
-              );
-            }
-            return [newItem, ...prev];
-          });
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'linza_sotuvlari',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          const updatedItem = mapToLocal(payload.new);
-          setSotuvlar(prev => prev.map(s => s.id === updatedItem.id ? updatedItem : s));
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'linza_sotuvlari',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          setSotuvlar(prev => prev.filter(s => s.id !== payload.old.id));
+        () => {
+          loadSotuvlar();
         }
       )
       .subscribe();
@@ -174,7 +128,16 @@ const LinzaSotuvi = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map(mapToLocal) || [];
+      const mapped = data?.map((item) => ({
+        id: item.id,
+        sana: item.sana,
+        createdAt: item.created_at,
+        tartibRaqam: item.tartib_raqam,
+        kliyent: item.kliyent,
+        linzaTuri: item.linza_turi,
+        summa: item.summa,
+      })) || [];
+
       setSotuvlar(mapped);
     } catch (error: any) {
       console.error("Error loading linza sotuvlari:", error);
@@ -192,33 +155,8 @@ const LinzaSotuvi = () => {
       return;
     }
 
-    const tempId = `temp-${Date.now()}`;
-    const nextTartibRaqam = sotuvlar.length > 0 ? Math.max(...sotuvlar.map(s => s.tartibRaqam)) + 1 : 1;
-
-    // Optimistik yangilanish
-    const optimisticItem: LinzaSotish = {
-      id: tempId,
-      sana: formatUzbekistanDate(selectedDate),
-      createdAt: new Date().toISOString(),
-      tartibRaqam: nextTartibRaqam,
-      kliyent: form.kliyent,
-      linzaTuri: form.linzaTuri,
-      summa: parseFloat(form.summa) || 0,
-    };
-
-    setSotuvlar(prev => [optimisticItem, ...prev]);
-    toast.success(t("lensSale.addSuccess"));
-
-    // Formani tozalash
-    const savedForm = { ...form };
-    setSelectedDate(new Date());
-    setForm({
-      kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
-      linzaTuri: "",
-      summa: "",
-    });
-
     try {
+      // Get the maximum tartib_raqam for this user
       const { data: maxData, error: maxError } = await supabase
         .from("linza_sotuvlari")
         .select("tartib_raqam")
@@ -229,26 +167,33 @@ const LinzaSotuvi = () => {
 
       if (maxError) throw maxError;
 
-      const serverTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("linza_sotuvlari")
         .insert({
           user_id: user.id,
           sana: formatUzbekistanDate(selectedDate),
-          tartib_raqam: serverTartibRaqam,
-          kliyent: savedForm.kliyent,
-          linza_turi: savedForm.linzaTuri,
-          summa: parseFloat(savedForm.summa) || 0,
-        })
-        .select()
-        .single();
+          tartib_raqam: nextTartibRaqam,
+          kliyent: form.kliyent,
+          linza_turi: form.linzaTuri,
+          summa: parseFloat(form.summa) || 0,
+        });
 
       if (error) throw error;
 
-      setSotuvlar(prev => prev.map(s => s.id === tempId ? mapToLocal(data) : s));
+      await loadSotuvlar();
+
+      setSelectedDate(new Date());
+      setForm({
+        kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
+        linzaTuri: "",
+        summa: "",
+      });
+
+      toast.success(t("lensSale.addSuccess"));
     } catch (error: any) {
-      setSotuvlar(prev => prev.filter(s => s.id !== tempId));
+      console.error("Error adding linza sotuvi:", error);
       toast.error(t("common.error"));
     }
   };
@@ -259,13 +204,8 @@ const LinzaSotuvi = () => {
     const itemToDelete = sotuvlar.find((s) => s.id === deleteId);
     if (!itemToDelete) return;
 
-    // Optimistik o'chirish
-    setSotuvlar(prev => prev.filter(s => s.id !== deleteId));
-    setDeleteId(null);
-    toast.success(t("lensSale.deleteSuccess"));
-
     try {
-      await supabase.from("chiqindilar").insert([{
+      const { error: trashError } = await supabase.from("chiqindilar").insert([{
         user_id: user.id,
         item_id: deleteId,
         type: "linzaSotuvlari",
@@ -279,8 +219,12 @@ const LinzaSotuvi = () => {
         .eq("id", deleteId);
 
       if (error) throw error;
+
+      await loadSotuvlar();
+      setDeleteId(null);
+      toast.success(t("lensSale.deleteSuccess"));
     } catch (error: any) {
-      setSotuvlar(prev => [itemToDelete, ...prev]);
+      console.error("Error deleting linza sotuvi:", error);
       toast.error(t("common.error"));
     }
   };
@@ -292,13 +236,6 @@ const LinzaSotuvi = () => {
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !user) return;
-
-    const previousItem = sotuvlar.find(s => s.id === editingItem.id);
-
-    // Optimistik yangilash
-    setSotuvlar(prev => prev.map(s => s.id === editingItem.id ? editingItem : s));
-    setEditingItem(null);
-    toast.success(t("common.updateSuccess"));
 
     try {
       const { error } = await supabase
@@ -312,10 +249,12 @@ const LinzaSotuvi = () => {
         .eq("id", editingItem.id);
 
       if (error) throw error;
+
+      await loadSotuvlar();
+      setEditingItem(null);
+      toast.success(t("common.updateSuccess"));
     } catch (error: any) {
-      if (previousItem) {
-        setSotuvlar(prev => prev.map(s => s.id === editingItem.id ? previousItem : s));
-      }
+      console.error("Error updating linza sotuvi:", error);
       toast.error(t("common.error"));
     }
   };
@@ -515,19 +454,6 @@ const LinzaSotuvi = () => {
     }, 1000);
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">{t("lensSale.title")}</h2>
-          <p className="text-muted-foreground">{t("lensSale.subtitle")}</p>
-        </div>
-        <FormSkeleton />
-        <TableSkeleton rows={10} columns={5} />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <div>
@@ -584,54 +510,42 @@ const LinzaSotuvi = () => {
                   { value: "linza-suvi", label: t("lensSale.solution") },
                   { value: "linza-konteyneri", label: t("lensSale.container") },
                 ]}
-                placeholder={t("lensSale.selectType")}
+                placeholder={t("lensSale.select")}
+                otherLabel={t("form.other")}
+                customInputLabel={t("form.enterCustomValue")}
               />
             </div>
 
             <div>
-              <Label htmlFor="summa">{t("lensSale.amount")}</Label>
+              <Label htmlFor="summa">{t("lensSale.amount")} ({t("common.sum")})</Label>
               <PriceInput
                 id="summa"
                 value={form.summa}
                 onChange={(value) => setForm({ ...form, summa: value })}
-                placeholder="0"
               />
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">
-              {t("lensSale.total")}: {filteredSotuvlar.length} {t("common.items")}
-            </span>
-            <Button type="submit" disabled={!form.linzaTuri}>
+          <div className="flex justify-end pt-4 border-t border-border">
+            <Button type="submit" className="bg-primary hover:bg-primary/90">
               {t("lensSale.add")}
             </Button>
           </div>
         </form>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h3 className="font-semibold text-lg">{t("lensSale.list")}</h3>
-            <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded">
-              {totalSum.toLocaleString()} {t("common.sum")}
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2 items-center">
-            <div className="relative w-48">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={t("common.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+      <div className="bg-card rounded-lg p-4 border border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <h3 className="text-lg font-semibold">{t("lensSale.list")}</h3>
+            <div className="text-lg font-bold text-primary">
+              {t("orders.total")}: {formatPrice(totalSum)} {t("common.currency")}
             </div>
-            <Select value={dateFilter} onValueChange={(value) => { setDateFilter(value); setCurrentPage(1); }}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Sana filtri" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
@@ -643,216 +557,367 @@ const LinzaSotuvi = () => {
                 <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
               </SelectContent>
             </Select>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={exportToExcel}>
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("common.exportExcel")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={exportToPDF}>
-                    <Download className="h-4 w-4 text-red-500" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("common.exportPdf")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={handlePrint}>
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{t("common.print")}</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
+              <Input
+                placeholder={t("lensSale.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToExcel}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportToPDF}
+                className="gap-2"
+              >
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="gap-2"
+              >
+                <Printer className="w-4 h-4" />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
-
-        {/* Desktop Table */}
-        {!isMobile && (
+        
+        {isMobile ? (
+          <div className="space-y-4">
+            {currentSotuvlar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha sotuvlar yo'q"}
+              </div>
+            ) : (
+              currentSotuvlar.map((s, index) => (
+              <div key={s.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="text-sm text-muted-foreground cursor-help">
+                            {formatDisplayDate(s.sana)}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{formatUzbekistanDateTime(new Date(s.createdAt))}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(s)}
+                            className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Tahrirlash</p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setDeleteId(s.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>O'chirish</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+                
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">{t("lensSale.client")}:</span>
+                    <span className="ml-2 font-medium">{s.kliyent}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">{t("lensSale.type")}:</span>
+                    <span className="ml-2">{getLensTypeTranslation(s.linzaTuri)}</span>
+                  </div>
+                </div>
+                
+                <div className="pt-2 border-t border-border flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">{t("lensSale.amount")}:</span>
+                  <span className="text-lg font-bold">{formatPrice(s.summa)} {t("common.currency")}</span>
+                </div>
+              </div>
+            ))
+            )}
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            <table id="printable-table" className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-2">{t("orders.number")}</th>
-                  <th className="text-left py-3 px-2">{t("common.date")}</th>
-                  <th className="text-left py-3 px-2">{t("lensSale.client")}</th>
-                  <th className="text-left py-3 px-2">{t("lensSale.type")}</th>
-                  <th className="text-right py-3 px-2">{t("lensSale.amount")}</th>
-                  <th className="text-right py-3 px-2">{t("common.actions")}</th>
+            {currentSotuvlar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "Qidiruv bo'yicha natija topilmadi" : "Hozircha sotuvlar yo'q"}
+              </div>
+            ) : (
+              <table id="printable-table" className="w-full">
+              <thead className="bg-secondary text-secondary-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left">№</th>
+                  <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                  <th className="px-4 py-2 text-left">{t("lensSale.client")}</th>
+                  <th className="px-4 py-2 text-left">{t("lensSale.type")}</th>
+                  <th className="px-4 py-2 text-center">{t("lensSale.amount")}</th>
+                  <th className="px-4 py-2 text-right"></th>
                 </tr>
               </thead>
               <tbody>
                 {currentSotuvlar.map((s, index) => (
-                  <tr key={s.id} className={`border-b hover:bg-muted/50 ${s.id.startsWith('temp-') ? 'opacity-70' : ''}`}>
-                    <td className="py-3 px-2">{startIndex + index + 1}</td>
-                    <td className="py-3 px-2">{formatDisplayDate(s.sana)}</td>
-                    <td className="py-3 px-2">{s.kliyent}</td>
-                    <td className="py-3 px-2">{getLensTypeTranslation(s.linzaTuri)}</td>
-                    <td className="py-3 px-2 text-right">{s.summa.toLocaleString()} {t("common.sum")}</td>
-                    <td className="py-3 px-2 text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(s)} disabled={s.id.startsWith('temp-')}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setDeleteId(s.id)} disabled={s.id.startsWith('temp-')}>
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
+                  <tr key={s.id} className="border-b border-border">
+                    <td className="px-4 py-2">{startIndex + index + 1}</td>
+                    <td className="px-4 py-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="cursor-help">{formatDisplayDate(s.sana)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(s.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-2">{s.kliyent}</td>
+                    <td className="px-4 py-2">{getLensTypeTranslation(s.linzaTuri)}</td>
+                    <td className="px-4 py-2 text-center font-semibold">
+                      {formatPrice(s.summa)} {t("common.currency")}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <TooltipProvider>
+                        <div className="flex gap-2 justify-end">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(s)}
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Tahrirlash</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setDeleteId(s.id)}
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 hover:scale-110 transition-all duration-200"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>O'chirish</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
 
-        {/* Mobile Cards */}
-        {isMobile && (
-          <div className="space-y-3">
-            {currentSotuvlar.map((s, index) => (
-              <Card key={s.id} className={`p-4 ${s.id.startsWith('temp-') ? 'opacity-70' : ''}`}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-medium">{s.kliyent}</p>
-                    <p className="text-sm text-muted-foreground">{formatDisplayDate(s.sana)}</p>
-                  </div>
-                  <span className="text-sm font-medium">{s.summa.toLocaleString()} {t("common.sum")}</span>
-                </div>
-                <div className="text-sm text-muted-foreground mb-2">
-                  {getLensTypeTranslation(s.linzaTuri)}
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-xs text-muted-foreground">№{startIndex + index + 1}</span>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(s)} disabled={s.id.startsWith('temp-')}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setDeleteId(s.id)} disabled={s.id.startsWith('temp-')}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {/* Pagination */}
         {totalPages > 1 && (
-          <Pagination className="mt-4">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (currentPage >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = currentPage - 2 + i;
-                }
-                return (
-                  <PaginationItem key={pageNum}>
+          <div className="mt-4 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
                     <PaginationLink
-                      onClick={() => setCurrentPage(pageNum)}
-                      isActive={currentPage === pageNum}
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
                       className="cursor-pointer"
                     >
-                      {pageNum}
+                      {page}
                     </PaginationLink>
                   </PaginationItem>
-                );
-              })}
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         )}
-
-        {filteredSotuvlar.length === 0 && (
-          <p className="text-center text-muted-foreground py-8">{t("common.noData")}</p>
-        )}
-      </Card>
+      </div>
 
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={handleDelete}
         title={t("common.confirmDelete")}
-        description={t("lensSale.deleteConfirm")}
+        description={t("common.confirmDeleteDesc")}
       />
 
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
-        title={t("lensSale.edit")}
+        title={t("common.edit")}
       >
-        {editingItem && (
-          <form onSubmit={handleUpdate} className="space-y-4">
-            <div className="space-y-2">
-              <Label>{t("common.date")}</Label>
+        <form onSubmit={handleUpdate} className="space-y-3">
+          <div className="border border-primary/30 bg-primary/5 rounded-md p-3 mb-4">
+            <Label className="text-xs font-medium text-primary">{t("common.date")}</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal h-9 text-sm mt-1.5"
+                >
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                  {editingItem?.sana ? formatDisplayDate(editingItem.sana) : t("common.date")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={editingItem?.sana ? new Date(editingItem.sana.split('-').reverse().join('-')) : undefined}
+                  onSelect={(date) => {
+                    if (date && editingItem) {
+                      setEditingItem({
+                        ...editingItem,
+                        sana: formatUzbekistanDate(date)
+                      });
+                    }
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="edit-kliyent" className="text-xs">{t("lensSale.client")}</Label>
               <Input
-                type="text"
-                value={editingItem.sana}
-                onChange={(e) => setEditingItem({ ...editingItem, sana: e.target.value })}
+                id="edit-kliyent"
+                value={editingItem?.kliyent || ""}
+                onChange={(e) =>
+                  setEditingItem(
+                    editingItem ? { ...editingItem, kliyent: e.target.value } : null
+                  )
+                }
+                required
+                className="h-9"
               />
             </div>
-            <div className="space-y-2">
-              <Label>{t("lensSale.client")}</Label>
-              <Input
-                value={editingItem.kliyent}
-                onChange={(e) => setEditingItem({ ...editingItem, kliyent: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("lensSale.type")}</Label>
-              <SelectWithOther
-                value={editingItem.linzaTuri}
-                onChange={(value) => setEditingItem({ ...editingItem, linzaTuri: value })}
-                options={[
-                  { value: "amerikanskiy", label: t("lensSale.american") },
-                  { value: "koreyskiy", label: t("lensSale.korean") },
-                  { value: "astigmatik", label: t("lensSale.astigmatic") },
-                  { value: "rangli-zreniya", label: t("lensSale.coloredVision") },
-                  { value: "chiroy-uchun", label: t("lensSale.beauty") },
-                  { value: "linza-suvi", label: t("lensSale.solution") },
-                  { value: "linza-konteyneri", label: t("lensSale.container") },
-                ]}
-                placeholder={t("lensSale.selectType")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("lensSale.amount")}</Label>
+
+            <div>
+              <Label htmlFor="edit-summa" className="text-xs">{t("lensSale.amount")}</Label>
               <PriceInput
-                value={editingItem.summa.toString()}
-                onChange={(value) => setEditingItem({ ...editingItem, summa: parseFloat(value) || 0 })}
+                id="edit-summa"
+                value={editingItem?.summa || ""}
+                onChange={(value) =>
+                  setEditingItem(
+                    editingItem
+                      ? { ...editingItem, summa: parseFloat(value) || 0 }
+                      : null
+                  )
+                }
+                className="h-9"
               />
             </div>
-            <div className="flex justify-end">
-              <Button type="submit">{t("common.save")}</Button>
-            </div>
-          </form>
-        )}
+          </div>
+
+          <div>
+            <Label htmlFor="edit-linzaTuri" className="text-xs">{t("lensSale.type")}</Label>
+            <SelectWithOther
+              id="edit-linzaTuri"
+              value={editingItem?.linzaTuri || ""}
+              onChange={(value) =>
+                setEditingItem(
+                  editingItem ? { ...editingItem, linzaTuri: value } : null
+                )
+              }
+              options={[
+                { value: "amerikanskiy", label: t("lensSale.american") },
+                { value: "koreyskiy", label: t("lensSale.korean") },
+                { value: "astigmatik", label: t("lensSale.astigmatic") },
+                { value: "rangli-zreniya", label: t("lensSale.coloredVision") },
+                { value: "chiroy-uchun", label: t("lensSale.beauty") },
+                { value: "linza-suvi", label: t("lensSale.solution") },
+                { value: "linza-konteyneri", label: t("lensSale.container") },
+              ]}
+              otherLabel={t("form.other")}
+              customInputLabel={t("form.enterCustomValue")}
+            />
+          </div>
+
+          <div className="flex gap-2 justify-end pt-2 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingItem(null)}
+              size="sm"
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button type="submit" size="sm">{t("common.save")}</Button>
+          </div>
+        </form>
       </EditDialog>
     </div>
   );
