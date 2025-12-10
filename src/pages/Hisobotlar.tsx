@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -1017,39 +1018,65 @@ const Hisobotlar = () => {
               
               {/* Progress bar statistika */}
               <div className="space-y-4">
-                {sectionData.map((section) => {
+                {sectionData.map((section, index) => {
                   const maxTotal = Math.max(...sectionData.map(s => s.total));
                   const percentage = maxTotal > 0 ? (section.total / maxTotal) * 100 : 0;
                   const totalPercentage = totalTushum > 0 ? (section.total / totalTushum) * 100 : 0;
                   
                   return (
-                    <div key={section.name} className="space-y-2">
+                    <motion.div 
+                      key={section.name} 
+                      className="space-y-2"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                    >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: section.color }} />
+                          <motion.div 
+                            className="w-3 h-3 rounded-full shrink-0" 
+                            style={{ backgroundColor: section.color }}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
+                          />
                           <span className="text-sm font-medium text-foreground">{section.name}</span>
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-muted-foreground">{section.count} ta</span>
-                          <span className="text-sm font-bold text-foreground min-w-[100px] text-right">
+                          <motion.span 
+                            className="text-sm font-bold text-foreground min-w-[100px] text-right"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+                          >
                             {section.total.toLocaleString()} so'm
-                          </span>
+                          </motion.span>
                           <span className="text-xs font-medium text-muted-foreground min-w-[45px] text-right">
                             {totalPercentage.toFixed(1)}%
                           </span>
                         </div>
                       </div>
                       <div className="relative h-3 bg-secondary rounded-full overflow-hidden">
-                        <div 
-                          className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out"
-                          style={{ 
-                            width: `${percentage}%`,
-                            backgroundColor: section.color 
+                        <motion.div 
+                          className="absolute inset-y-0 left-0 rounded-full"
+                          style={{ backgroundColor: section.color }}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ 
+                            duration: 0.8, 
+                            delay: index * 0.15,
+                            ease: [0.25, 0.46, 0.45, 0.94]
                           }}
                         />
                       </div>
                       {showComparison && section.change !== undefined && section.previousTotal !== undefined && section.previousTotal > 0 && (
-                        <div className="flex items-center gap-2 pl-5">
+                        <motion.div 
+                          className="flex items-center gap-2 pl-5"
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 + 0.5 }}
+                        >
                           <span className="text-xs text-muted-foreground">
                             Oldingi: {section.previousTotal.toLocaleString()} so'm
                           </span>
@@ -1059,9 +1086,9 @@ const Hisobotlar = () => {
                           )}>
                             {section.change > 0 ? "↑" : section.change < 0 ? "↓" : ""} {Math.abs(section.change).toFixed(1)}%
                           </span>
-                        </div>
+                        </motion.div>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
