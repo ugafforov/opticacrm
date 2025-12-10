@@ -290,6 +290,8 @@ const translations = {
     "auth.user": "Фойдаланувчи",
     "auth.contactForCRM": "CRM тизимини сотиб олиш учун боғланинг",
     "auth.developer": "Дастурчи",
+    "auth.showPassword": "Паролни кўрсатиш",
+    "auth.hidePassword": "Паролни яшириш",
 
     // Profile
     "profile.title": "Профил",
@@ -667,6 +669,8 @@ const translations = {
     "auth.user": "Foydalanuvchi",
     "auth.contactForCRM": "CRM tizimini sotib olish uchun bog'laning",
     "auth.developer": "Dasturchi",
+    "auth.showPassword": "Parolni ko'rsatish",
+    "auth.hidePassword": "Parolni yashirish",
 
     // Profile
     "profile.title": "Profil",
