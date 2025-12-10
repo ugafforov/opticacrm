@@ -35,8 +35,8 @@ const Buyurtmalar = () => {
   // Date filter
   const { dateFilter, setDateFilter, filteredItems: dateFiltered } = useDateFilter(searchFiltered);
 
-  // Pagination
-  const { currentPage, setCurrentPage, totalPages, paginatedItems, startIndex } = useTablePagination(dateFiltered);
+  // Pagination - 20 items per page
+  const { currentPage, setCurrentPage, totalPages, paginatedItems, startIndex } = useTablePagination(dateFiltered, 20);
 
   // Export functionality
   const { exportToExcel, exportToPDF, handlePrint, getLensTypeTranslation, getFrameTypeTranslation } = 
