@@ -52,7 +52,7 @@ export const BuyurtmalarTable = ({
   currentPage,
   setCurrentPage,
   totalPages,
-  startIndex,
+  startIndex = 0,
   getLensTypeTranslation,
   getFrameTypeTranslation,
 }: BuyurtmalarTableProps) => {
