@@ -62,7 +62,7 @@ const LinzaRoyxati = () => {
   const [editingItem, setEditingItem] = useState<LinzaRoyxat | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const [selectedPatient, setSelectedPatient] = useState<LinzaRoyxat | null>(null);
   const [form, setForm] = useState({
     mijoz: "",
@@ -712,7 +712,7 @@ const LinzaRoyxati = () => {
               <div key={r.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {index + 1}</div>
+                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -840,7 +840,7 @@ const LinzaRoyxati = () => {
               <tbody>
                 {currentRoyxatlar.map((r, index) => (
                   <tr key={r.id} className="border-b border-border">
-                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2">{startIndex + index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>

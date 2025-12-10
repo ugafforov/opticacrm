@@ -36,7 +36,7 @@ const Buyurtmalar = () => {
   const { dateFilter, setDateFilter, filteredItems: dateFiltered } = useDateFilter(searchFiltered);
 
   // Pagination
-  const { currentPage, setCurrentPage, totalPages, paginatedItems } = useTablePagination(dateFiltered, 10);
+  const { currentPage, setCurrentPage, totalPages, paginatedItems, startIndex } = useTablePagination(dateFiltered);
 
   // Export functionality
   const { exportToExcel, exportToPDF, handlePrint, getLensTypeTranslation, getFrameTypeTranslation } = 
@@ -91,6 +91,7 @@ const Buyurtmalar = () => {
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         totalPages={totalPages}
+        startIndex={startIndex}
         getLensTypeTranslation={getLensTypeTranslation}
         getFrameTypeTranslation={getFrameTypeTranslation}
       />

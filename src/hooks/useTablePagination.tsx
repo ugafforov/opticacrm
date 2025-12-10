@@ -1,13 +1,14 @@
 import { useState, useMemo } from "react";
 
-export const useTablePagination = <T,>(items: T[], itemsPerPage: number = 10) => {
+export const useTablePagination = <T,>(items: T[], itemsPerPage: number = 20) => {
   const [currentPage, setCurrentPage] = useState(1);
 
+  const startIndex = (currentPage - 1) * itemsPerPage;
+
   const paginatedItems = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     return items.slice(startIndex, endIndex);
-  }, [items, currentPage, itemsPerPage]);
+  }, [items, startIndex, itemsPerPage]);
 
   const totalPages = Math.ceil(items.length / itemsPerPage);
 
@@ -22,6 +23,7 @@ export const useTablePagination = <T,>(items: T[], itemsPerPage: number = 10) =>
     currentPage,
     totalPages,
     paginatedItems,
+    startIndex,
     goToPage,
     nextPage,
     prevPage,

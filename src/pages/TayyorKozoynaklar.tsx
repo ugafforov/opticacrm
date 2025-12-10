@@ -66,7 +66,7 @@ const TayyorKozoynaklar = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("today");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const [form, setForm] = useState({
     kliyent: defaultClientName,
     kozoynakTuri: "",
@@ -613,7 +613,7 @@ const TayyorKozoynaklar = () => {
               <div key={k.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {index + 1}</div>
+                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -703,7 +703,7 @@ const TayyorKozoynaklar = () => {
               <tbody>
                 {currentKozoynaklar.map((k, index) => (
                   <tr key={k.id} className="border-b border-border">
-                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2">{startIndex + index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
                         <Tooltip>
