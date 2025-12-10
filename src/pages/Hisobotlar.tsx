@@ -26,6 +26,8 @@ interface ReportData {
   name: string;
   tushum: number;
   oldatgiTushum?: number;
+  isToday?: boolean;
+  daysAgo?: number;
 }
 
 interface SectionData {
@@ -421,13 +423,26 @@ const Hisobotlar = () => {
   };
 
   const groupByPeriod = (data: any[]): ReportData[] => {
-    const grouped: { [key: string]: number } = {};
+    const grouped: { [key: string]: { tushum: number; dateObj?: Date } } = {};
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     data.forEach(item => {
       // Sanani normallash
       const normalizedDate = normalizeDateString(item.sana);
       let key = normalizedDate;
+      let dateObj: Date | undefined;
       
-      if (period === "weekly") {
+      // Parse date for daily period
+      if (period === "daily") {
+        const dateParts = normalizedDate.split("-");
+        if (dateParts.length === 3) {
+          const day = parseInt(dateParts[0], 10);
+          const month = parseInt(dateParts[1], 10) - 1;
+          const year = parseInt(dateParts[2], 10);
+          dateObj = new Date(year, month, day);
+        }
+      } else if (period === "weekly") {
         const dateParts = normalizedDate.split("-");
         if (dateParts.length === 3) {
           const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
@@ -439,14 +454,36 @@ const Hisobotlar = () => {
           key = `${dateParts[1]}-${dateParts[2]}`; // OY-YIL
         }
       }
-      grouped[key] = (grouped[key] || 0) + item.summa;
+      
+      if (!grouped[key]) {
+        grouped[key] = { tushum: 0, dateObj };
+      }
+      grouped[key].tushum += item.summa;
+      if (dateObj && !grouped[key].dateObj) {
+        grouped[key].dateObj = dateObj;
+      }
     });
     
-    return Object.entries(grouped).map(([name, tushum]) => ({
-      name,
-      tushum,
-      oldatgiTushum: undefined
-    })).sort((a, b) => {
+    return Object.entries(grouped).map(([name, data]) => {
+      let daysAgo = 0;
+      let isToday = false;
+      
+      if (period === "daily" && data.dateObj) {
+        const itemDate = new Date(data.dateObj);
+        itemDate.setHours(0, 0, 0, 0);
+        const diffTime = today.getTime() - itemDate.getTime();
+        daysAgo = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        isToday = daysAgo === 0;
+      }
+      
+      return {
+        name,
+        tushum: data.tushum,
+        oldatgiTushum: undefined,
+        isToday,
+        daysAgo
+      };
+    }).sort((a, b) => {
       // Sanalarni to'g'ri tartiblash (DD-MM-YYYY formatida)
       const parseForSort = (dateStr: string) => {
         const parts = dateStr.split("-");
@@ -1064,9 +1101,45 @@ const Hisobotlar = () => {
                 </div>
               </div>
               
-              {/* Gradient definition for bars */}
+              {/* Gradient definitions for bars with opacity levels */}
               <svg width="0" height="0">
                 <defs>
+                  {/* Today - full brightness */}
+                  <linearGradient id="barGradientToday" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#60a5fa" />
+                  </linearGradient>
+                  {/* 1 day ago - 80% */}
+                  <linearGradient id="barGradient1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.75" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.75" />
+                  </linearGradient>
+                  {/* 2 days ago - 60% */}
+                  <linearGradient id="barGradient2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.55" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.55" />
+                  </linearGradient>
+                  {/* 3 days ago - 45% */}
+                  <linearGradient id="barGradient3" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.4" />
+                  </linearGradient>
+                  {/* 4 days ago - 35% */}
+                  <linearGradient id="barGradient4" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.3" />
+                  </linearGradient>
+                  {/* 5 days ago - 25% */}
+                  <linearGradient id="barGradient5" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.22" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.22" />
+                  </linearGradient>
+                  {/* 6+ days ago - 18% */}
+                  <linearGradient id="barGradient6" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.15" />
+                  </linearGradient>
+                  {/* Default gradient */}
                   <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#3b82f6" />
                     <stop offset="100%" stopColor="#60a5fa" />
@@ -1098,10 +1171,37 @@ const Hisobotlar = () => {
                       <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
                       <Bar 
                         dataKey="tushum" 
-                        fill="url(#barGradient)" 
                         name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
                         radius={[6, 6, 0, 0]}
                         maxBarSize={60}
+                        shape={(props: any) => {
+                          const { x, y, width, height, payload } = props;
+                          const daysAgo = payload?.daysAgo ?? 0;
+                          const isToday = payload?.isToday;
+                          let gradientId = "barGradient";
+                          if (isToday) {
+                            gradientId = "barGradientToday";
+                          } else if (daysAgo >= 1 && daysAgo <= 6) {
+                            gradientId = `barGradient${daysAgo}`;
+                          } else if (daysAgo > 6) {
+                            gradientId = "barGradient6";
+                          }
+                          return (
+                            <rect
+                              x={x}
+                              y={y}
+                              width={width}
+                              height={height}
+                              fill={`url(#${gradientId})`}
+                              rx={6}
+                              ry={6}
+                              style={{
+                                filter: isToday ? "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.4))" : undefined,
+                                transition: "all 0.3s ease"
+                              }}
+                            />
+                          );
+                        }}
                       />
                       {showComparison && (
                         <Bar 
