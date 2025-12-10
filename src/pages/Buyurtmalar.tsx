@@ -9,6 +9,7 @@ import { useBuyurtmalarExport } from "@/hooks/useBuyurtmalarExport";
 import { useSearchFilter } from "@/hooks/useSearchFilter";
 import { useDateFilter } from "@/hooks/useDateFilter";
 import { useTablePagination } from "@/hooks/useTablePagination";
+import { TableSkeleton, FormSkeleton } from "@/components/skeletons/TableSkeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PriceInput } from "@/components/PriceInput";
@@ -61,8 +62,13 @@ const Buyurtmalar = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h2>
+          <p className="text-muted-foreground">{t("orders.subtitle")}</p>
+        </div>
+        <FormSkeleton />
+        <TableSkeleton rows={10} columns={8} />
       </div>
     );
   }

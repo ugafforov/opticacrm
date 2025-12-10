@@ -24,6 +24,23 @@ export interface Buyurtma {
   jamiSumma: number;
 }
 
+// Map database row to local format
+const mapToLocal = (item: any): Buyurtma => ({
+  id: item.id,
+  sana: item.sana,
+  createdAt: item.created_at,
+  tartibRaqam: item.tartib_raqam,
+  mijoz: item.mijoz,
+  telefon: item.telefon,
+  od: item.od,
+  os: item.os,
+  oynaTuri: item.oyna_tури,
+  oynaNarxi: Number(item.oyna_narxi) || 0,
+  opravaNarxi: Number(item.oprava_narxi) || 0,
+  opravaTuri: item.oprava_turi,
+  jamiSumma: Number(item.jami_summa) || 0,
+});
+
 export const useBuyurtmalar = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -32,7 +49,7 @@ export const useBuyurtmalar = () => {
   const isLoadingRef = useRef(false);
   const retryCountRef = useRef(0);
 
-  // Debounced load function to prevent multiple simultaneous loads
+  // Load buyurtmalar from database
   const loadBuyurtmalar = useCallback(async () => {
     if (!user || isLoadingRef.current) return;
     
@@ -50,23 +67,7 @@ export const useBuyurtmalar = () => {
         return data;
       }, { maxRetries: 3 });
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        mijoz: item.mijoz,
-        telefon: item.telefon,
-        od: item.od,
-        os: item.os,
-        oynaTuri: item.oyna_tури,
-        oynaNarxi: Number(item.oyna_narxi) || 0,
-        opravaNarxi: Number(item.oprava_narxi) || 0,
-        opravaTuri: item.oprava_turi,
-        jamiSumma: Number(item.jami_summa) || 0,
-      })) || [];
-
-      setBuyurtmalar(mapped);
+      setBuyurtmalar(data?.map(mapToLocal) || []);
       retryCountRef.current = 0;
     } catch (error: any) {
       console.error("Error loading buyurtmalar:", error);
@@ -86,22 +87,60 @@ export const useBuyurtmalar = () => {
     }
   }, [user, loadBuyurtmalar]);
 
+  // Real-time subscription with incremental updates
   useEffect(() => {
     if (!user) return;
 
     const channel = supabase
-      .channel('buyurtmalar-changes')
+      .channel('buyurtmalar-realtime')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'buyurtmalar',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          // Debounce realtime updates
-          setTimeout(() => loadBuyurtmalar(), 100);
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setBuyurtmalar(prev => {
+            // Check if item already exists (from optimistic update)
+            if (prev.some(b => b.id === newItem.id)) {
+              return prev;
+            }
+            // Also check for temp IDs that might match
+            const withoutTemp = prev.filter(b => !b.id.startsWith('temp-'));
+            return [newItem, ...withoutTemp];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'buyurtmalar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setBuyurtmalar(prev => 
+            prev.map(b => b.id === updatedItem.id ? updatedItem : b)
+          );
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'buyurtmalar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setBuyurtmalar(prev => 
+            prev.filter(b => b.id !== (payload.old as any).id)
+          );
         }
       )
       .subscribe();
@@ -109,20 +148,46 @@ export const useBuyurtmalar = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, loadBuyurtmalar]);
+  }, [user]);
 
+  // Optimistic create with background sync
   const createBuyurtma = useCallback(async (formData: BuyurtmaFormData, selectedDate: Date) => {
     if (!user) {
       toast.error(t("toast.loginRequired"));
       return;
     }
 
-    // Use safe calculation for total
     const oynaNarxi = safeParsePriceToNumber(formData.oynaNarxi);
     const opravaNarxi = safeParsePriceToNumber(formData.opravaNarxi);
     const jamiSumma = safeAdd(oynaNarxi, opravaNarxi);
 
+    // Generate temp ID for optimistic update
+    const tempId = `temp-${Date.now()}`;
+    const sana = formatUzbekistanDate(selectedDate);
+
+    // Optimistic item
+    const optimisticItem: Buyurtma = {
+      id: tempId,
+      sana,
+      createdAt: new Date().toISOString(),
+      tartibRaqam: buyurtmalar.length + 1,
+      mijoz: formData.mijoz.trim(),
+      telefon: formData.telefon?.trim() || undefined,
+      od: formData.od.trim(),
+      os: formData.os.trim(),
+      oynaTuri: formData.oynaTuri,
+      oynaNarxi,
+      opravaNarxi,
+      opravaTuri: formData.opravaTuri,
+      jamiSumma,
+    };
+
+    // Immediately add to UI
+    setBuyurtmalar(prev => [optimisticItem, ...prev]);
+    toast.success(t("orders.addSuccess"));
+
     try {
+      // Get next tartibRaqam
       const maxData = await withRetry(async () => {
         const { data, error } = await supabase
           .from("buyurtmalar")
@@ -138,12 +203,13 @@ export const useBuyurtmalar = () => {
 
       const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-      await withRetry(async () => {
-        const { error } = await supabase
+      // Insert to database
+      const result = await withRetry(async () => {
+        const { data, error } = await supabase
           .from("buyurtmalar")
           .insert({
             user_id: user.id,
-            sana: formatUzbekistanDate(selectedDate),
+            sana,
             tartib_raqam: nextTartibRaqam,
             mijoz: formData.mijoz.trim(),
             telefon: formData.telefon?.trim() || null,
@@ -154,21 +220,36 @@ export const useBuyurtmalar = () => {
             oprava_narxi: opravaNarxi,
             oprava_turi: formData.opravaTuri,
             jami_summa: jamiSumma,
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
+        return data;
       });
 
-      await loadBuyurtmalar();
-      toast.success(t("orders.addSuccess"));
+      // Replace temp ID with real ID
+      setBuyurtmalar(prev => 
+        prev.map(b => b.id === tempId ? mapToLocal(result) : b)
+      );
     } catch (error: any) {
       console.error("Error creating buyurtma:", error);
+      // Rollback optimistic update
+      setBuyurtmalar(prev => prev.filter(b => b.id !== tempId));
       toast.error(t("toast.saveError"));
     }
-  }, [user, t, loadBuyurtmalar]);
+  }, [user, t, buyurtmalar.length]);
 
+  // Optimistic update
   const updateBuyurtma = useCallback(async (item: Buyurtma) => {
     if (!user) return;
+
+    const previousItem = buyurtmalar.find(b => b.id === item.id);
+    
+    // Optimistic update
+    setBuyurtmalar(prev => 
+      prev.map(b => b.id === item.id ? item : b)
+    );
 
     try {
       await withRetry(async () => {
@@ -191,22 +272,31 @@ export const useBuyurtmalar = () => {
         if (error) throw error;
       });
 
-      await loadBuyurtmalar();
       toast.success(t("common.updateSuccess"));
     } catch (error: any) {
       console.error("Error updating buyurtma:", error);
+      // Rollback
+      if (previousItem) {
+        setBuyurtmalar(prev => 
+          prev.map(b => b.id === item.id ? previousItem : b)
+        );
+      }
       toast.error(t("toast.updateError"));
     }
-  }, [user, t, loadBuyurtmalar]);
+  }, [user, t, buyurtmalar]);
 
+  // Optimistic delete
   const deleteBuyurtma = useCallback(async (id: string) => {
     if (!user) return;
 
     const itemToDelete = buyurtmalar.find((b) => b.id === id);
     if (!itemToDelete) return;
 
+    // Optimistic delete
+    setBuyurtmalar(prev => prev.filter(b => b.id !== id));
+
     try {
-      // First backup to trash
+      // Backup to trash
       await withRetry(async () => {
         const { error } = await supabase.from("chiqindilar").insert([{
           user_id: user.id,
@@ -218,7 +308,7 @@ export const useBuyurtmalar = () => {
         if (error) throw error;
       });
 
-      // Then delete
+      // Delete from table
       await withRetry(async () => {
         const { error } = await supabase
           .from("buyurtmalar")
@@ -228,13 +318,14 @@ export const useBuyurtmalar = () => {
         if (error) throw error;
       });
 
-      await loadBuyurtmalar();
       toast.success(t("orders.deleteSuccess"));
     } catch (error: any) {
       console.error("Error deleting buyurtma:", error);
+      // Rollback
+      setBuyurtmalar(prev => [itemToDelete, ...prev]);
       toast.error(t("toast.deleteError"));
     }
-  }, [user, t, buyurtmalar, loadBuyurtmalar]);
+  }, [user, t, buyurtmalar]);
 
   return {
     buyurtmalar,
