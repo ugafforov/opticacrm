@@ -829,11 +829,10 @@ const Tekshiruv = () => {
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
-        onSubmit={handleUpdate}
         title={t("exam.edit")}
       >
         {editingItem && (
-          <div className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">
               <Label>{t("common.date")}</Label>
               <Input
@@ -889,7 +888,10 @@ const Tekshiruv = () => {
                 onChange={(value) => setEditingItem({ ...editingItem, jamiSumma: parseInt(value) || 0 })}
               />
             </div>
-          </div>
+            <div className="flex justify-end">
+              <Button type="submit">{t("common.save")}</Button>
+            </div>
+          </form>
         )}
       </EditDialog>
     </div>
