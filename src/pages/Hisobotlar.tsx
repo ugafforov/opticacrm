@@ -121,10 +121,12 @@ const Hisobotlar = () => {
     return value.toString();
   };
 
-  // Boshlang'ich sanalarni o'rnatish
+  // Boshlang'ich sanalarni o'rnatish - oxirgi 7 kun
   useEffect(() => {
     const today = new Date();
-    setStartDate(today);
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(today.getDate() - 6);
+    setStartDate(sevenDaysAgo);
     setEndDate(today);
   }, []);
 
@@ -163,8 +165,10 @@ const Hisobotlar = () => {
     const today = new Date();
     
     if (newPeriod === "daily") {
-      // Bugun - faqat bugungi kun
-      setStartDate(today);
+      // Oxirgi 7 kunni ko'rsatish - tarixiy trend uchun
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 6);
+      setStartDate(sevenDaysAgo);
       setEndDate(today);
     } else if (newPeriod === "weekly") {
       // Bu hafta - dushanbadan yakshanbagacha
