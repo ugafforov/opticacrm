@@ -1015,50 +1015,63 @@ const Hisobotlar = () => {
             <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
               <h4 className="text-base font-semibold text-foreground mb-4">{t("reports.bySection")}</h4>
               
-              {/* Bo'limlar statistikasi */}
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {sectionData.map((section) => (
-                  <div key={section.name} className="bg-secondary/50 rounded-lg p-3 border border-border/50">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
-                      <p className="text-xs text-muted-foreground truncate">{section.name}</p>
+              {/* Progress bar statistika */}
+              <div className="space-y-4">
+                {sectionData.map((section) => {
+                  const maxTotal = Math.max(...sectionData.map(s => s.total));
+                  const percentage = maxTotal > 0 ? (section.total / maxTotal) * 100 : 0;
+                  const totalPercentage = totalTushum > 0 ? (section.total / totalTushum) * 100 : 0;
+                  
+                  return (
+                    <div key={section.name} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: section.color }} />
+                          <span className="text-sm font-medium text-foreground">{section.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground">{section.count} ta</span>
+                          <span className="text-sm font-bold text-foreground min-w-[100px] text-right">
+                            {section.total.toLocaleString()} so'm
+                          </span>
+                          <span className="text-xs font-medium text-muted-foreground min-w-[45px] text-right">
+                            {totalPercentage.toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="relative h-3 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out"
+                          style={{ 
+                            width: `${percentage}%`,
+                            backgroundColor: section.color 
+                          }}
+                        />
+                      </div>
+                      {showComparison && section.change !== undefined && section.previousTotal !== undefined && section.previousTotal > 0 && (
+                        <div className="flex items-center gap-2 pl-5">
+                          <span className="text-xs text-muted-foreground">
+                            Oldingi: {section.previousTotal.toLocaleString()} so'm
+                          </span>
+                          <span className={cn(
+                            "text-xs font-semibold",
+                            section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
+                          )}>
+                            {section.change > 0 ? "↑" : section.change < 0 ? "↓" : ""} {Math.abs(section.change).toFixed(1)}%
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <p className="text-sm font-bold text-foreground">{section.total.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">{section.count} {t("reports.records")}</p>
-                    {showComparison && section.change !== undefined && section.previousTotal !== undefined && section.previousTotal > 0 && (
-                      <p className={cn(
-                        "text-xs font-semibold mt-1",
-                        section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
-                      )}>
-                        {section.change > 0 ? "+" : ""}{section.change.toFixed(1)}%
-                      </p>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
-              {/* Pie Chart */}
-              <div className="h-[220px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sectionData.filter(s => s.total > 0)}
-                      dataKey="total"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      innerRadius={40}
-                      label={(entry) => `${entry.total.toLocaleString()}`}
-                      labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
-                    >
-                      {sectionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
-                  </PieChart>
-                </ResponsiveContainer>
+              {/* Jami */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-foreground">Jami tushum</span>
+                  <span className="text-lg font-bold text-primary">{totalTushum.toLocaleString()} so'm</span>
+                </div>
               </div>
             </div>
           </div>
