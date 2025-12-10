@@ -585,8 +585,6 @@ const LinzaSotuvi = () => {
                   { value: "linza-konteyneri", label: t("lensSale.container") },
                 ]}
                 placeholder={t("lensSale.selectType")}
-                storageKey="linzaSotuviTypes"
-                required
               />
             </div>
 
@@ -807,11 +805,10 @@ const LinzaSotuvi = () => {
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
-        onSubmit={handleUpdate}
         title={t("lensSale.edit")}
       >
         {editingItem && (
-          <div className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">
               <Label>{t("common.date")}</Label>
               <Input
@@ -842,7 +839,6 @@ const LinzaSotuvi = () => {
                   { value: "linza-konteyneri", label: t("lensSale.container") },
                 ]}
                 placeholder={t("lensSale.selectType")}
-                storageKey="linzaSotuviTypes"
               />
             </div>
             <div className="space-y-2">
@@ -852,7 +848,10 @@ const LinzaSotuvi = () => {
                 onChange={(value) => setEditingItem({ ...editingItem, summa: parseFloat(value) || 0 })}
               />
             </div>
-          </div>
+            <div className="flex justify-end">
+              <Button type="submit">{t("common.save")}</Button>
+            </div>
+          </form>
         )}
       </EditDialog>
     </div>

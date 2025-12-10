@@ -579,8 +579,6 @@ const TayyorKozoynaklar = () => {
                   { value: "zreniya", label: t("ready.vision") },
                 ]}
                 placeholder={t("ready.selectType")}
-                storageKey="tayyorKozoynakTypes"
-                required
               />
             </div>
 
@@ -801,11 +799,10 @@ const TayyorKozoynaklar = () => {
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
-        onSubmit={handleUpdate}
         title={t("ready.edit")}
       >
         {editingItem && (
-          <div className="space-y-4">
+          <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">
               <Label>{t("common.date")}</Label>
               <Input
@@ -833,7 +830,6 @@ const TayyorKozoynaklar = () => {
                   { value: "zreniya", label: t("ready.vision") },
                 ]}
                 placeholder={t("ready.selectType")}
-                storageKey="tayyorKozoynakTypes"
               />
             </div>
             <div className="space-y-2">
@@ -843,7 +839,10 @@ const TayyorKozoynaklar = () => {
                 onChange={(value) => setEditingItem({ ...editingItem, summa: parseFloat(value) || 0 })}
               />
             </div>
-          </div>
+            <div className="flex justify-end">
+              <Button type="submit">{t("common.save")}</Button>
+            </div>
+          </form>
         )}
       </EditDialog>
     </div>
