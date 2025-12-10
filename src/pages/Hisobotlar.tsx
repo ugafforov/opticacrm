@@ -1160,7 +1160,7 @@ const Hisobotlar = () => {
               <TabsContent value="daily" className="mt-0">
                 <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis 
                         dataKey="name" 
@@ -1178,8 +1178,11 @@ const Hisobotlar = () => {
                       <Bar 
                         dataKey="tushum" 
                         name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[6, 6, 0, 0]}
-                        maxBarSize={60}
+                        radius={[8, 8, 0, 0]}
+                        maxBarSize={50}
+                        animationBegin={0}
+                        animationDuration={800}
+                        animationEasing="ease-out"
                         shape={(props: any) => {
                           const { x, y, width, height, payload } = props;
                           const daysAgo = payload?.daysAgo ?? 0;
@@ -1214,8 +1217,11 @@ const Hisobotlar = () => {
                           dataKey="oldatgiTushum" 
                           fill="url(#barGradientPrev)" 
                           name={t("reports.previousPeriod")} 
-                          radius={[6, 6, 0, 0]}
-                          maxBarSize={60}
+                          radius={[8, 8, 0, 0]}
+                          maxBarSize={50}
+                          animationBegin={200}
+                          animationDuration={800}
+                          animationEasing="ease-out"
                         />
                       )}
                     </BarChart>
@@ -1226,7 +1232,7 @@ const Hisobotlar = () => {
               <TabsContent value="weekly" className="mt-0">
                 <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis 
                         dataKey="name" 
@@ -1245,16 +1251,22 @@ const Hisobotlar = () => {
                         dataKey="tushum" 
                         fill="url(#barGradient)" 
                         name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[6, 6, 0, 0]}
-                        maxBarSize={60}
+                        radius={[8, 8, 0, 0]}
+                        maxBarSize={50}
+                        animationBegin={0}
+                        animationDuration={800}
+                        animationEasing="ease-out"
                       />
                       {showComparison && (
                         <Bar 
                           dataKey="oldatgiTushum" 
                           fill="url(#barGradientPrev)" 
                           name={t("reports.previousPeriod")} 
-                          radius={[6, 6, 0, 0]}
-                          maxBarSize={60}
+                          radius={[8, 8, 0, 0]}
+                          maxBarSize={50}
+                          animationBegin={200}
+                          animationDuration={800}
+                          animationEasing="ease-out"
                         />
                       )}
                     </BarChart>
@@ -1265,7 +1277,7 @@ const Hisobotlar = () => {
               <TabsContent value="monthly" className="mt-0">
                 <div className="h-[320px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis 
                         dataKey="name" 
@@ -1284,16 +1296,22 @@ const Hisobotlar = () => {
                         dataKey="tushum" 
                         fill="url(#barGradient)" 
                         name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[6, 6, 0, 0]}
-                        maxBarSize={60}
+                        radius={[8, 8, 0, 0]}
+                        maxBarSize={50}
+                        animationBegin={0}
+                        animationDuration={800}
+                        animationEasing="ease-out"
                       />
                       {showComparison && (
                         <Bar 
                           dataKey="oldatgiTushum" 
                           fill="url(#barGradientPrev)" 
                           name={t("reports.previousPeriod")} 
-                          radius={[6, 6, 0, 0]}
-                          maxBarSize={60}
+                          radius={[8, 8, 0, 0]}
+                          maxBarSize={50}
+                          animationBegin={200}
+                          animationDuration={800}
+                          animationEasing="ease-out"
                         />
                       )}
                     </BarChart>
