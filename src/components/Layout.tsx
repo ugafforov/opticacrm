@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -58,15 +59,28 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-300 hover-scale-sm animate-slide-in-right relative overflow-hidden group",
+                    "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-colors duration-200 group",
                     isActive
-                      ? "gradient-primary text-white shadow-premium glow-primary"
-                      : "bg-card/50 text-foreground hover:bg-card hover:shadow-md backdrop-blur-sm border border-border/50"
+                      ? "text-white"
+                      : "text-foreground hover:text-primary"
                   )}
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
-                  {item.label}
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 gradient-primary rounded-xl shadow-premium"
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 35,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Icon className={cn("w-4 h-4 transition-transform group-hover:scale-110", isActive && "drop-shadow-sm")} />
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
