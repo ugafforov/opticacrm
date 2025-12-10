@@ -884,23 +884,6 @@ const Hisobotlar = () => {
               </Button>
             </div>
           </div>
-          
-          <div className="mt-4">
-            <Label>{t("reports.productServiceType")}</Label>
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="w-full md:w-[300px]">
-                <SelectValue placeholder="Turni tanlang" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
-                <SelectItem value="buyurtmalar">{t("nav.orders")}</SelectItem>
-                <SelectItem value="tekshiruvlar">{t("nav.examination")}</SelectItem>
-                <SelectItem value="tayyor_kozoynaklar">{t("nav.readyGlasses")}</SelectItem>
-                <SelectItem value="linza_sotuvlari">{t("nav.lensSales")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
         </div>
 
         <div id="printable-report">
