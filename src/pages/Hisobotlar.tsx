@@ -968,107 +968,118 @@ const Hisobotlar = () => {
             </div>
           </div>
 
-          <TabsContent value="daily" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="weekly" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="monthly" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
-        </Tabs>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">{t("reports.bySection")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {sectionData.map((section) => (
-            <div key={section.name} className="bg-secondary rounded-lg p-4">
-              <p className="text-sm text-muted-foreground mb-1">{section.name}</p>
-              <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.currency")}</p>
-              <p className="text-xs text-muted-foreground mt-1">{section.count} {t("reports.records")}</p>
-              {showComparison && section.previousTotal !== undefined && (
-                <div className="mt-2 pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">{t("reports.previous")} {section.previousTotal.toLocaleString()}</p>
-                  {section.change !== undefined && section.previousTotal > 0 && (
-                    <p className={cn(
-                      "text-sm font-semibold",
-                      section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
-                    )}>
-                      {section.change > 0 ? "+" : ""}{section.change.toFixed(1)}%
-                    </p>
-                  )}
+          {/* Diagrammalar - bir qatorda 50/50 */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Ustun diagramma - 50% */}
+            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+              <h4 className="text-base font-semibold text-foreground mb-4">{t("reports.income")}</h4>
+              <TabsContent value="daily" className="mt-0">
+                <div className="h-[350px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={reportData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                      <Legend />
+                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                      {showComparison && (
+                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                      )}
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
+              </TabsContent>
 
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={sectionData.filter(s => s.total > 0)}
-                dataKey="total"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                label={(entry) => `${entry.name}: ${entry.total.toLocaleString()}`}
-              >
-                {sectionData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+              <TabsContent value="weekly" className="mt-0">
+                <div className="h-[350px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={reportData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                      <Legend />
+                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                      {showComparison && (
+                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                      )}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="monthly" className="mt-0">
+                <div className="h-[350px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={reportData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
+                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                      <Legend />
+                      <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} radius={[4, 4, 0, 0]} />
+                      {showComparison && (
+                        <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} radius={[4, 4, 0, 0]} />
+                      )}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </TabsContent>
+            </div>
+
+            {/* Dumalaq diagramma - 50% */}
+            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
+              <h4 className="text-base font-semibold text-foreground mb-4">{t("reports.bySection")}</h4>
+              
+              {/* Bo'limlar statistikasi */}
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {sectionData.map((section) => (
+                  <div key={section.name} className="bg-secondary/50 rounded-lg p-3 border border-border/50">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: section.color }} />
+                      <p className="text-xs text-muted-foreground truncate">{section.name}</p>
+                    </div>
+                    <p className="text-sm font-bold text-foreground">{section.total.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{section.count} {t("reports.records")}</p>
+                    {showComparison && section.change !== undefined && section.previousTotal !== undefined && section.previousTotal > 0 && (
+                      <p className={cn(
+                        "text-xs font-semibold mt-1",
+                        section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
+                      )}>
+                        {section.change > 0 ? "+" : ""}{section.change.toFixed(1)}%
+                      </p>
+                    )}
+                  </div>
                 ))}
-              </Pie>
-              <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
-            </PieChart>
-          </ResponsiveContainer>
+              </div>
+
+              {/* Pie Chart */}
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={sectionData.filter(s => s.total > 0)}
+                      dataKey="total"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={40}
+                      label={(entry) => `${entry.total.toLocaleString()}`}
+                      labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1 }}
+                    >
+                      {sectionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </Tabs>
         </div>
       </Card>
     </div>
