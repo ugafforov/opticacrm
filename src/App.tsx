@@ -39,11 +39,18 @@ const queryClient = new QueryClient({
   },
 });
 
-// Loading fallback component
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+// Minimal inline loader - only shows briefly for uncached pages
+const InlineLoader = () => (
+  <div className="flex items-center justify-center py-12 animate-fade-in">
+    <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent"></div>
   </div>
+);
+
+// Wrapper to handle individual page suspense without full-page flash
+const SuspensePage = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<InlineLoader />}>
+    <PageTransition>{children}</PageTransition>
+  </Suspense>
 );
 
 const App = () => (
@@ -53,21 +60,19 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/auth" element={<PageTransition><Auth /></PageTransition>} />
-              <Route path="/" element={<ProtectedRoute><Layout><PageTransition><Buyurtmalar /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/linza-royxati" element={<ProtectedRoute><Layout><PageTransition><LinzaRoyxati /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/tekshiruv" element={<ProtectedRoute><Layout><PageTransition><Tekshiruv /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/tayyor-kozoynaklar" element={<ProtectedRoute><Layout><PageTransition><TayyorKozoynaklar /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/linza-sotuvi" element={<ProtectedRoute><Layout><PageTransition><LinzaSotuvi /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/hisobotlar" element={<ProtectedRoute><Layout><PageTransition><Hisobotlar /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/chiqindilar" element={<ProtectedRoute><Layout><PageTransition><Chiqindilar /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/admin/users" element={<ProtectedRoute><Layout><PageTransition><AdminUsers /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Layout><PageTransition><Profile /></PageTransition></Layout></ProtectedRoute>} />
-              <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-            </Routes>
-          </Suspense>
+          <Routes>
+            <Route path="/auth" element={<Suspense fallback={<InlineLoader />}><PageTransition><Auth /></PageTransition></Suspense>} />
+            <Route path="/" element={<ProtectedRoute><Layout><SuspensePage><Buyurtmalar /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/linza-royxati" element={<ProtectedRoute><Layout><SuspensePage><LinzaRoyxati /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/tekshiruv" element={<ProtectedRoute><Layout><SuspensePage><Tekshiruv /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/tayyor-kozoynaklar" element={<ProtectedRoute><Layout><SuspensePage><TayyorKozoynaklar /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/linza-sotuvi" element={<ProtectedRoute><Layout><SuspensePage><LinzaSotuvi /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/hisobotlar" element={<ProtectedRoute><Layout><SuspensePage><Hisobotlar /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
+            <Route path="*" element={<Suspense fallback={<InlineLoader />}><PageTransition><NotFound /></PageTransition></Suspense>} />
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </LanguageProvider>
