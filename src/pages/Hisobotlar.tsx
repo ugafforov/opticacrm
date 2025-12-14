@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -26,8 +25,6 @@ interface ReportData {
   name: string;
   tushum: number;
   oldatgiTushum?: number;
-  isToday?: boolean;
-  daysAgo?: number;
 }
 
 interface SectionData {
@@ -60,49 +57,31 @@ const Hisobotlar = () => {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [exportFormat, setExportFormat] = useState<"excel" | "pdf">("excel");
 
-  // Zamonaviy tooltip
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const currentIncome = payload[0].value;
       const percentage = total ? ((currentIncome / total) * 100).toFixed(1) : "0";
       const previousIncome = payload[1]?.value;
-      const change = previousIncome ? ((currentIncome - previousIncome) / previousIncome * 100).toFixed(1) : null;
 
       return (
-        <div className="bg-card/95 backdrop-blur-sm border border-border rounded-xl shadow-xl p-4 min-w-[180px]">
-          <p className="font-semibold text-foreground mb-3 text-sm border-b border-border pb-2">{label}</p>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(135deg, #3b82f6, #60a5fa)" }} />
-                <span className="text-xs text-muted-foreground">{showComparison ? t("reports.currentPeriod") : t("reports.income")}</span>
-              </div>
-              <span className="text-sm font-bold text-foreground">{currentIncome.toLocaleString()}</span>
+        <div className="bg-popover border border-border rounded-lg shadow-lg p-3">
+          <p className="font-semibold text-foreground mb-2">{label}</p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[0].color }} />
+              <p className="text-sm text-foreground">
+                <span className="font-medium">{currentIncome.toLocaleString()}</span> {t("common.sum")}
+                <span className="text-muted-foreground ml-1">({percentage}%)</span>
+              </p>
             </div>
             {showComparison && previousIncome !== undefined && (
-              <>
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-sm" style={{ background: "linear-gradient(135deg, #8b5cf6, #a78bfa)" }} />
-                    <span className="text-xs text-muted-foreground">{t("reports.previousPeriod")}</span>
-                  </div>
-                  <span className="text-sm font-medium text-muted-foreground">{previousIncome.toLocaleString()}</span>
-                </div>
-                {change && (
-                  <div className="pt-2 border-t border-border mt-2">
-                    <div className={cn(
-                      "flex items-center justify-center gap-1 text-xs font-semibold py-1 px-2 rounded-full",
-                      parseFloat(change) > 0 ? "bg-green-500/10 text-green-600" : parseFloat(change) < 0 ? "bg-red-500/10 text-red-600" : "bg-muted text-muted-foreground"
-                    )}>
-                      {parseFloat(change) > 0 ? "↑" : parseFloat(change) < 0 ? "↓" : "→"} {Math.abs(parseFloat(change))}%
-                    </div>
-                  </div>
-                )}
-              </>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: payload[1].color }} />
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium">{previousIncome.toLocaleString()}</span> {t("common.sum")}
+                </p>
+              </div>
             )}
-            <div className="text-xs text-muted-foreground text-center pt-1">
-              Jami: {percentage}%
-            </div>
           </div>
         </div>
       );
@@ -110,23 +89,10 @@ const Hisobotlar = () => {
     return null;
   };
 
-  // Y-axis formatter - raqamlarni qisqartirish
-  const formatYAxis = (value: number) => {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}M`;
-    }
-    if (value >= 1000) {
-      return `${(value / 1000).toFixed(0)}K`;
-    }
-    return value.toString();
-  };
-
-  // Boshlang'ich sanalarni o'rnatish - oxirgi 7 kun
+  // Boshlang'ich sanalarni o'rnatish
   useEffect(() => {
     const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(today.getDate() - 6);
-    setStartDate(sevenDaysAgo);
+    setStartDate(today);
     setEndDate(today);
   }, []);
 
@@ -165,10 +131,8 @@ const Hisobotlar = () => {
     const today = new Date();
     
     if (newPeriod === "daily") {
-      // Oxirgi 7 kunni ko'rsatish - tarixiy trend uchun
-      const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(today.getDate() - 6);
-      setStartDate(sevenDaysAgo);
+      // Bugun - faqat bugungi kun
+      setStartDate(today);
       setEndDate(today);
     } else if (newPeriod === "weekly") {
       // Bu hafta - dushanbadan yakshanbagacha
@@ -427,26 +391,13 @@ const Hisobotlar = () => {
   };
 
   const groupByPeriod = (data: any[]): ReportData[] => {
-    const grouped: { [key: string]: { tushum: number; dateObj?: Date } } = {};
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
+    const grouped: { [key: string]: number } = {};
     data.forEach(item => {
       // Sanani normallash
       const normalizedDate = normalizeDateString(item.sana);
       let key = normalizedDate;
-      let dateObj: Date | undefined;
       
-      // Parse date for daily period
-      if (period === "daily") {
-        const dateParts = normalizedDate.split("-");
-        if (dateParts.length === 3) {
-          const day = parseInt(dateParts[0], 10);
-          const month = parseInt(dateParts[1], 10) - 1;
-          const year = parseInt(dateParts[2], 10);
-          dateObj = new Date(year, month, day);
-        }
-      } else if (period === "weekly") {
+      if (period === "weekly") {
         const dateParts = normalizedDate.split("-");
         if (dateParts.length === 3) {
           const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
@@ -458,36 +409,14 @@ const Hisobotlar = () => {
           key = `${dateParts[1]}-${dateParts[2]}`; // OY-YIL
         }
       }
-      
-      if (!grouped[key]) {
-        grouped[key] = { tushum: 0, dateObj };
-      }
-      grouped[key].tushum += item.summa;
-      if (dateObj && !grouped[key].dateObj) {
-        grouped[key].dateObj = dateObj;
-      }
+      grouped[key] = (grouped[key] || 0) + item.summa;
     });
     
-    return Object.entries(grouped).map(([name, data]) => {
-      let daysAgo = 0;
-      let isToday = false;
-      
-      if (period === "daily" && data.dateObj) {
-        const itemDate = new Date(data.dateObj);
-        itemDate.setHours(0, 0, 0, 0);
-        const diffTime = today.getTime() - itemDate.getTime();
-        daysAgo = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        isToday = daysAgo === 0;
-      }
-      
-      return {
-        name,
-        tushum: data.tushum,
-        oldatgiTushum: undefined,
-        isToday,
-        daysAgo
-      };
-    }).sort((a, b) => {
+    return Object.entries(grouped).map(([name, tushum]) => ({
+      name,
+      tushum,
+      oldatgiTushum: undefined
+    })).sort((a, b) => {
       // Sanalarni to'g'ri tartiblash (DD-MM-YYYY formatida)
       const parseForSort = (dateStr: string) => {
         const parts = dateStr.split("-");
@@ -527,8 +456,6 @@ const Hisobotlar = () => {
   };
 
   const totalTushum = reportData.reduce((sum, item) => sum + item.tushum, 0);
-  // Faqat bugungi kunning tushumini hisoblash (karta uchun)
-  const todayTushum = reportData.reduce((sum, item) => sum + (item.isToday ? item.tushum : 0), 0);
   const previousTotalTushum = showComparison ? reportData.reduce((sum, item) => sum + (item.oldatgiTushum || 0), 0) : 0;
   const totalChange = previousTotalTushum > 0 ? ((totalTushum - previousTotalTushum) / previousTotalTushum) * 100 : 0;
   
@@ -880,39 +807,23 @@ const Hisobotlar = () => {
         <p className="text-muted-foreground">{t("reports.subtitle")}</p>
       </div>
 
-      <Card className="p-6 bg-gradient-to-br from-card via-card to-secondary/20 border-border/50">
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <CalendarIcon className="h-5 w-5 text-primary" />
-            </div>
+      <Card className="p-6">
+        <div className="mb-6 space-y-4">
+          <h3 className="text-lg font-semibold">{t("reports.dateRange")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-foreground">{t("reports.dateRange")}</h3>
-              <p className="text-xs text-muted-foreground">Hisobot uchun sana oralig'ini tanlang</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Boshlanish sanasi */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("common.from")}</Label>
+              <Label>{t("common.from")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal h-11 bg-background/50 hover:bg-background border-border/50 hover:border-primary/50 transition-colors",
+                      "w-full justify-start text-left font-normal",
                       !startDate && "text-muted-foreground"
                     )}
                   >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="p-1.5 rounded-md bg-blue-500/10">
-                        <CalendarIcon className="h-3.5 w-3.5 text-blue-500" />
-                      </div>
-                      <span className="flex-1">
-                        {startDate ? format(startDate, "dd.MM.yyyy") : t("reports.selectDate")}
-                      </span>
-                    </div>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -926,27 +837,19 @@ const Hisobotlar = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            
-            {/* Tugash sanasi */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("common.to")}</Label>
+            <div>
+              <Label>{t("common.to")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal h-11 bg-background/50 hover:bg-background border-border/50 hover:border-primary/50 transition-colors",
+                      "w-full justify-start text-left font-normal",
                       !endDate && "text-muted-foreground"
                     )}
                   >
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="p-1.5 rounded-md bg-indigo-500/10">
-                        <CalendarIcon className="h-3.5 w-3.5 text-indigo-500" />
-                      </div>
-                      <span className="flex-1">
-                        {endDate ? format(endDate, "dd.MM.yyyy") : t("reports.selectDate")}
-                      </span>
-                    </div>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "dd.MM.yyyy") : <span>{t("reports.selectDate")}</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -961,47 +864,43 @@ const Hisobotlar = () => {
                 </PopoverContent>
               </Popover>
             </div>
-            
-            {/* Amallar */}
-            <div className="space-y-2 lg:col-span-2">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Amallar</Label>
-              <div className="flex items-center gap-2 h-11">
-                <Button 
-                  variant="outline" 
-                  className="h-full px-4 bg-background/50 hover:bg-background border-border/50 hover:border-red-500/50 hover:text-red-500 transition-colors"
-                  onClick={() => {
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-                  }}
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  {t("reports.reset")}
-                </Button>
-                <Button
-                  className={cn(
-                    "h-full px-4 transition-all",
-                    showComparison 
-                      ? "bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white shadow-md" 
-                      : "bg-background/50 hover:bg-background border border-border/50 hover:border-purple-500/50 text-foreground hover:text-purple-500"
-                  )}
-                  variant={showComparison ? "default" : "outline"}
-                  onClick={() => setShowComparison(!showComparison)}
-                  disabled={!startDate || !endDate}
-                  title={!startDate || !endDate ? t("reports.compareTooltip") : ""}
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  {t("reports.compare")}
-                  {showComparison && (
-                    <span className="ml-2 w-2 h-2 rounded-full bg-white animate-pulse" />
-                  )}
-                </Button>
-              </div>
+            <div className="flex items-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setStartDate(undefined);
+                  setEndDate(undefined);
+                }}
+              >
+                {t("reports.reset")}
+              </Button>
+              <Button
+                variant={showComparison ? "default" : "outline"}
+                onClick={() => setShowComparison(!showComparison)}
+                disabled={!startDate || !endDate}
+                title={!startDate || !endDate ? t("reports.compareTooltip") : ""}
+              >
+                {t("reports.compare")}
+              </Button>
             </div>
           </div>
+          
+          <div className="mt-4">
+            <Label>{t("reports.productServiceType")}</Label>
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full md:w-[300px]">
+                <SelectValue placeholder="Turni tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                <SelectItem value="buyurtmalar">{t("nav.orders")}</SelectItem>
+                <SelectItem value="tekshiruvlar">{t("nav.examination")}</SelectItem>
+                <SelectItem value="tayyor_kozoynaklar">{t("nav.readyGlasses")}</SelectItem>
+                <SelectItem value="linza_sotuvlari">{t("nav.lensSales")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
         </div>
 
         <div id="printable-report">
@@ -1046,400 +945,130 @@ const Hisobotlar = () => {
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 p-6 shadow-lg">
-            {/* Background decorations */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-            <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full" />
-            
-            <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <div className="flex justify-between items-start">
               <div>
-                <p className="text-sm text-blue-100 mb-2 flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {t("reports.totalIncome")} ({t("reports.daily").toLowerCase()})
-                </p>
-                <p className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                  {todayTushum.toLocaleString()}
-                  <span className="text-lg md:text-xl font-medium text-blue-200 ml-2">{t("common.currency")}</span>
-                </p>
+                <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
+                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.currency")}</p>
               </div>
-              
               {showComparison && previousTotalTushum > 0 && (
-                <div className="flex flex-col items-end gap-2">
-                  <div className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold",
-                    totalChange > 0 
-                      ? "bg-green-500/20 text-green-100" 
-                      : totalChange < 0 
-                        ? "bg-red-500/20 text-red-100" 
-                        : "bg-white/10 text-white"
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground mb-1">{t("reports.change")}</p>
+                  <p className={cn(
+                    "text-2xl font-bold",
+                    totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
                   )}>
-                    {totalChange > 0 ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    ) : totalChange < 0 ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-                      </svg>
-                    ) : null}
                     {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
-                  </div>
-                  <p className="text-xs text-blue-200">
-                    {t("reports.previous")}: {previousTotalTushum.toLocaleString()} {t("common.currency")}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {t("reports.previous")} {previousTotalTushum.toLocaleString()}
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Diagrammalar - bir qatorda 50/50 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Ustun diagramma - 50% */}
-            <div className="bg-gradient-to-br from-card to-card/80 rounded-xl border border-border p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-base font-semibold text-foreground">{t("reports.income")}</h4>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="w-3 h-3 rounded" style={{ background: "linear-gradient(135deg, #3b82f6, #60a5fa)" }} />
-                  <span>{t("reports.income")}</span>
-                </div>
-              </div>
-              
-              {/* Gradient definitions for bars with opacity levels */}
-              <svg width="0" height="0">
-                <defs>
-                  {/* Today - full brightness */}
-                  <linearGradient id="barGradientToday" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#60a5fa" />
-                  </linearGradient>
-                  {/* 1 day ago - 80% */}
-                  <linearGradient id="barGradient1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.75" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.75" />
-                  </linearGradient>
-                  {/* 2 days ago - 60% */}
-                  <linearGradient id="barGradient2" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.55" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.55" />
-                  </linearGradient>
-                  {/* 3 days ago - 45% */}
-                  <linearGradient id="barGradient3" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.4" />
-                  </linearGradient>
-                  {/* 4 days ago - 35% */}
-                  <linearGradient id="barGradient4" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.3" />
-                  </linearGradient>
-                  {/* 5 days ago - 25% */}
-                  <linearGradient id="barGradient5" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.22" />
-                  </linearGradient>
-                  {/* 6+ days ago - 18% */}
-                  <linearGradient id="barGradient6" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#60a5fa" stopOpacity="0.15" />
-                  </linearGradient>
-                  {/* Default gradient */}
-                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" />
-                    <stop offset="100%" stopColor="#60a5fa" />
-                  </linearGradient>
-                  <linearGradient id="barGradientPrev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#a78bfa" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-              <TabsContent value="daily" className="mt-0">
-                <div className="h-[320px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={{ stroke: "hsl(var(--border))" }}
-                        tickLine={false}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={formatYAxis}
-                      />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
-                      <Bar 
-                        dataKey="tushum" 
-                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[8, 8, 0, 0]}
-                        maxBarSize={50}
-                        animationBegin={0}
-                        animationDuration={800}
-                        animationEasing="ease-out"
-                        shape={(props: any) => {
-                          const { x, y, width, height, payload } = props;
-                          const daysAgo = payload?.daysAgo ?? 0;
-                          const isToday = payload?.isToday;
-                          let gradientId = "barGradient";
-                          if (isToday) {
-                            gradientId = "barGradientToday";
-                          } else if (daysAgo >= 1 && daysAgo <= 6) {
-                            gradientId = `barGradient${daysAgo}`;
-                          } else if (daysAgo > 6) {
-                            gradientId = "barGradient6";
-                          }
-                          return (
-                            <rect
-                              x={x}
-                              y={y}
-                              width={width}
-                              height={height}
-                              fill={`url(#${gradientId})`}
-                              rx={6}
-                              ry={6}
-                              style={{
-                                filter: isToday ? "drop-shadow(0 4px 8px rgba(59, 130, 246, 0.4))" : undefined,
-                                transition: "all 0.3s ease"
-                              }}
-                            />
-                          );
-                        }}
-                      />
-                      {showComparison && (
-                        <Bar 
-                          dataKey="oldatgiTushum" 
-                          fill="url(#barGradientPrev)" 
-                          name={t("reports.previousPeriod")} 
-                          radius={[8, 8, 0, 0]}
-                          maxBarSize={50}
-                          animationBegin={200}
-                          animationDuration={800}
-                          animationEasing="ease-out"
-                        />
-                      )}
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="weekly" className="mt-0">
-                <div className="h-[320px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={{ stroke: "hsl(var(--border))" }}
-                        tickLine={false}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={formatYAxis}
-                      />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
-                      <Bar 
-                        dataKey="tushum" 
-                        fill="url(#barGradient)" 
-                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[8, 8, 0, 0]}
-                        maxBarSize={50}
-                        animationBegin={0}
-                        animationDuration={800}
-                        animationEasing="ease-out"
-                      />
-                      {showComparison && (
-                        <Bar 
-                          dataKey="oldatgiTushum" 
-                          fill="url(#barGradientPrev)" 
-                          name={t("reports.previousPeriod")} 
-                          radius={[8, 8, 0, 0]}
-                          maxBarSize={50}
-                          animationBegin={200}
-                          animationDuration={800}
-                          animationEasing="ease-out"
-                        />
-                      )}
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="monthly" className="mt-0">
-                <div className="h-[320px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={reportData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }} barCategoryGap="15%">
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={{ stroke: "hsl(var(--border))" }}
-                        tickLine={false}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} 
-                        axisLine={false}
-                        tickLine={false}
-                        tickFormatter={formatYAxis}
-                      />
-                      <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} cursor={{ fill: "hsl(var(--muted)/0.1)" }} />
-                      <Bar 
-                        dataKey="tushum" 
-                        fill="url(#barGradient)" 
-                        name={showComparison ? t("reports.currentPeriod") : t("reports.income")} 
-                        radius={[8, 8, 0, 0]}
-                        maxBarSize={50}
-                        animationBegin={0}
-                        animationDuration={800}
-                        animationEasing="ease-out"
-                      />
-                      {showComparison && (
-                        <Bar 
-                          dataKey="oldatgiTushum" 
-                          fill="url(#barGradientPrev)" 
-                          name={t("reports.previousPeriod")} 
-                          radius={[8, 8, 0, 0]}
-                          maxBarSize={50}
-                          animationBegin={200}
-                          animationDuration={800}
-                          animationEasing="ease-out"
-                        />
-                      )}
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
+          <TabsContent value="daily" className="space-y-4">
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                  <Legend />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
             </div>
+          </TabsContent>
 
-            {/* Dumalaq diagramma - 50% */}
-            <div className="bg-card rounded-xl border border-border p-4 shadow-sm">
-              <h4 className="text-base font-semibold text-foreground mb-4">{t("reports.bySection")}</h4>
-              
-              {/* Progress bar statistika */}
-              <div className="space-y-4">
-                {sectionData.map((section, index) => {
-                  const maxTotal = Math.max(...sectionData.map(s => s.total));
-                  const percentage = maxTotal > 0 ? (section.total / maxTotal) * 100 : 0;
-                  const totalPercentage = totalTushum > 0 ? (section.total / totalTushum) * 100 : 0;
-                  
-                  // Gradient ranglar har bir bo'lim uchun
-                  const gradients: Record<string, string> = {
-                    "Buyurtmalar": "linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)",
-                    "Буюртмалар": "linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #93c5fd 100%)",
-                    "Tekshiruv": "linear-gradient(90deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)",
-                    "Текширув": "linear-gradient(90deg, #8b5cf6 0%, #a78bfa 50%, #c4b5fd 100%)",
-                    "Tayyor ko'zoynaklar": "linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%)",
-                    "Тайёр кўзойнаклар": "linear-gradient(90deg, #f59e0b 0%, #fbbf24 50%, #fcd34d 100%)",
-                    "Linza sotuvi": "linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)",
-                    "Линза сотуви": "linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)",
-                  };
-                  
-                  const gradient = gradients[section.name] || `linear-gradient(90deg, ${section.color} 0%, ${section.color}aa 100%)`;
-                  
-                  return (
-                    <motion.div 
-                      key={section.name} 
-                      className="space-y-2"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.1 }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <motion.div 
-                            className="w-3 h-3 rounded-full shrink-0" 
-                            style={{ background: gradient }}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 + 0.2 }}
-                          />
-                          <span className="text-sm font-medium text-foreground">{section.name}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground">{section.count} ta</span>
-                          <motion.span 
-                            className="text-sm font-bold text-foreground min-w-[100px] text-right"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
-                          >
-                            {section.total.toLocaleString()} so'm
-                          </motion.span>
-                          <span className="text-xs font-medium text-muted-foreground min-w-[45px] text-right">
-                            {totalPercentage.toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="relative h-3 bg-secondary rounded-full overflow-hidden shadow-inner">
-                        <motion.div 
-                          className="absolute inset-y-0 left-0 rounded-full shadow-sm"
-                          style={{ background: gradient }}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${percentage}%` }}
-                          transition={{ 
-                            duration: 0.8, 
-                            delay: index * 0.15,
-                            ease: [0.25, 0.46, 0.45, 0.94]
-                          }}
-                        />
-                        {/* Shimmer effekt */}
-                        <motion.div 
-                          className="absolute inset-y-0 left-0 rounded-full opacity-30"
-                          style={{ 
-                            background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-                            width: `${percentage}%`
-                          }}
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "100%" }}
-                          transition={{ 
-                            duration: 1.5, 
-                            delay: index * 0.15 + 0.8,
-                            ease: "easeInOut"
-                          }}
-                        />
-                      </div>
-                      {showComparison && section.change !== undefined && section.previousTotal !== undefined && section.previousTotal > 0 && (
-                        <motion.div 
-                          className="flex items-center gap-2 pl-5"
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 + 0.5 }}
-                        >
-                          <span className="text-xs text-muted-foreground">
-                            Oldingi: {section.previousTotal.toLocaleString()} so'm
-                          </span>
-                          <span className={cn(
-                            "text-xs font-semibold",
-                            section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
-                          )}>
-                            {section.change > 0 ? "↑" : section.change < 0 ? "↓" : ""} {Math.abs(section.change).toFixed(1)}%
-                          </span>
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* Jami */}
-              <div className="mt-6 pt-4 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">Jami tushum</span>
-                  <span className="text-lg font-bold text-primary">{totalTushum.toLocaleString()} so'm</span>
-                </div>
-              </div>
+          <TabsContent value="weekly" className="space-y-4">
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                  <Legend />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
+          </TabsContent>
+
+          <TabsContent value="monthly" className="space-y-4">
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={reportData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                  <Legend />
+                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
+                  {showComparison && (
+                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </TabsContent>
         </Tabs>
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">{t("reports.bySection")}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {sectionData.map((section) => (
+            <div key={section.name} className="bg-secondary rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{section.name}</p>
+              <p className="text-xl font-bold text-foreground">{section.total.toLocaleString()} {t("common.currency")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{section.count} {t("reports.records")}</p>
+              {showComparison && section.previousTotal !== undefined && (
+                <div className="mt-2 pt-2 border-t border-border">
+                  <p className="text-xs text-muted-foreground">{t("reports.previous")} {section.previousTotal.toLocaleString()}</p>
+                  {section.change !== undefined && section.previousTotal > 0 && (
+                    <p className={cn(
+                      "text-sm font-semibold",
+                      section.change > 0 ? "text-green-600" : section.change < 0 ? "text-red-600" : "text-muted-foreground"
+                    )}>
+                      {section.change > 0 ? "+" : ""}{section.change.toFixed(1)}%
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={sectionData.filter(s => s.total > 0)}
+                dataKey="total"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                label={(entry) => `${entry.name}: ${entry.total.toLocaleString()}`}
+              >
+                {sectionData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </Card>
     </div>
