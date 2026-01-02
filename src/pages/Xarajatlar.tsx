@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -162,6 +162,10 @@ const Xarajatlar = () => {
   const currentXarajatlar = filteredXarajatlar.slice(startIndex, endIndex);
 
   const totalSum = filteredXarajatlar.reduce((sum, x) => sum + x.summa, 0);
+
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('uz-UZ');
+  };
 
   const exportToExcel = () => {
     const dateTime = formatUzbekistanDateTime();
@@ -388,140 +392,215 @@ const Xarajatlar = () => {
         </form>
       </Card>
 
-      <Card className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h3 className="font-semibold text-lg">{t("expenses.list")}</h3>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+      <div className="bg-card rounded-lg p-4 border border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <h3 className="text-lg font-semibold">{t("expenses.list")}</h3>
+            <div className="text-lg font-bold text-destructive">
+              {t("expenses.totalExpenses")}: {formatPrice(totalSum)} {t("common.currency")}
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <DateFilterSelect value={dateFilter} onValueChange={setDateFilter} />
+            
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
               <Input
                 placeholder={t("orders.search")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-[200px]"
+                className="pl-10 pr-10"
               />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              )}
             </div>
-            <DateFilterSelect value={dateFilter} onValueChange={setDateFilter} />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={exportToExcel}>
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Excel</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={exportToPDF}>
-                    <Download className="h-4 w-4 text-red-500" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>PDF</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="icon" onClick={handlePrint}>
-                    <Printer className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Print</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2">
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+                <Printer className="w-4 h-4" />
+                Print
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-4">
-          <p className="text-sm text-muted-foreground mb-1">{t("expenses.totalExpenses")}</p>
-          <p className="text-2xl font-bold text-destructive">{totalSum.toLocaleString()} {t("common.currency")}</p>
-          <p className="text-xs text-muted-foreground mt-1">{filteredXarajatlar.length} {t("reports.records")}</p>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table id="printable-table" className="w-full border-collapse">
-            <thead>
-              <tr className="bg-muted">
-                <th className="border border-border p-2 text-left">{t("orders.number")}</th>
-                <th className="border border-border p-2 text-left">{t("common.date")}</th>
-                <th className="border border-border p-2 text-left">{t("expenses.category")}</th>
-                <th className="border border-border p-2 text-left">{t("expenses.description")}</th>
-                <th className="border border-border p-2 text-right">{t("expenses.amount")}</th>
-                <th className="border border-border p-2 text-center">{t("common.actions")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="border border-border p-4 text-center">
-                    {t("common.loading")}
-                  </td>
-                </tr>
-              ) : currentXarajatlar.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="border border-border p-4 text-center text-muted-foreground">
-                    {t("expenses.empty")}
-                  </td>
-                </tr>
-              ) : (
-                currentXarajatlar.map((x) => (
-                  <tr key={x.id} className="hover:bg-muted/50">
-                    <td className="border border-border p-2">{x.tartibRaqam}</td>
-                    <td className="border border-border p-2">{formatDisplayDate(x.sana)}</td>
-                    <td className="border border-border p-2">{getKategoriyaLabel(x.kategoriya)}</td>
-                    <td className="border border-border p-2">{x.tavsif}</td>
-                    <td className="border border-border p-2 text-right font-medium">
-                      {x.summa.toLocaleString()} {t("common.currency")}
-                    </td>
-                    <td className="border border-border p-2">
-                      <div className="flex justify-center gap-1">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleEdit(x)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t("common.edit")}</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteId(x.id)}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{t("common.delete")}</TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+        {isMobile ? (
+          <div className="space-y-4">
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t("common.loading")}
+              </div>
+            ) : currentXarajatlar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? t("lens.noResults") : t("expenses.empty")}
+              </div>
+            ) : (
+              currentXarajatlar.map((x, index) => (
+                <div key={x.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-sm text-muted-foreground cursor-help">
+                              {formatDisplayDate(x.sana)}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(x)}
+                        className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteId(x.id)}
+                        className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">{t("expenses.category")}:</span>
+                      <span className="ml-2 font-medium">{getKategoriyaLabel(x.kategoriya)}</span>
+                    </div>
+                    {x.tavsif && (
+                      <div>
+                        <span className="text-muted-foreground">{t("expenses.description")}:</span>
+                        <span className="ml-2">{x.tavsif}</span>
                       </div>
-                    </td>
+                    )}
+                  </div>
+                  
+                  <div className="pt-2 border-t border-border flex justify-between items-center">
+                    <span className="text-muted-foreground text-sm">{t("expenses.amount")}:</span>
+                    <span className="text-lg font-bold text-destructive">{formatPrice(x.summa)} {t("common.currency")}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {t("common.loading")}
+              </div>
+            ) : currentXarajatlar.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {searchQuery ? t("lens.noResults") : t("expenses.empty")}
+              </div>
+            ) : (
+              <table id="printable-table" className="w-full min-w-[640px]">
+                <thead className="bg-secondary text-secondary-foreground">
+                  <tr>
+                    <th className="px-2 sm:px-4 py-2 text-left text-sm">№</th>
+                    <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("common.date")}</th>
+                    <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("expenses.category")}</th>
+                    <th className="px-2 sm:px-4 py-2 text-left text-sm">{t("expenses.description")}</th>
+                    <th className="px-2 sm:px-4 py-2 text-center text-sm">{t("expenses.amount")}</th>
+                    <th className="px-2 sm:px-4 py-2 text-right"></th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {currentXarajatlar.map((x, index) => (
+                    <tr key={x.id} className="border-b border-border hover:bg-muted/50">
+                      <td className="px-2 sm:px-4 py-2 text-sm">{startIndex + index + 1}</td>
+                      <td className="px-2 sm:px-4 py-2 text-sm">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help">{formatDisplayDate(x.sana)}</span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 text-sm">{getKategoriyaLabel(x.kategoriya)}</td>
+                      <td className="px-2 sm:px-4 py-2 text-sm">{x.tavsif || "-"}</td>
+                      <td className="px-2 sm:px-4 py-2 text-center font-semibold text-sm whitespace-nowrap">
+                        {formatPrice(x.summa)} {t("common.currency")}
+                      </td>
+                      <td className="px-2 sm:px-4 py-2 text-right">
+                        <TooltipProvider>
+                          <div className="flex gap-1 justify-end">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(x)}
+                                  className="h-8 w-8 p-0 text-primary hover:bg-primary/10"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("common.edit")}</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setDeleteId(x.id)}
+                                  className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("common.delete")}</TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TooltipProvider>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
 
         {totalPages > 1 && (
-          <div className="mt-4">
+          <div className="mt-4 flex justify-center">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
                   <PaginationPrevious
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
                 </PaginationItem>
@@ -538,7 +617,7 @@ const Xarajatlar = () => {
                 ))}
                 <PaginationItem>
                   <PaginationNext
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                   />
                 </PaginationItem>
@@ -546,7 +625,7 @@ const Xarajatlar = () => {
             </Pagination>
           </div>
         )}
-      </Card>
+      </div>
 
       <ConfirmDialog
         open={!!deleteId}
