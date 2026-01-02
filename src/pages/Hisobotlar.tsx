@@ -24,6 +24,8 @@ import { withRetry } from "@/lib/retryUtils";
 interface ReportData {
   name: string;
   tushum: number;
+  xarajat: number;
+  foyda: number;
   oldatgiTushum?: number;
 }
 
@@ -49,6 +51,8 @@ const Hisobotlar = () => {
   const { user } = useAuth();
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [sectionData, setSectionData] = useState<SectionData[]>([]);
+  const [expenseCategoryData, setExpenseCategoryData] = useState<SectionData[]>([]);
+  const [totalXarajat, setTotalXarajat] = useState(0);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
@@ -56,6 +60,7 @@ const Hisobotlar = () => {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [exportFormat, setExportFormat] = useState<"excel" | "pdf">("excel");
+  const [activeTab, setActiveTab] = useState<"income" | "expense" | "compare">("income");
 
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -203,29 +208,65 @@ const Hisobotlar = () => {
     try {
       setLoading(true);
 
-      // Load all data from Supabase
-      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes] = await Promise.all([
+      // Load all data from Supabase including expenses
+      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes, xarajatlarRes] = await Promise.all([
         supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
         supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
         supabase.from("tayyor_kozoynaklar").select("*").eq("user_id", user.id),
         supabase.from("linza_sotuvlari").select("*").eq("user_id", user.id),
+        supabase.from("xarajatlar").select("*").eq("user_id", user.id),
       ]);
 
       if (buyurtmalarRes.error) throw buyurtmalarRes.error;
       if (tekshiruvlarRes.error) throw tekshiruvlarRes.error;
       if (tayyorKozoynakRes.error) throw tayyorKozoynakRes.error;
       if (linzaSotuvRes.error) throw linzaSotuvRes.error;
+      if (xarajatlarRes.error) throw xarajatlarRes.error;
 
       const buyurtmalar = buyurtmalarRes.data || [];
       const tekshiruvlar = tekshiruvlarRes.data || [];
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
+      const xarajatlar = xarajatlarRes.data || [];
 
       // Calculate current period totals
       const currentBuyurtmalar = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
       const currentTekshiruvlar = tekshiruvlar.filter((t: any) => !startDate && !endDate ? true : isDateInRange(t.sana));
       const currentTayyorKozoynaklar = tayyorKozoynaklar.filter((k: any) => !startDate && !endDate ? true : isDateInRange(k.sana));
       const currentLinzaSotuvlari = linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana));
+      const currentXarajatlar = xarajatlar.filter((x: any) => !startDate && !endDate ? true : isDateInRange(x.sana));
+
+      // Calculate total expenses
+      const expenseTotal = currentXarajatlar.reduce((sum: number, x: any) => sum + (x.summa || 0), 0);
+      setTotalXarajat(expenseTotal);
+
+      // Calculate expense category data
+      const expenseCategories: { [key: string]: { total: number; count: number } } = {};
+      currentXarajatlar.forEach((x: any) => {
+        const category = x.kategoriya || t("expenses.other");
+        if (!expenseCategories[category]) {
+          expenseCategories[category] = { total: 0, count: 0 };
+        }
+        expenseCategories[category].total += x.summa || 0;
+        expenseCategories[category].count += 1;
+      });
+
+      const categoryColors = [
+        "hsl(var(--chart-1))",
+        "hsl(var(--chart-2))",
+        "hsl(var(--chart-3))",
+        "hsl(var(--chart-4))",
+        "hsl(var(--chart-5))",
+        "hsl(var(--destructive))",
+      ];
+
+      const expenseCategorySectionData: SectionData[] = Object.entries(expenseCategories).map(([name, data], index) => ({
+        name,
+        total: data.total,
+        count: data.count,
+        color: categoryColors[index % categoryColors.length],
+      }));
+      setExpenseCategoryData(expenseCategorySectionData);
 
       // Calculate previous period data if comparison is enabled
       let previousBuyurtmalar: any[] = [];
@@ -317,7 +358,14 @@ const Hisobotlar = () => {
         })));
       }
 
-      const groupedData = groupByPeriod(allData);
+      // Group expenses by period
+      const expenseData = currentXarajatlar.map((x: any) => ({
+        sana: x.sana,
+        summa: x.summa,
+        tur: "Xarajat"
+      }));
+
+      const groupedData = groupByPeriod(allData, expenseData);
 
       // Add previous period data if comparison is enabled with filter
       if (showComparison && (startDate || endDate)) {
@@ -390,10 +438,12 @@ const Hisobotlar = () => {
     return dateString;
   };
 
-  const groupByPeriod = (data: any[]): ReportData[] => {
-    const grouped: { [key: string]: number } = {};
-    data.forEach(item => {
-      // Sanani normallash
+  const groupByPeriod = (incomeData: any[], expenseData: any[] = []): ReportData[] => {
+    const groupedIncome: { [key: string]: number } = {};
+    const groupedExpense: { [key: string]: number } = {};
+    
+    // Group income data
+    incomeData.forEach(item => {
       const normalizedDate = normalizeDateString(item.sana);
       let key = normalizedDate;
       
@@ -406,22 +456,49 @@ const Hisobotlar = () => {
       } else if (period === "monthly") {
         const dateParts = normalizedDate.split("-");
         if (dateParts.length === 3) {
-          key = `${dateParts[1]}-${dateParts[2]}`; // OY-YIL
+          key = `${dateParts[1]}-${dateParts[2]}`;
         }
       }
-      grouped[key] = (grouped[key] || 0) + item.summa;
+      groupedIncome[key] = (groupedIncome[key] || 0) + item.summa;
     });
+
+    // Group expense data
+    expenseData.forEach(item => {
+      const normalizedDate = normalizeDateString(item.sana);
+      let key = normalizedDate;
+      
+      if (period === "weekly") {
+        const dateParts = normalizedDate.split("-");
+        if (dateParts.length === 3) {
+          const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
+          key = `${dateParts[1]}-oy, ${weekNum}-hafta`;
+        }
+      } else if (period === "monthly") {
+        const dateParts = normalizedDate.split("-");
+        if (dateParts.length === 3) {
+          key = `${dateParts[1]}-${dateParts[2]}`;
+        }
+      }
+      groupedExpense[key] = (groupedExpense[key] || 0) + item.summa;
+    });
+
+    // Merge all keys
+    const allKeys = new Set([...Object.keys(groupedIncome), ...Object.keys(groupedExpense)]);
     
-    return Object.entries(grouped).map(([name, tushum]) => ({
-      name,
-      tushum,
-      oldatgiTushum: undefined
-    })).sort((a, b) => {
-      // Sanalarni to'g'ri tartiblash (DD-MM-YYYY formatida)
+    return Array.from(allKeys).map(name => {
+      const tushum = groupedIncome[name] || 0;
+      const xarajat = groupedExpense[name] || 0;
+      return {
+        name,
+        tushum,
+        xarajat,
+        foyda: tushum - xarajat,
+        oldatgiTushum: undefined
+      };
+    }).sort((a, b) => {
       const parseForSort = (dateStr: string) => {
         const parts = dateStr.split("-");
         if (parts.length === 3 && parts[2].length === 4) {
-          // DD-MM-YYYY -> YYYY-MM-DD formatga o'zgartirish tartiblash uchun
           return `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
         return dateStr;
@@ -945,82 +1022,103 @@ const Hisobotlar = () => {
             </div>
           </div>
 
-          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
-                <p className="text-3xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.currency")}</p>
-              </div>
-              {showComparison && previousTotalTushum > 0 && (
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground mb-1">{t("reports.change")}</p>
-                  <p className={cn(
-                    "text-2xl font-bold",
-                    totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
-                  )}>
-                    {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {t("reports.previous")} {previousTotalTushum.toLocaleString()}
-                  </p>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">{t("reports.totalIncome")}</p>
+                  <p className="text-2xl font-bold text-primary">{totalTushum.toLocaleString()} {t("common.currency")}</p>
                 </div>
-              )}
+                {showComparison && previousTotalTushum > 0 && (
+                  <div className="text-right">
+                    <p className={cn(
+                      "text-lg font-bold",
+                      totalChange > 0 ? "text-green-600" : totalChange < 0 ? "text-red-600" : "text-muted-foreground"
+                    )}>
+                      {totalChange > 0 ? "+" : ""}{totalChange.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.totalExpenses")}</p>
+              <p className="text-2xl font-bold text-destructive">{totalXarajat.toLocaleString()} {t("common.currency")}</p>
+            </div>
+            
+            <div className={cn(
+              "rounded-lg p-4 border",
+              (totalTushum - totalXarajat) >= 0 
+                ? "bg-green-500/10 border-green-500/20" 
+                : "bg-red-500/10 border-red-500/20"
+            )}>
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.netProfit")}</p>
+              <p className={cn(
+                "text-2xl font-bold",
+                (totalTushum - totalXarajat) >= 0 ? "text-green-600" : "text-red-600"
+              )}>
+                {(totalTushum - totalXarajat).toLocaleString()} {t("common.currency")}
+              </p>
             </div>
           </div>
 
-          <TabsContent value="daily" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+          {/* Report Type Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "income" | "expense" | "compare")} className="mt-6">
+            <TabsList className="grid grid-cols-3 w-full md:w-auto">
+              <TabsTrigger value="income">{t("reports.incomeTab")}</TabsTrigger>
+              <TabsTrigger value="expense">{t("reports.expenseTab")}</TabsTrigger>
+              <TabsTrigger value="compare">{t("reports.compareTab")}</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="weekly" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+            <TabsContent value="income" className="space-y-4 mt-4">
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={reportData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
+                    <Legend />
+                    <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
 
-          <TabsContent value="monthly" className="space-y-4">
-            <div className="h-[400px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={reportData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip content={<CustomTooltip total={totalTushum} showComparison={showComparison} />} />
-                  <Legend />
-                  <Bar dataKey="tushum" fill="hsl(var(--primary))" name={showComparison ? t("reports.currentPeriod") : t("reports.income")} />
-                  {showComparison && (
-                    <Bar dataKey="oldatgiTushum" fill="hsl(var(--chart-2))" name={t("reports.previousPeriod")} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </TabsContent>
+            <TabsContent value="expense" className="space-y-4 mt-4">
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={reportData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+                    <Legend />
+                    <Bar dataKey="xarajat" fill="hsl(var(--destructive))" name={t("reports.expense")} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="compare" className="space-y-4 mt-4">
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={reportData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+                    <Legend />
+                    <Bar dataKey="tushum" fill="hsl(var(--primary))" name={t("reports.income")} />
+                    <Bar dataKey="xarajat" fill="hsl(var(--destructive))" name={t("reports.expense")} />
+                    <Bar dataKey="foyda" fill="hsl(142, 76%, 36%)" name={t("reports.netProfit")} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
+          </Tabs>
         </Tabs>
         </div>
       </Card>
@@ -1071,6 +1169,43 @@ const Hisobotlar = () => {
           </ResponsiveContainer>
         </div>
       </Card>
+
+      {/* Expense Categories Section */}
+      {expenseCategoryData.length > 0 && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">{t("reports.byExpenseCategory")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {expenseCategoryData.map((category) => (
+              <div key={category.name} className="bg-destructive/5 border border-destructive/10 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground mb-1">{category.name}</p>
+                <p className="text-xl font-bold text-destructive">{category.total.toLocaleString()} {t("common.currency")}</p>
+                <p className="text-xs text-muted-foreground mt-1">{category.count} {t("reports.records")}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={expenseCategoryData.filter(s => s.total > 0)}
+                  dataKey="total"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  label={(entry) => `${entry.name}: ${entry.total.toLocaleString()}`}
+                >
+                  {expenseCategoryData.map((entry, index) => (
+                    <Cell key={`expense-cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
