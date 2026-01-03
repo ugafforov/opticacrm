@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Users } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Users, Phone, PhoneCall, CreditCard, History, Check, Clock, AlertTriangle, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
@@ -18,10 +18,25 @@ import { EditDialog } from "@/components/EditDialog";
 import { formatUzbekistanDate, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { PriceInput } from "@/components/PriceInput";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
-import { useQarzdorlar, Qarzdor } from "@/hooks/useQarzdorlar";
+import { useQarzdorlar, Qarzdor, QarzTolovi, DebtorStatus } from "@/hooks/useQarzdorlar";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DateFilterSelect } from "@/components/DateFilterSelect";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -39,15 +54,30 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
+type AgeFilter = "all" | "new" | "warning" | "danger" | "critical";
+
 const Qarzdorlar = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { qarzdorlar, loading, addQarzdor, updateQarzdor, deleteQarzdor } = useQarzdorlar();
+  const { 
+    qarzdorlar, 
+    loading, 
+    addQarzdor, 
+    updateQarzdor, 
+    deleteQarzdor,
+    addPayment,
+    getPaymentHistory,
+    deletePayment,
+    markContacted,
+    getDebtAgeCategory
+  } = useQarzdorlar();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<DebtorStatus>("all");
+  const [ageFilter, setAgeFilter] = useState<AgeFilter>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   
@@ -60,6 +90,19 @@ const Qarzdorlar = () => {
   
   const [editingItem, setEditingItem] = useState<Qarzdor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  
+  // Payment dialog states
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [paymentQarzdor, setPaymentQarzdor] = useState<Qarzdor | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentDate, setPaymentDate] = useState<Date>(new Date());
+  const [paymentNote, setPaymentNote] = useState("");
+  
+  // Payment history dialog states
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historyQarzdor, setHistoryQarzdor] = useState<Qarzdor | null>(null);
+  const [paymentHistory, setPaymentHistory] = useState<QarzTolovi[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +153,92 @@ const Qarzdorlar = () => {
     }
   };
 
+  // Payment handlers
+  const openPaymentDialog = (qarzdor: Qarzdor) => {
+    setPaymentQarzdor(qarzdor);
+    setPaymentAmount("");
+    setPaymentDate(new Date());
+    setPaymentNote("");
+    setPaymentDialogOpen(true);
+  };
+
+  const handleAddPayment = async () => {
+    if (!paymentQarzdor || !paymentAmount) return;
+    
+    const success = await addPayment(paymentQarzdor.id, {
+      summa: parseFloat(paymentAmount) || 0,
+      sana: paymentDate,
+      izoh: paymentNote,
+    });
+
+    if (success) {
+      setPaymentDialogOpen(false);
+      setPaymentQarzdor(null);
+    }
+  };
+
+  const openHistoryDialog = async (qarzdor: Qarzdor) => {
+    setHistoryQarzdor(qarzdor);
+    setHistoryDialogOpen(true);
+    setLoadingHistory(true);
+    const history = await getPaymentHistory(qarzdor.id);
+    setPaymentHistory(history);
+    setLoadingHistory(false);
+  };
+
+  const handleDeletePayment = async (paymentId: string) => {
+    if (!historyQarzdor) return;
+    await deletePayment(paymentId, historyQarzdor.id);
+    const history = await getPaymentHistory(historyQarzdor.id);
+    setPaymentHistory(history);
+  };
+
+  const handleMarkContacted = async (id: string) => {
+    await markContacted(id);
+  };
+
+  // Get status badge
+  const getStatusBadge = (holat: Qarzdor["holat"]) => {
+    switch (holat) {
+      case "tollangan":
+        return <Badge className="bg-green-500 hover:bg-green-600"><Check className="w-3 h-3 mr-1" />{t("debtors.statusPaid")}</Badge>;
+      case "qisman":
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />{t("debtors.statusPartial")}</Badge>;
+      default:
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />{t("debtors.statusUnpaid")}</Badge>;
+    }
+  };
+
+  // Get age badge with color
+  const getAgeBadge = (sana: string, holat: Qarzdor["holat"]) => {
+    if (holat === "tollangan") return null;
+    
+    const age = getDebtAgeCategory(sana);
+    switch (age) {
+      case "new":
+        return <Badge variant="outline" className="border-green-500 text-green-600"><Clock className="w-3 h-3 mr-1" />{t("debtors.ageNew")}</Badge>;
+      case "warning":
+        return <Badge variant="outline" className="border-yellow-500 text-yellow-600"><AlertTriangle className="w-3 h-3 mr-1" />{t("debtors.ageWarning")}</Badge>;
+      case "danger":
+        return <Badge variant="outline" className="border-orange-500 text-orange-600"><AlertTriangle className="w-3 h-3 mr-1" />{t("debtors.ageDanger")}</Badge>;
+      case "critical":
+        return <Badge variant="outline" className="border-red-500 text-red-600"><AlertCircle className="w-3 h-3 mr-1" />{t("debtors.ageCritical")}</Badge>;
+    }
+  };
+
+  // Get row background color based on age
+  const getRowClassName = (qarzdor: Qarzdor) => {
+    if (qarzdor.holat === "tollangan") return "bg-green-50 dark:bg-green-950/20";
+    
+    const age = getDebtAgeCategory(qarzdor.sana);
+    switch (age) {
+      case "new": return "";
+      case "warning": return "bg-yellow-50 dark:bg-yellow-950/20";
+      case "danger": return "bg-orange-50 dark:bg-orange-950/20";
+      case "critical": return "bg-red-50 dark:bg-red-950/20";
+    }
+  };
+
   const filteredQarzdorlar = qarzdorlar.filter((x) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch = (
@@ -120,6 +249,15 @@ const Qarzdorlar = () => {
     );
 
     if (!matchesSearch) return false;
+
+    // Status filter
+    if (statusFilter !== "all" && x.holat !== statusFilter) return false;
+
+    // Age filter
+    if (ageFilter !== "all") {
+      const age = getDebtAgeCategory(x.sana);
+      if (age !== ageFilter) return false;
+    }
 
     if (dateFilter === "all") return true;
 
@@ -159,7 +297,8 @@ const Qarzdorlar = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentQarzdorlar = filteredQarzdorlar.slice(startIndex, endIndex);
 
-  const totalSum = filteredQarzdorlar.reduce((sum, x) => sum + x.qarzSummasi, 0);
+  const totalDebt = filteredQarzdorlar.reduce((sum, x) => sum + x.qarzSummasi, 0);
+  const totalRemaining = filteredQarzdorlar.reduce((sum, x) => sum + x.qoldiqSumma, 0);
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('uz-UZ');
@@ -171,7 +310,8 @@ const Qarzdorlar = () => {
     const metadata = [
       { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
       { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
-      { [t("export.info")]: t("debtors.totalDebt"), [t("export.value")]: `${totalSum.toLocaleString()} ${t("common.sum")}` },
+      { [t("export.info")]: t("debtors.totalDebt"), [t("export.value")]: `${totalDebt.toLocaleString()} ${t("common.sum")}` },
+      { [t("export.info")]: t("debtors.totalRemaining"), [t("export.value")]: `${totalRemaining.toLocaleString()} ${t("common.sum")}` },
     ];
     
     const data = filteredQarzdorlar.map((x) => ({
@@ -180,6 +320,8 @@ const Qarzdorlar = () => {
       [t("debtors.debtorName")]: x.mijoz,
       [t("debtors.debtorPhone")]: x.telefon,
       [t("debtors.debtAmount")]: x.qarzSummasi,
+      [t("debtors.remainingAmount")]: x.qoldiqSumma,
+      [t("debtors.status")]: x.holat === "tollangan" ? t("debtors.statusPaid") : x.holat === "qisman" ? t("debtors.statusPartial") : t("debtors.statusUnpaid"),
       [t("debtors.note")]: x.izoh,
     }));
 
@@ -202,7 +344,7 @@ const Qarzdorlar = () => {
         doc,
         t("debtors.list"),
         user?.email,
-        `${t("debtors.totalDebt")}: ${totalSum.toLocaleString()} ${t("common.sum")}`,
+        `${t("debtors.totalRemaining")}: ${totalRemaining.toLocaleString()} ${t("common.sum")}`,
         t("common.exportedBy"),
         t("common.dateAndTime")
       );
@@ -213,16 +355,18 @@ const Qarzdorlar = () => {
         x.mijoz,
         x.telefon,
         `${x.qarzSummasi.toLocaleString()} ${t("common.currency")}`,
+        `${x.qoldiqSumma.toLocaleString()} ${t("common.currency")}`,
+        x.holat === "tollangan" ? t("debtors.statusPaid") : x.holat === "qisman" ? t("debtors.statusPartial") : t("debtors.statusUnpaid"),
         x.izoh,
       ]);
 
       autoTable(doc, {
         startY,
-        head: [[t("orders.number"), t("common.date"), t("debtors.debtorName"), t("debtors.debtorPhone"), t("debtors.debtAmount"), t("debtors.note")]],
+        head: [[t("orders.number"), t("common.date"), t("debtors.debtorName"), t("debtors.debtorPhone"), t("debtors.debtAmount"), t("debtors.remainingAmount"), t("debtors.status"), t("debtors.note")]],
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
-          fontSize: 10,
+          fontSize: 9,
           cellPadding: 1.5,
           lineWidth: 0.5,
           lineColor: [200, 200, 200],
@@ -239,6 +383,7 @@ const Qarzdorlar = () => {
         },
         columnStyles: {
           4: { halign: 'right' },
+          5: { halign: 'right' },
         },
       });
 
@@ -394,16 +539,59 @@ const Qarzdorlar = () => {
       </Card>
 
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-lg font-semibold">{t("debtors.list")}</h3>
-            <div className="text-lg font-bold text-destructive">
-              {t("debtors.totalDebt")}: {formatPrice(totalSum)} {t("common.currency")}
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <h3 className="text-lg font-semibold">{t("debtors.list")}</h3>
+              <div className="flex gap-2 flex-wrap">
+                <div className="text-sm font-bold text-destructive">
+                  {t("debtors.totalRemaining")}: {formatPrice(totalRemaining)} {t("common.currency")}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2">
+                <Download className="w-4 h-4" />
+                Excel
+              </Button>
+              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
+                <Download className="w-4 h-4" />
+                PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+                <Printer className="w-4 h-4" />
+                Print
+              </Button>
             </div>
           </div>
-          
+
+          {/* Status tabs */}
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as DebtorStatus)} className="w-full">
+            <TabsList className="w-full grid grid-cols-4">
+              <TabsTrigger value="all">{t("debtors.statusAll")}</TabsTrigger>
+              <TabsTrigger value="tollanmagan">{t("debtors.statusUnpaid")}</TabsTrigger>
+              <TabsTrigger value="qisman">{t("debtors.statusPartial")}</TabsTrigger>
+              <TabsTrigger value="tollangan">{t("debtors.statusPaid")}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Filters row */}
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <DateFilterSelect value={dateFilter} onValueChange={setDateFilter} />
+            
+            <Select value={ageFilter} onValueChange={(v) => setAgeFilter(v as AgeFilter)}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder={t("debtors.filterByAge")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("debtors.allAges")}</SelectItem>
+                <SelectItem value="new">{t("debtors.ageNew")}</SelectItem>
+                <SelectItem value="warning">{t("debtors.ageWarning")}</SelectItem>
+                <SelectItem value="danger">{t("debtors.ageDanger")}</SelectItem>
+                <SelectItem value="critical">{t("debtors.ageCritical")}</SelectItem>
+              </SelectContent>
+            </Select>
             
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
@@ -424,21 +612,6 @@ const Qarzdorlar = () => {
                 </Button>
               )}
             </div>
-            
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2">
-                <Download className="w-4 h-4" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
-                <Download className="w-4 h-4" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
-                <Printer className="w-4 h-4" />
-                Print
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -454,7 +627,7 @@ const Qarzdorlar = () => {
               </div>
             ) : (
               currentQarzdorlar.map((x, index) => (
-                <div key={x.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+                <div key={x.id} className={`border border-border rounded-lg p-4 space-y-3 ${getRowClassName(x)}`}>
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
@@ -471,23 +644,9 @@ const Qarzdorlar = () => {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(x)}
-                        className="hover:bg-primary/10 hover:text-primary"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(x.id)}
-                        className="hover:bg-destructive/10 hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="flex flex-col gap-1 items-end">
+                      {getStatusBadge(x.holat)}
+                      {getAgeBadge(x.sana, x.holat)}
                     </div>
                   </div>
                   
@@ -502,12 +661,72 @@ const Qarzdorlar = () => {
                     </div>
                     <div>
                       <span className="text-muted-foreground">{t("debtors.debtAmount")}:</span>
-                      <div className="font-bold text-destructive">{formatPrice(x.qarzSummasi)} {t("common.currency")}</div>
+                      <div className="font-medium">{formatPrice(x.qarzSummasi)} {t("common.currency")}</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{t("debtors.note")}:</span>
-                      <div className="font-medium">{x.izoh || "-"}</div>
+                      <span className="text-muted-foreground">{t("debtors.remainingAmount")}:</span>
+                      <div className="font-bold text-destructive">{formatPrice(x.qoldiqSumma)} {t("common.currency")}</div>
                     </div>
+                    {x.oxirgiAloqa && (
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">{t("debtors.lastContact")}:</span>
+                        <div className="font-medium text-green-600">{formatDisplayDate(x.oxirgiAloqa.split('T')[0])}</div>
+                      </div>
+                    )}
+                    {x.izoh && (
+                      <div className="col-span-2">
+                        <span className="text-muted-foreground">{t("debtors.note")}:</span>
+                        <div className="font-medium">{x.izoh}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                    {x.holat !== "tollangan" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openPaymentDialog(x)}
+                        className="gap-1"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        {t("debtors.addPayment")}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openHistoryDialog(x)}
+                      className="gap-1"
+                    >
+                      <History className="w-4 h-4" />
+                      {t("debtors.paymentHistory")}
+                    </Button>
+                    <Button
+                      variant={x.oxirgiAloqa ? "outline" : "secondary"}
+                      size="sm"
+                      onClick={() => handleMarkContacted(x.id)}
+                      className="gap-1"
+                    >
+                      <PhoneCall className="w-4 h-4" />
+                      {t("debtors.markContacted")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(x)}
+                      className="hover:bg-primary/10 hover:text-primary"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDeleteId(x.id)}
+                      className="hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))
@@ -523,48 +742,108 @@ const Qarzdorlar = () => {
                   <TableHead>{t("debtors.debtorName")}</TableHead>
                   <TableHead>{t("debtors.debtorPhone")}</TableHead>
                   <TableHead className="text-right">{t("debtors.debtAmount")}</TableHead>
+                  <TableHead className="text-right">{t("debtors.remainingAmount")}</TableHead>
+                  <TableHead>{t("debtors.status")}</TableHead>
+                  <TableHead>{t("debtors.lastContact")}</TableHead>
                   <TableHead>{t("debtors.note")}</TableHead>
-                  <TableHead className="w-[100px]">{t("common.actions")}</TableHead>
+                  <TableHead className="w-[200px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       {t("common.loading")}
                     </TableCell>
                   </TableRow>
                 ) : currentQarzdorlar.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       {searchQuery ? t("lens.noResults") : t("debtors.empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   currentQarzdorlar.map((x, index) => (
-                    <TableRow key={x.id}>
+                    <TableRow key={x.id} className={getRowClassName(x)}>
                       <TableCell className="font-medium">{startIndex + index + 1}</TableCell>
                       <TableCell>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="cursor-help">{formatDisplayDate(x.sana)}</span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <div className="flex flex-col gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="cursor-help">{formatDisplayDate(x.sana)}</span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          {getAgeBadge(x.sana, x.holat)}
+                        </div>
                       </TableCell>
                       <TableCell>{x.mijoz}</TableCell>
                       <TableCell>{x.telefon || "-"}</TableCell>
-                      <TableCell className="text-right font-bold text-destructive">
+                      <TableCell className="text-right">
                         {formatPrice(x.qarzSummasi)} {t("common.currency")}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-destructive">
+                        {formatPrice(x.qoldiqSumma)} {t("common.currency")}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(x.holat)}</TableCell>
+                      <TableCell>
+                        {x.oxirgiAloqa ? (
+                          <span className="text-green-600 text-sm">
+                            {formatDisplayDate(x.oxirgiAloqa.split('T')[0])}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">{t("debtors.notContacted")}</span>
+                        )}
                       </TableCell>
                       <TableCell>{x.izoh || "-"}</TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <TooltipProvider>
+                            {x.holat !== "tollangan" && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => openPaymentDialog(x)}
+                                    className="hover:bg-green-100 hover:text-green-600 transition-colors"
+                                  >
+                                    <CreditCard className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{t("debtors.addPayment")}</TooltipContent>
+                              </Tooltip>
+                            )}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => openHistoryDialog(x)}
+                                  className="hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                                >
+                                  <History className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("debtors.paymentHistory")}</TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleMarkContacted(x.id)}
+                                  className={x.oxirgiAloqa ? "text-green-600 hover:bg-green-100" : "hover:bg-yellow-100 hover:text-yellow-600"}
+                                >
+                                  <PhoneCall className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>{t("debtors.markContacted")}</TooltipContent>
+                            </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -646,6 +925,120 @@ const Qarzdorlar = () => {
           </div>
         )}
       </div>
+
+      {/* Payment Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("debtors.addPayment")}</DialogTitle>
+          </DialogHeader>
+          {paymentQarzdor && (
+            <div className="space-y-4">
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="font-medium">{paymentQarzdor.mijoz}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t("debtors.remainingAmount")}: {formatPrice(paymentQarzdor.qoldiqSumma)} {t("common.currency")}
+                </p>
+              </div>
+              
+              <div>
+                <Label>{t("common.date")}</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(paymentDate, "dd-MM-yyyy")}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={paymentDate}
+                      onSelect={(date) => date && setPaymentDate(date)}
+                      disabled={(date) => date > new Date()}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label>{t("debtors.paymentAmount")}</Label>
+                <PriceInput
+                  value={paymentAmount}
+                  onChange={setPaymentAmount}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <Label>{t("debtors.note")}</Label>
+                <Input
+                  value={paymentNote}
+                  onChange={(e) => setPaymentNote(e.target.value)}
+                  placeholder={t("debtors.notePlaceholder")}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button onClick={handleAddPayment} disabled={!paymentAmount}>
+                  {t("common.save")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("debtors.paymentHistory")}</DialogTitle>
+          </DialogHeader>
+          {historyQarzdor && (
+            <div className="space-y-4">
+              <div className="bg-muted p-3 rounded-lg">
+                <p className="font-medium">{historyQarzdor.mijoz}</p>
+                <div className="flex justify-between text-sm">
+                  <span>{t("debtors.debtAmount")}: {formatPrice(historyQarzdor.qarzSummasi)} {t("common.currency")}</span>
+                  <span className="font-bold text-destructive">{t("debtors.remainingAmount")}: {formatPrice(historyQarzdor.qoldiqSumma)} {t("common.currency")}</span>
+                </div>
+              </div>
+              
+              {loadingHistory ? (
+                <div className="text-center py-4 text-muted-foreground">{t("common.loading")}</div>
+              ) : paymentHistory.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">{t("debtors.noPayments")}</div>
+              ) : (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {paymentHistory.map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-green-600">+{formatPrice(payment.summa)} {t("common.currency")}</p>
+                        <p className="text-sm text-muted-foreground">{formatDisplayDate(payment.sana)}</p>
+                        {payment.izoh && <p className="text-sm">{payment.izoh}</p>}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeletePayment(payment.id)}
+                        className="hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <EditDialog
         open={!!editingItem}
