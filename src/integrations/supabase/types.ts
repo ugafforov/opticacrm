@@ -253,13 +253,54 @@ export type Database = {
         }
         Relationships: []
       }
-      qarzdorlar: {
+      qarz_tolovlari: {
         Row: {
           created_at: string
           id: string
           izoh: string | null
+          qarzdor_id: string
+          sana: string
+          summa: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          izoh?: string | null
+          qarzdor_id: string
+          sana: string
+          summa?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          izoh?: string | null
+          qarzdor_id?: string
+          sana?: string
+          summa?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qarz_tolovlari_qarzdor_id_fkey"
+            columns: ["qarzdor_id"]
+            isOneToOne: false
+            referencedRelation: "qarzdorlar"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      qarzdorlar: {
+        Row: {
+          created_at: string
+          holat: string
+          id: string
+          izoh: string | null
           mijoz: string
+          oxirgi_aloqa: string | null
           qarz_summasi: number
+          qoldiq_summa: number
           sana: string
           tartib_raqam: number
           telefon: string | null
@@ -268,10 +309,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          holat?: string
           id?: string
           izoh?: string | null
           mijoz: string
+          oxirgi_aloqa?: string | null
           qarz_summasi?: number
+          qoldiq_summa?: number
           sana: string
           tartib_raqam?: number
           telefon?: string | null
@@ -280,10 +324,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          holat?: string
           id?: string
           izoh?: string | null
           mijoz?: string
+          oxirgi_aloqa?: string | null
           qarz_summasi?: number
+          qoldiq_summa?: number
           sana?: string
           tartib_raqam?: number
           telefon?: string | null
