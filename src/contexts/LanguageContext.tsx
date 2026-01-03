@@ -197,6 +197,24 @@ const translations = {
     "expenses.deleteSuccess": "Ўчирилди",
     "expenses.empty": "Ҳозирча харажатлар йўқ",
     "expenses.totalExpenses": "Жами харажат",
+
+    // Debtors
+    "nav.debtors": "Қарздорлар",
+    "debtors.title": "Қарздорлар",
+    "debtors.subtitle": "Қарздор мижозларни бошқариш",
+    "debtors.list": "Қарздорлар рўйхати",
+    "debtors.debtorName": "Ф.И.О",
+    "debtors.debtorNamePlaceholder": "Исм фамилияни киритинг",
+    "debtors.debtorPhone": "Телефон",
+    "debtors.debtorPhonePlaceholder": "Телефон рақамини киритинг",
+    "debtors.debtAmount": "Қарз суммаси",
+    "debtors.note": "Изоҳ",
+    "debtors.notePlaceholder": "Изоҳ киритинг...",
+    "debtors.totalDebt": "Жами қарз",
+    "debtors.addSuccess": "Қарздор қўшилди!",
+    "debtors.deleteSuccess": "Ўчирилди",
+    "debtors.empty": "Ҳозирча қарздорлар йўқ",
+    "trash.debtors": "Қарздор",
     
     // Common
     "common.sum": "сўм",
@@ -604,6 +622,24 @@ const translations = {
     "expenses.deleteSuccess": "O'chirildi",
     "expenses.empty": "Hozircha xarajatlar yo'q",
     "expenses.totalExpenses": "Jami xarajat",
+
+    // Debtors
+    "nav.debtors": "Qarzdorlar",
+    "debtors.title": "Qarzdorlar",
+    "debtors.subtitle": "Qarzdor mijozlarni boshqarish",
+    "debtors.list": "Qarzdorlar ro'yxati",
+    "debtors.debtorName": "F.I.O",
+    "debtors.debtorNamePlaceholder": "Ism familiyani kiriting",
+    "debtors.debtorPhone": "Telefon",
+    "debtors.debtorPhonePlaceholder": "Telefon raqamini kiriting",
+    "debtors.debtAmount": "Qarz summasi",
+    "debtors.note": "Izoh",
+    "debtors.notePlaceholder": "Izoh kiriting...",
+    "debtors.totalDebt": "Jami qarz",
+    "debtors.addSuccess": "Qarzdor qo'shildi!",
+    "debtors.deleteSuccess": "O'chirildi",
+    "debtors.empty": "Hozircha qarzdorlar yo'q",
+    "trash.debtors": "Qarzdor",
     
     // Common
     "common.sum": "so'm",

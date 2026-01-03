@@ -253,6 +253,45 @@ export type Database = {
         }
         Relationships: []
       }
+      qarzdorlar: {
+        Row: {
+          created_at: string
+          id: string
+          izoh: string | null
+          mijoz: string
+          qarz_summasi: number
+          sana: string
+          tartib_raqam: number
+          telefon: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          izoh?: string | null
+          mijoz: string
+          qarz_summasi?: number
+          sana: string
+          tartib_raqam?: number
+          telefon?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          izoh?: string | null
+          mijoz?: string
+          qarz_summasi?: number
+          sana?: string
+          tartib_raqam?: number
+          telefon?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tayyor_kozoynaklar: {
         Row: {
           created_at: string

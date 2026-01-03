@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, WifiOff, Wallet } from "lucide-react";
+import { Glasses, ShoppingCart, ClipboardList, Contact, Eye, BarChart3, Trash2, Users, WifiOff, Wallet, UserX } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -23,6 +23,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { to: "/linza-sotuvi", label: t("nav.lensSales"), icon: ClipboardList },
     { to: "/linza-royxati", label: t("nav.lensLists"), icon: Contact },
     { to: "/xarajatlar", label: t("nav.expenses"), icon: Wallet },
+    { to: "/qarzdorlar", label: t("nav.debtors"), icon: UserX },
     { to: "/hisobotlar", label: t("nav.reports"), icon: BarChart3 },
     { to: "/chiqindilar", label: t("nav.trash"), icon: Trash2 },
   ];
