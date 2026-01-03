@@ -17,6 +17,7 @@ const TayyorKozoynaklar = lazy(() => import("./pages/TayyorKozoynaklar"));
 const LinzaSotuvi = lazy(() => import("./pages/LinzaSotuvi"));
 const Hisobotlar = lazy(() => import("./pages/Hisobotlar"));
 const Xarajatlar = lazy(() => import("./pages/Xarajatlar"));
+const Qarzdorlar = lazy(() => import("./pages/Qarzdorlar"));
 const Chiqindilar = lazy(() => import("./pages/Chiqindilar"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -32,6 +33,7 @@ const preloadPages = () => {
   import("./pages/LinzaSotuvi");
   import("./pages/Hisobotlar");
   import("./pages/Xarajatlar");
+  import("./pages/Qarzdorlar");
   import("./pages/Chiqindilar");
   import("./pages/AdminUsers");
   import("./pages/Profile");
@@ -80,6 +82,7 @@ const AppRoutes = () => {
       <Route path="/linza-sotuvi" element={<ProtectedRoute><Layout><SuspensePage><LinzaSotuvi /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/hisobotlar" element={<ProtectedRoute><Layout><SuspensePage><Hisobotlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/xarajatlar" element={<ProtectedRoute><Layout><SuspensePage><Xarajatlar /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/qarzdorlar" element={<ProtectedRoute><Layout><SuspensePage><Qarzdorlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
