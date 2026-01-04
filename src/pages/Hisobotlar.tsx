@@ -446,9 +446,9 @@ const Hisobotlar = () => {
 
       setReportData(groupedData);
 
-      // Calculate debtor statistics
-      const currentQarzdorlar = qarzdorlar.filter((q: any) => !startDate && !endDate ? true : isDateInRange(q.sana));
-      const currentTolovlar = tolovlar.filter((t: any) => !startDate && !endDate ? true : isDateInRange(t.sana));
+      // Calculate debtor statistics - independent of date filter (all debtors)
+      const currentQarzdorlar = qarzdorlar;
+      const currentTolovlar = tolovlar;
 
       const totalDebtAmount = currentQarzdorlar.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0);
       const totalCollectedAmount = currentTolovlar.reduce((sum: number, t: any) => sum + (t.summa || 0), 0);
