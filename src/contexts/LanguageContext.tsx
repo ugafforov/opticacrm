@@ -251,6 +251,15 @@ const translations = {
     "debtors.contactedAt": "Боғланилган",
     "debtors.filterByAge": "Муддат бўйича",
     "debtors.allAges": "Барча муддатлар",
+    "debtors.overdueDebt": "Муддати ўтган қарз",
+    "debtors.overdueDebtors": "Муддати ўтган",
+    "debtors.debtorsCount": "Қарздорлар сони",
+    "debtors.overdue30Days": "30 кундан ошган",
+    "debtors.quickFilters": "Тезкор филтрлар",
+    "debtors.sortBy": "Саралаш",
+    "debtors.sortByAmount": "Қарз суммаси бўйича",
+    "debtors.sortByDate": "Сана бўйича",
+    "debtors.sortByName": "Исм бўйича",
     "trash.debtors": "Қарздор",
     
     // Common
@@ -713,6 +722,15 @@ const translations = {
     "debtors.contactedAt": "Bog'lanilgan",
     "debtors.filterByAge": "Muddat bo'yicha",
     "debtors.allAges": "Barcha muddatlar",
+    "debtors.overdueDebt": "Muddati o'tgan qarz",
+    "debtors.overdueDebtors": "Muddati o'tgan",
+    "debtors.debtorsCount": "Qarzdorlar soni",
+    "debtors.overdue30Days": "30 kundan oshgan",
+    "debtors.quickFilters": "Tezkor filtrlar",
+    "debtors.sortBy": "Saralash",
+    "debtors.sortByAmount": "Qarz summasi bo'yicha",
+    "debtors.sortByDate": "Sana bo'yicha",
+    "debtors.sortByName": "Ism bo'yicha",
     "trash.debtors": "Qarzdor",
     
     // Common

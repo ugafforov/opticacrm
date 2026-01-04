@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Users, Phone, PhoneCall, CreditCard, History, Check, Clock, AlertTriangle, AlertCircle } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Users, PhoneCall, CreditCard, History, Check, Clock, AlertTriangle, AlertCircle, TrendingUp, ArrowUpDown, Banknote } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -21,7 +21,6 @@ import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { useQarzdorlar, Qarzdor, QarzTolovi, DebtorStatus } from "@/hooks/useQarzdorlar";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { DateFilterSelect } from "@/components/DateFilterSelect";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -54,7 +53,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 
-type AgeFilter = "all" | "new" | "warning" | "danger" | "critical";
+type SortOption = "date" | "amount" | "name";
 
 const Qarzdorlar = () => {
   const { t, script } = useLanguage();
@@ -75,9 +74,9 @@ const Qarzdorlar = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [dateFilter, setDateFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<DebtorStatus>("all");
-  const [ageFilter, setAgeFilter] = useState<AgeFilter>("all");
+  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
+  const [sortOption, setSortOption] = useState<SortOption>("date");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   
@@ -103,6 +102,30 @@ const Qarzdorlar = () => {
   const [historyQarzdor, setHistoryQarzdor] = useState<Qarzdor | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<QarzTolovi[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Calculate KPI stats
+  const kpiStats = useMemo(() => {
+    const totalDebt = qarzdorlar.reduce((sum, x) => sum + x.qoldiqSumma, 0);
+    const today = new Date();
+    
+    const overdueDebt = qarzdorlar
+      .filter(x => {
+        if (x.holat === "tollangan") return false;
+        const debtDate = new Date(x.sana.split('-').reverse().join('-'));
+        return differenceInDays(today, debtDate) > 30;
+      })
+      .reduce((sum, x) => sum + x.qoldiqSumma, 0);
+    
+    const overdueCount = qarzdorlar.filter(x => {
+      if (x.holat === "tollangan") return false;
+      const debtDate = new Date(x.sana.split('-').reverse().join('-'));
+      return differenceInDays(today, debtDate) > 30;
+    }).length;
+
+    const totalCount = qarzdorlar.filter(x => x.holat !== "tollangan").length;
+
+    return { totalDebt, overdueDebt, overdueCount, totalCount };
+  }, [qarzdorlar]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,108 +220,96 @@ const Qarzdorlar = () => {
     await markContacted(id);
   };
 
-  // Get status badge
+  // Get status badge - simplified with clear colors
   const getStatusBadge = (holat: Qarzdor["holat"]) => {
     switch (holat) {
       case "tollangan":
-        return <Badge className="bg-green-500 hover:bg-green-600"><Check className="w-3 h-3 mr-1" />{t("debtors.statusPaid")}</Badge>;
+        return <Badge className="bg-green-500 hover:bg-green-600 text-white"><Check className="w-3 h-3 mr-1" />{t("debtors.statusPaid")}</Badge>;
       case "qisman":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600"><Clock className="w-3 h-3 mr-1" />{t("debtors.statusPartial")}</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white"><Clock className="w-3 h-3 mr-1" />{t("debtors.statusPartial")}</Badge>;
       default:
-        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />{t("debtors.statusUnpaid")}</Badge>;
+        return <Badge className="bg-red-500 hover:bg-red-600 text-white"><AlertCircle className="w-3 h-3 mr-1" />{t("debtors.statusUnpaid")}</Badge>;
     }
   };
 
-  // Get age badge with color
-  const getAgeBadge = (sana: string, holat: Qarzdor["holat"]) => {
+  // Get row background color based on age - PDF spec: 30+ kun = qizil background
+  const getRowClassName = (qarzdor: Qarzdor) => {
+    if (qarzdor.holat === "tollangan") return "bg-green-50 dark:bg-green-950/30";
+    
+    const today = new Date();
+    const debtDate = new Date(qarzdor.sana.split('-').reverse().join('-'));
+    const daysDiff = differenceInDays(today, debtDate);
+    
+    if (daysDiff > 30) return "bg-red-100 dark:bg-red-950/40 border-l-4 border-l-red-500";
+    if (daysDiff > 15) return "bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-l-yellow-500";
+    return "";
+  };
+
+  // Get debt age indicator text
+  const getAgeIndicator = (sana: string, holat: Qarzdor["holat"]) => {
     if (holat === "tollangan") return null;
     
-    const age = getDebtAgeCategory(sana);
-    switch (age) {
-      case "new":
-        return <Badge variant="outline" className="border-green-500 text-green-600"><Clock className="w-3 h-3 mr-1" />{t("debtors.ageNew")}</Badge>;
-      case "warning":
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-600"><AlertTriangle className="w-3 h-3 mr-1" />{t("debtors.ageWarning")}</Badge>;
-      case "danger":
-        return <Badge variant="outline" className="border-orange-500 text-orange-600"><AlertTriangle className="w-3 h-3 mr-1" />{t("debtors.ageDanger")}</Badge>;
-      case "critical":
-        return <Badge variant="outline" className="border-red-500 text-red-600"><AlertCircle className="w-3 h-3 mr-1" />{t("debtors.ageCritical")}</Badge>;
-    }
-  };
-
-  // Get row background color based on age
-  const getRowClassName = (qarzdor: Qarzdor) => {
-    if (qarzdor.holat === "tollangan") return "bg-green-50 dark:bg-green-950/20";
-    
-    const age = getDebtAgeCategory(qarzdor.sana);
-    switch (age) {
-      case "new": return "";
-      case "warning": return "bg-yellow-50 dark:bg-yellow-950/20";
-      case "danger": return "bg-orange-50 dark:bg-orange-950/20";
-      case "critical": return "bg-red-50 dark:bg-red-950/20";
-    }
-  };
-
-  const filteredQarzdorlar = qarzdorlar.filter((x) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = (
-      x.mijoz.toLowerCase().includes(query) ||
-      x.telefon.toLowerCase().includes(query) ||
-      x.izoh.toLowerCase().includes(query) ||
-      x.sana.includes(query)
-    );
-
-    if (!matchesSearch) return false;
-
-    // Status filter
-    if (statusFilter !== "all" && x.holat !== statusFilter) return false;
-
-    // Age filter
-    if (ageFilter !== "all") {
-      const age = getDebtAgeCategory(x.sana);
-      if (age !== ageFilter) return false;
-    }
-
-    if (dateFilter === "all") return true;
-
-    const itemDate = new Date(x.sana.split('-').reverse().join('-'));
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    switch (dateFilter) {
-      case "today":
-        return itemDate.toDateString() === today.toDateString();
-      case "yesterday":
-        const yesterday = subDays(today, 1);
-        return itemDate.toDateString() === yesterday.toDateString();
-      case "thisWeek":
-        const weekStart = startOfWeek(today, { weekStartsOn: 1 });
-        const weekEnd = endOfWeek(today, { weekStartsOn: 1 });
-        return itemDate >= weekStart && itemDate <= weekEnd;
-      case "lastWeek":
-        const lastWeekStart = startOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
-        const lastWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 });
-        return itemDate >= lastWeekStart && itemDate <= lastWeekEnd;
-      case "thisMonth":
-        const monthStart = startOfMonth(today);
-        const monthEnd = endOfMonth(today);
-        return itemDate >= monthStart && itemDate <= monthEnd;
-      case "lastMonth":
-        const lastMonthStart = startOfMonth(subMonths(today, 1));
-        const lastMonthEnd = endOfMonth(subMonths(today, 1));
-        return itemDate >= lastMonthStart && itemDate <= lastMonthEnd;
-      default:
-        return true;
+    const debtDate = new Date(sana.split('-').reverse().join('-'));
+    const daysDiff = differenceInDays(today, debtDate);
+    
+    if (daysDiff > 30) {
+      return <span className="text-xs font-medium text-red-600 dark:text-red-400">{daysDiff} {script === 'cyrillic' ? 'кун' : 'kun'}</span>;
     }
-  });
+    if (daysDiff > 15) {
+      return <span className="text-xs font-medium text-yellow-600 dark:text-yellow-400">{daysDiff} {script === 'cyrillic' ? 'кун' : 'kun'}</span>;
+    }
+    return <span className="text-xs text-muted-foreground">{daysDiff} {script === 'cyrillic' ? 'кун' : 'kun'}</span>;
+  };
+
+  // Filtered and sorted data
+  const filteredQarzdorlar = useMemo(() => {
+    let result = qarzdorlar.filter((x) => {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        x.mijoz.toLowerCase().includes(query) ||
+        x.telefon.toLowerCase().includes(query) ||
+        x.izoh.toLowerCase().includes(query)
+      );
+
+      if (!matchesSearch) return false;
+
+      // Status filter
+      if (statusFilter !== "all" && x.holat !== statusFilter) return false;
+
+      // Overdue filter (30+ days)
+      if (showOverdueOnly) {
+        if (x.holat === "tollangan") return false;
+        const today = new Date();
+        const debtDate = new Date(x.sana.split('-').reverse().join('-'));
+        if (differenceInDays(today, debtDate) <= 30) return false;
+      }
+
+      return true;
+    });
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case "amount":
+          return b.qoldiqSumma - a.qoldiqSumma;
+        case "name":
+          return a.mijoz.localeCompare(b.mijoz);
+        case "date":
+        default:
+          const dateA = new Date(a.sana.split('-').reverse().join('-'));
+          const dateB = new Date(b.sana.split('-').reverse().join('-'));
+          return dateB.getTime() - dateA.getTime();
+      }
+    });
+
+    return result;
+  }, [qarzdorlar, searchQuery, statusFilter, showOverdueOnly, sortOption]);
 
   const totalPages = Math.ceil(filteredQarzdorlar.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentQarzdorlar = filteredQarzdorlar.slice(startIndex, endIndex);
-
-  const totalDebt = filteredQarzdorlar.reduce((sum, x) => sum + x.qarzSummasi, 0);
-  const totalRemaining = filteredQarzdorlar.reduce((sum, x) => sum + x.qoldiqSumma, 0);
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('uz-UZ');
@@ -310,8 +321,7 @@ const Qarzdorlar = () => {
     const metadata = [
       { [t("export.info")]: t("export.exportedBy"), [t("export.value")]: user?.email || t("export.unknown") },
       { [t("export.info")]: t("export.dateTime"), [t("export.value")]: dateTime },
-      { [t("export.info")]: t("debtors.totalDebt"), [t("export.value")]: `${totalDebt.toLocaleString()} ${t("common.sum")}` },
-      { [t("export.info")]: t("debtors.totalRemaining"), [t("export.value")]: `${totalRemaining.toLocaleString()} ${t("common.sum")}` },
+      { [t("export.info")]: t("debtors.totalRemaining"), [t("export.value")]: `${kpiStats.totalDebt.toLocaleString()} ${t("common.sum")}` },
     ];
     
     const data = filteredQarzdorlar.map((x) => ({
@@ -344,7 +354,7 @@ const Qarzdorlar = () => {
         doc,
         t("debtors.list"),
         user?.email,
-        `${t("debtors.totalRemaining")}: ${totalRemaining.toLocaleString()} ${t("common.sum")}`,
+        `${t("debtors.totalRemaining")}: ${kpiStats.totalDebt.toLocaleString()} ${t("common.sum")}`,
         t("common.exportedBy"),
         t("common.dateAndTime")
       );
@@ -457,6 +467,7 @@ const Qarzdorlar = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Users className="w-6 h-6" />
@@ -465,6 +476,52 @@ const Qarzdorlar = () => {
         <p className="text-muted-foreground">{t("debtors.subtitle")}</p>
       </div>
 
+      {/* KPI Cards - PDF Spec requirement */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Total Debt Card */}
+        <Card className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-primary/20 rounded-lg">
+              <Banknote className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("debtors.totalRemaining")}</p>
+              <p className="text-2xl font-bold text-primary">{formatPrice(kpiStats.totalDebt)}</p>
+              <p className="text-xs text-muted-foreground">{t("common.currency")}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Overdue Debt Card */}
+        <Card className="p-4 bg-gradient-to-br from-red-500/10 to-red-500/5 border-red-500/20">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-red-500/20 rounded-lg">
+              <AlertTriangle className="w-6 h-6 text-red-500" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("debtors.overdueDebt")}</p>
+              <p className="text-2xl font-bold text-red-500">{formatPrice(kpiStats.overdueDebt)}</p>
+              <p className="text-xs text-muted-foreground">{t("debtors.overdue30Days")}</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Debtors Count Card */}
+        <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-500/20 rounded-lg">
+              <Users className="w-6 h-6 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("debtors.debtorsCount")}</p>
+              <p className="text-2xl font-bold text-blue-500">{kpiStats.totalCount}</p>
+              <p className="text-xs text-red-500">{kpiStats.overdueCount} {t("debtors.overdueDebtors")}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Add Form */}
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -538,85 +595,94 @@ const Qarzdorlar = () => {
         </form>
       </Card>
 
+      {/* Main Table Section */}
       <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <h3 className="text-lg font-semibold">{t("debtors.list")}</h3>
-              <div className="flex gap-2 flex-wrap">
-                <div className="text-sm font-bold text-destructive">
-                  {t("debtors.totalRemaining")}: {formatPrice(totalRemaining)} {t("common.currency")}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2">
-                <Download className="w-4 h-4" />
-                Excel
-              </Button>
-              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
-                <Download className="w-4 h-4" />
-                PDF
-              </Button>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
-                <Printer className="w-4 h-4" />
-                Print
-              </Button>
-            </div>
-          </div>
-
-          {/* Status tabs */}
-          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as DebtorStatus)} className="w-full">
-            <TabsList className="w-full grid grid-cols-4">
-              <TabsTrigger value="all">{t("debtors.statusAll")}</TabsTrigger>
-              <TabsTrigger value="tollanmagan">{t("debtors.statusUnpaid")}</TabsTrigger>
-              <TabsTrigger value="qisman">{t("debtors.statusPartial")}</TabsTrigger>
-              <TabsTrigger value="tollangan">{t("debtors.statusPaid")}</TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Filters row */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <DateFilterSelect value={dateFilter} onValueChange={setDateFilter} />
-            
-            <Select value={ageFilter} onValueChange={(v) => setAgeFilter(v as AgeFilter)}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder={t("debtors.filterByAge")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("debtors.allAges")}</SelectItem>
-                <SelectItem value="new">{t("debtors.ageNew")}</SelectItem>
-                <SelectItem value="warning">{t("debtors.ageWarning")}</SelectItem>
-                <SelectItem value="danger">{t("debtors.ageDanger")}</SelectItem>
-                <SelectItem value="critical">{t("debtors.ageCritical")}</SelectItem>
-              </SelectContent>
-            </Select>
-            
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
-              <Input
-                placeholder={t("orders.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
-                >
-                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </Button>
-              )}
-            </div>
+        {/* Header with title and export buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <h3 className="text-lg font-semibold">{t("debtors.list")}</h3>
+          
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={exportToExcel} className="gap-2">
+              <Download className="w-4 h-4" />
+              Excel
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
+              <Download className="w-4 h-4" />
+              PDF
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+              <Printer className="w-4 h-4" />
+              Print
+            </Button>
           </div>
         </div>
 
+        {/* Status tabs */}
+        <Tabs value={statusFilter} onValueChange={(v) => { setStatusFilter(v as DebtorStatus); setCurrentPage(1); }} className="w-full mb-4">
+          <TabsList className="w-full grid grid-cols-4">
+            <TabsTrigger value="all">{t("debtors.statusAll")}</TabsTrigger>
+            <TabsTrigger value="tollanmagan">{t("debtors.statusUnpaid")}</TabsTrigger>
+            <TabsTrigger value="qisman">{t("debtors.statusPartial")}</TabsTrigger>
+            <TabsTrigger value="tollangan">{t("debtors.statusPaid")}</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* Search, Quick Filters, and Sort - PDF Spec */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center mb-4">
+          {/* Search */}
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none z-10" />
+            <Input
+              placeholder={t("orders.search")}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              className="pl-10 pr-10"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+              >
+                <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+              </Button>
+            )}
+          </div>
+
+          {/* Quick Filter - Overdue 30+ days */}
+          <Button
+            variant={showOverdueOnly ? "destructive" : "outline"}
+            size="sm"
+            onClick={() => { setShowOverdueOnly(!showOverdueOnly); setCurrentPage(1); }}
+            className="gap-2 whitespace-nowrap"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            {t("debtors.overdue30Days")}
+          </Button>
+
+          {/* Sort dropdown */}
+          <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <ArrowUpDown className="w-4 h-4 mr-2" />
+              <SelectValue placeholder={t("debtors.sortBy")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">{t("debtors.sortByDate")}</SelectItem>
+              <SelectItem value="amount">{t("debtors.sortByAmount")}</SelectItem>
+              <SelectItem value="name">{t("debtors.sortByName")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground mb-4">
+          {filteredQarzdorlar.length} {script === 'cyrillic' ? 'та топилди' : 'ta topildi'}
+        </div>
+
         {isMobile ? (
-          <div className="space-y-4">
+          // Mobile card view
+          <div className="space-y-3">
             {loading ? (
               <div className="text-center py-8 text-muted-foreground">
                 {t("common.loading")}
@@ -630,53 +696,28 @@ const Qarzdorlar = () => {
                 <div key={x.id} className={`border border-border rounded-lg p-4 space-y-3 ${getRowClassName(x)}`}>
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <div className="text-sm text-muted-foreground cursor-help">
-                              {formatDisplayDate(x.sana)}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <div className="font-semibold text-lg">{x.mijoz}</div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        {formatDisplayDate(x.sana)}
+                        {getAgeIndicator(x.sana, x.holat)}
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-1 items-end">
-                      {getStatusBadge(x.holat)}
-                      {getAgeBadge(x.sana, x.holat)}
-                    </div>
+                    {getStatusBadge(x.holat)}
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">{t("debtors.debtorName")}:</span>
-                      <div className="font-medium">{x.mijoz}</div>
-                    </div>
                     <div>
                       <span className="text-muted-foreground">{t("debtors.debtorPhone")}:</span>
                       <div className="font-medium">{x.telefon || "-"}</div>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">{t("debtors.debtAmount")}:</span>
-                      <div className="font-medium">{formatPrice(x.qarzSummasi)} {t("common.currency")}</div>
-                    </div>
-                    <div>
                       <span className="text-muted-foreground">{t("debtors.remainingAmount")}:</span>
-                      <div className="font-bold text-destructive">{formatPrice(x.qoldiqSumma)} {t("common.currency")}</div>
+                      <div className="font-bold text-lg text-destructive">{formatPrice(x.qoldiqSumma)} {t("common.currency")}</div>
                     </div>
                     {x.oxirgiAloqa && (
                       <div className="col-span-2">
                         <span className="text-muted-foreground">{t("debtors.lastContact")}:</span>
                         <div className="font-medium text-green-600">{formatDisplayDate(x.oxirgiAloqa.split('T')[0])}</div>
-                      </div>
-                    )}
-                    {x.izoh && (
-                      <div className="col-span-2">
-                        <span className="text-muted-foreground">{t("debtors.note")}:</span>
-                        <div className="font-medium">{x.izoh}</div>
                       </div>
                     )}
                   </div>
@@ -700,7 +741,6 @@ const Qarzdorlar = () => {
                       className="gap-1"
                     >
                       <History className="w-4 h-4" />
-                      {t("debtors.paymentHistory")}
                     </Button>
                     <Button
                       variant={x.oxirgiAloqa ? "outline" : "secondary"}
@@ -709,13 +749,11 @@ const Qarzdorlar = () => {
                       className="gap-1"
                     >
                       <PhoneCall className="w-4 h-4" />
-                      {t("debtors.markContacted")}
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(x)}
-                      className="hover:bg-primary/10 hover:text-primary"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -723,7 +761,7 @@ const Qarzdorlar = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setDeleteId(x.id)}
-                      className="hover:bg-destructive/10 hover:text-destructive"
+                      className="text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -733,32 +771,31 @@ const Qarzdorlar = () => {
             )}
           </div>
         ) : (
+          // Desktop table view
           <div className="overflow-x-auto">
             <Table id="printable-table">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[60px]">{t("orders.number")}</TableHead>
+                  <TableHead className="w-[50px]">{t("orders.number")}</TableHead>
                   <TableHead>{t("common.date")}</TableHead>
                   <TableHead>{t("debtors.debtorName")}</TableHead>
                   <TableHead>{t("debtors.debtorPhone")}</TableHead>
-                  <TableHead className="text-right">{t("debtors.debtAmount")}</TableHead>
                   <TableHead className="text-right">{t("debtors.remainingAmount")}</TableHead>
                   <TableHead>{t("debtors.status")}</TableHead>
                   <TableHead>{t("debtors.lastContact")}</TableHead>
-                  <TableHead>{t("debtors.note")}</TableHead>
-                  <TableHead className="w-[200px]">{t("common.actions")}</TableHead>
+                  <TableHead className="w-[180px]">{t("common.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       {t("common.loading")}
                     </TableCell>
                   </TableRow>
                 ) : currentQarzdorlar.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       {searchQuery ? t("lens.noResults") : t("debtors.empty")}
                     </TableCell>
                   </TableRow>
@@ -767,26 +804,14 @@ const Qarzdorlar = () => {
                     <TableRow key={x.id} className={getRowClassName(x)}>
                       <TableCell className="font-medium">{startIndex + index + 1}</TableCell>
                       <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="cursor-help">{formatDisplayDate(x.sana)}</span>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{formatUzbekistanDateTime(new Date(x.createdAt))}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                          {getAgeBadge(x.sana, x.holat)}
+                        <div className="flex flex-col">
+                          <span>{formatDisplayDate(x.sana)}</span>
+                          {getAgeIndicator(x.sana, x.holat)}
                         </div>
                       </TableCell>
-                      <TableCell>{x.mijoz}</TableCell>
+                      <TableCell className="font-medium">{x.mijoz}</TableCell>
                       <TableCell>{x.telefon || "-"}</TableCell>
-                      <TableCell className="text-right">
-                        {formatPrice(x.qarzSummasi)} {t("common.currency")}
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-destructive">
+                      <TableCell className="text-right font-bold text-lg text-destructive">
                         {formatPrice(x.qoldiqSumma)} {t("common.currency")}
                       </TableCell>
                       <TableCell>{getStatusBadge(x.holat)}</TableCell>
@@ -799,7 +824,6 @@ const Qarzdorlar = () => {
                           <span className="text-muted-foreground text-sm">{t("debtors.notContacted")}</span>
                         )}
                       </TableCell>
-                      <TableCell>{x.izoh || "-"}</TableCell>
                       <TableCell>
                         <div className="flex gap-1">
                           <TooltipProvider>
@@ -881,6 +905,7 @@ const Qarzdorlar = () => {
           </div>
         )}
 
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-4 flex justify-center">
             <Pagination>
@@ -1040,6 +1065,7 @@ const Qarzdorlar = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Dialog */}
       <EditDialog
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
@@ -1088,6 +1114,7 @@ const Qarzdorlar = () => {
         )}
       </EditDialog>
 
+      {/* Delete Confirm Dialog */}
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
