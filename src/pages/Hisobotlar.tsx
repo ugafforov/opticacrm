@@ -46,6 +46,19 @@ interface CustomTooltipProps {
   showComparison?: boolean;
 }
 
+interface DebtorStatusData {
+  name: string;
+  count: number;
+  total: number;
+  color: string;
+}
+
+interface PaymentTrendData {
+  name: string;
+  qarz: number;
+  tolov: number;
+}
+
 const Hisobotlar = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
@@ -60,7 +73,20 @@ const Hisobotlar = () => {
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
   const [exportFormat, setExportFormat] = useState<"excel" | "pdf">("excel");
-  const [activeTab, setActiveTab] = useState<"income" | "expense" | "compare">("income");
+  const [activeTab, setActiveTab] = useState<"income" | "expense" | "compare" | "debtors">("income");
+  
+  // Debtor statistics state
+  const [debtorStats, setDebtorStats] = useState({
+    totalDebt: 0,
+    totalCollected: 0,
+    remainingDebt: 0,
+    totalDebtors: 0,
+    paidCount: 0,
+    partialCount: 0,
+    unpaidCount: 0,
+  });
+  const [debtorStatusData, setDebtorStatusData] = useState<DebtorStatusData[]>([]);
+  const [paymentTrendData, setPaymentTrendData] = useState<PaymentTrendData[]>([]);
 
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -208,13 +234,15 @@ const Hisobotlar = () => {
     try {
       setLoading(true);
 
-      // Load all data from Supabase including expenses
-      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes, xarajatlarRes] = await Promise.all([
+      // Load all data from Supabase including expenses and debtors
+      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes, xarajatlarRes, qarzdorlarRes, tolovlarRes] = await Promise.all([
         supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
         supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
         supabase.from("tayyor_kozoynaklar").select("*").eq("user_id", user.id),
         supabase.from("linza_sotuvlari").select("*").eq("user_id", user.id),
         supabase.from("xarajatlar").select("*").eq("user_id", user.id),
+        supabase.from("qarzdorlar").select("*").eq("user_id", user.id),
+        supabase.from("qarz_tolovlari").select("*").eq("user_id", user.id),
       ]);
 
       if (buyurtmalarRes.error) throw buyurtmalarRes.error;
@@ -222,12 +250,16 @@ const Hisobotlar = () => {
       if (tayyorKozoynakRes.error) throw tayyorKozoynakRes.error;
       if (linzaSotuvRes.error) throw linzaSotuvRes.error;
       if (xarajatlarRes.error) throw xarajatlarRes.error;
+      if (qarzdorlarRes.error) throw qarzdorlarRes.error;
+      if (tolovlarRes.error) throw tolovlarRes.error;
 
       const buyurtmalar = buyurtmalarRes.data || [];
       const tekshiruvlar = tekshiruvlarRes.data || [];
       const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
       const linzaSotuvlari = linzaSotuvRes.data || [];
       const xarajatlar = xarajatlarRes.data || [];
+      const qarzdorlar = qarzdorlarRes.data || [];
+      const tolovlar = tolovlarRes.data || [];
 
       // Calculate current period totals
       const currentBuyurtmalar = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
@@ -413,6 +445,118 @@ const Hisobotlar = () => {
       }
 
       setReportData(groupedData);
+
+      // Calculate debtor statistics
+      const currentQarzdorlar = qarzdorlar.filter((q: any) => !startDate && !endDate ? true : isDateInRange(q.sana));
+      const currentTolovlar = tolovlar.filter((t: any) => !startDate && !endDate ? true : isDateInRange(t.sana));
+
+      const totalDebtAmount = currentQarzdorlar.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0);
+      const totalCollectedAmount = currentTolovlar.reduce((sum: number, t: any) => sum + (t.summa || 0), 0);
+      const remainingDebtAmount = currentQarzdorlar.reduce((sum: number, q: any) => sum + (q.qoldiq_summa || 0), 0);
+
+      const paidDebtors = currentQarzdorlar.filter((q: any) => q.holat === 'tollangan');
+      const partialDebtors = currentQarzdorlar.filter((q: any) => q.holat === 'qisman');
+      const unpaidDebtors = currentQarzdorlar.filter((q: any) => q.holat === 'tollanmagan');
+
+      setDebtorStats({
+        totalDebt: totalDebtAmount,
+        totalCollected: totalCollectedAmount,
+        remainingDebt: remainingDebtAmount,
+        totalDebtors: currentQarzdorlar.length,
+        paidCount: paidDebtors.length,
+        partialCount: partialDebtors.length,
+        unpaidCount: unpaidDebtors.length,
+      });
+
+      // Status distribution for pie chart
+      const statusColors = {
+        paid: "hsl(142, 76%, 36%)",
+        partial: "hsl(47, 100%, 50%)",
+        unpaid: "hsl(var(--destructive))",
+      };
+
+      const statusData: DebtorStatusData[] = [
+        {
+          name: t("reports.paidDebtors"),
+          count: paidDebtors.length,
+          total: paidDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          color: statusColors.paid,
+        },
+        {
+          name: t("reports.partialDebtors"),
+          count: partialDebtors.length,
+          total: partialDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          color: statusColors.partial,
+        },
+        {
+          name: t("reports.unpaidDebtors"),
+          count: unpaidDebtors.length,
+          total: unpaidDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          color: statusColors.unpaid,
+        },
+      ].filter(s => s.count > 0);
+
+      setDebtorStatusData(statusData);
+
+      // Payment trend data grouped by period
+      const groupedDebtByDate: { [key: string]: number } = {};
+      const groupedPaymentsByDate: { [key: string]: number } = {};
+
+      currentQarzdorlar.forEach((q: any) => {
+        const normalizedDate = normalizeDateString(q.sana);
+        let key = normalizedDate;
+        
+        if (period === "weekly") {
+          const dateParts = normalizedDate.split("-");
+          if (dateParts.length === 3) {
+            const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
+            key = `${dateParts[1]}-oy, ${weekNum}-hafta`;
+          }
+        } else if (period === "monthly") {
+          const dateParts = normalizedDate.split("-");
+          if (dateParts.length === 3) {
+            key = `${dateParts[1]}-${dateParts[2]}`;
+          }
+        }
+        groupedDebtByDate[key] = (groupedDebtByDate[key] || 0) + (q.qarz_summasi || 0);
+      });
+
+      currentTolovlar.forEach((t: any) => {
+        const normalizedDate = normalizeDateString(t.sana);
+        let key = normalizedDate;
+        
+        if (period === "weekly") {
+          const dateParts = normalizedDate.split("-");
+          if (dateParts.length === 3) {
+            const weekNum = Math.ceil(parseInt(dateParts[0]) / 7);
+            key = `${dateParts[1]}-oy, ${weekNum}-hafta`;
+          }
+        } else if (period === "monthly") {
+          const dateParts = normalizedDate.split("-");
+          if (dateParts.length === 3) {
+            key = `${dateParts[1]}-${dateParts[2]}`;
+          }
+        }
+        groupedPaymentsByDate[key] = (groupedPaymentsByDate[key] || 0) + (t.summa || 0);
+      });
+
+      const allDebtKeys = new Set([...Object.keys(groupedDebtByDate), ...Object.keys(groupedPaymentsByDate)]);
+      const trendData: PaymentTrendData[] = Array.from(allDebtKeys).map(name => ({
+        name,
+        qarz: groupedDebtByDate[name] || 0,
+        tolov: groupedPaymentsByDate[name] || 0,
+      })).sort((a, b) => {
+        const parseForSort = (dateStr: string) => {
+          const parts = dateStr.split("-");
+          if (parts.length === 3 && parts[2].length === 4) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+          }
+          return dateStr;
+        };
+        return parseForSort(a.name).localeCompare(parseForSort(b.name));
+      });
+
+      setPaymentTrendData(trendData);
     } catch (error: any) {
       toast.error(t("toast.loadError"));
     } finally {
@@ -1065,11 +1209,12 @@ const Hisobotlar = () => {
           </div>
 
           {/* Report Type Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "income" | "expense" | "compare")} className="mt-6">
-            <TabsList className="grid grid-cols-3 w-full md:w-auto">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "income" | "expense" | "compare" | "debtors")} className="mt-6">
+            <TabsList className="grid grid-cols-4 w-full md:w-auto">
               <TabsTrigger value="income">{t("reports.incomeTab")}</TabsTrigger>
               <TabsTrigger value="expense">{t("reports.expenseTab")}</TabsTrigger>
               <TabsTrigger value="compare">{t("reports.compareTab")}</TabsTrigger>
+              <TabsTrigger value="debtors">{t("reports.debtorsTab")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="income" className="space-y-4 mt-4">
@@ -1118,10 +1263,85 @@ const Hisobotlar = () => {
                 </ResponsiveContainer>
               </div>
             </TabsContent>
+
+            <TabsContent value="debtors" className="space-y-4 mt-4">
+              <div className="h-[400px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={paymentTrendData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+                    <Legend />
+                    <Bar dataKey="qarz" fill="hsl(var(--destructive))" name={t("reports.debt")} />
+                    <Bar dataKey="tolov" fill="hsl(142, 76%, 36%)" name={t("reports.payments")} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </TabsContent>
           </Tabs>
         </Tabs>
         </div>
       </Card>
+
+      {/* Debtor Statistics Section */}
+      {debtorStats.totalDebtors > 0 && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">{t("reports.debtorsSection")}</h3>
+          
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="bg-muted/50 border border-border rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.totalDebt")}</p>
+              <p className="text-xl font-bold text-foreground">{debtorStats.totalDebt.toLocaleString()} {t("common.currency")}</p>
+              <p className="text-xs text-muted-foreground mt-1">{debtorStats.totalDebtors} {t("reports.debtorsCount")}</p>
+            </div>
+            
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.totalCollected")}</p>
+              <p className="text-xl font-bold text-green-600">{debtorStats.totalCollected.toLocaleString()} {t("common.currency")}</p>
+            </div>
+            
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.remainingDebt")}</p>
+              <p className="text-xl font-bold text-destructive">{debtorStats.remainingDebt.toLocaleString()} {t("common.currency")}</p>
+            </div>
+            
+            <div className="bg-secondary rounded-lg p-4">
+              <p className="text-sm text-muted-foreground mb-1">{t("reports.debtByStatus")}</p>
+              <div className="flex gap-2 mt-2">
+                <span className="text-xs px-2 py-1 rounded bg-green-500/20 text-green-600">{debtorStats.paidCount} {t("reports.paidDebtors")}</span>
+                <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-600">{debtorStats.partialCount} {t("reports.partialDebtors")}</span>
+                <span className="text-xs px-2 py-1 rounded bg-destructive/20 text-destructive">{debtorStats.unpaidCount} {t("reports.unpaidDebtors")}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Pie Chart for Status Distribution */}
+          {debtorStatusData.length > 0 && (
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={debtorStatusData}
+                    dataKey="total"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={(entry) => `${entry.name}: ${entry.count}`}
+                  >
+                    {debtorStatusData.map((entry, index) => (
+                      <Cell key={`debtor-cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `${value.toLocaleString()} ${t("common.currency")}`} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      )}
 
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">{t("reports.bySection")}</h3>
