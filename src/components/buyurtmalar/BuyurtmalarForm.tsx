@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatPhoneNumber, formatPrice, formatOdOs } from "@/lib/utils";
@@ -14,6 +14,8 @@ import { SelectWithOther } from "@/components/SelectWithOther";
 
 interface BuyurtmalarFormProps {
   onSubmit: (data: BuyurtmaFormData, selectedDate: Date) => Promise<void>;
+  isSubmitting?: boolean;
+  isOnline?: boolean;
 }
 
 export interface BuyurtmaFormData {
@@ -27,7 +29,7 @@ export interface BuyurtmaFormData {
   opravaTuri: string;
 }
 
-export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
+export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = true }: BuyurtmalarFormProps) => {
   const { t, script } = useLanguage();
   const defaultClientName = script === 'cyrillic' ? "Мижоз" : "Mijoz";
   
@@ -213,8 +215,19 @@ export const BuyurtmalarForm = ({ onSubmit }: BuyurtmalarFormProps) => {
           <div className="text-lg font-semibold">
             {t("orders.totalAmount")}: {formatPrice(totalAmount)} {t("common.currency")}
           </div>
-          <Button type="submit" className="bg-primary hover:bg-primary/90">
-            {t("orders.add")}
+          <Button 
+            type="submit" 
+            className="bg-primary hover:bg-primary/90"
+            disabled={isSubmitting || !isOnline}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("common.loading")}
+              </>
+            ) : (
+              t("orders.add")
+            )}
           </Button>
         </div>
       </form>

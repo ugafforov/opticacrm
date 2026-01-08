@@ -23,7 +23,7 @@ import { cn, formatPhoneNumber, formatOdOs } from "@/lib/utils";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
-  const { buyurtmalar, loading, createBuyurtma, updateBuyurtma, deleteBuyurtma } = useBuyurtmalar();
+  const { buyurtmalar, loading, isSubmitting, isOnline, createBuyurtma, updateBuyurtma, deleteBuyurtma } = useBuyurtmalar();
   const [editingItem, setEditingItem] = useState<Buyurtma | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -80,7 +80,7 @@ const Buyurtmalar = () => {
         <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
 
-      <BuyurtmalarForm onSubmit={createBuyurtma} />
+      <BuyurtmalarForm onSubmit={createBuyurtma} isSubmitting={isSubmitting} isOnline={isOnline} />
 
       <BuyurtmalarTable
         buyurtmalar={paginatedItems}
