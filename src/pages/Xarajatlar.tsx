@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Wallet } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Wallet, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
@@ -23,6 +23,8 @@ import { useXarajatlar, Xarajat } from "@/hooks/useXarajatlar";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { DateFilterSelect } from "@/components/DateFilterSelect";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import {
   Pagination,
   PaginationContent,
@@ -37,11 +39,14 @@ const Xarajatlar = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { xarajatlar, loading, addXarajat, updateXarajat, deleteXarajat } = useXarajatlar();
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("today");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const itemsPerPage = 20;
   
   const [form, setForm] = useState({
@@ -67,25 +72,42 @@ const Xarajatlar = () => {
     return found ? found.label : value;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const success = await addXarajat({
-      sana: selectedDate,
-      kategoriya: form.kategoriya,
-      tavsif: form.tavsif,
-      summa: parseFloat(form.summa) || 0,
-    });
-
-    if (success) {
-      setSelectedDate(new Date());
-      setForm({
-        kategoriya: "",
-        tavsif: "",
-        summa: "",
-      });
+    // Check if already submitting or offline
+    if (isSubmitting || isOperationPending('xarajat-add')) {
+      return;
     }
-  };
+
+    // Guard against offline operations
+    await guardOperation(async () => {
+      return await withDuplicatePrevention('xarajat-add', async () => {
+        setIsSubmitting(true);
+        
+        try {
+          const success = await addXarajat({
+            sana: selectedDate,
+            kategoriya: form.kategoriya,
+            tavsif: form.tavsif,
+            summa: parseFloat(form.summa) || 0,
+          });
+
+          if (success) {
+            setSelectedDate(new Date());
+            setForm({
+              kategoriya: "",
+              tavsif: "",
+              summa: "",
+            });
+          }
+          return success;
+        } finally {
+          setIsSubmitting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [form, selectedDate, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending, addXarajat, t]);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -384,8 +406,19 @@ const Xarajatlar = () => {
             </div>
 
             <div className="flex items-end">
-              <Button type="submit" className="w-full" disabled={!form.kategoriya || !form.summa}>
-                {t("common.add")}
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={!form.kategoriya || !form.summa || isSubmitting || !isOnline}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("common.loading")}
+                  </>
+                ) : (
+                  t("common.add")
+                )}
               </Button>
             </div>
           </div>

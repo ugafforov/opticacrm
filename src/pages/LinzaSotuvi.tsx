@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +7,7 @@ import { SelectWithOther } from "@/components/SelectWithOther";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import * as XLSX from 'xlsx';
@@ -23,6 +23,8 @@ import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import {
   Pagination,
   PaginationContent,
@@ -46,6 +48,8 @@ const LinzaSotuvi = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
 
   // Mapping funksiya - linza turlarini tarjimalash
   const getLensTypeTranslation = (lensType: string): string => {
@@ -66,6 +70,7 @@ const LinzaSotuvi = () => {
   const [sotuvlar, setSotuvlar] = useState<LinzaSotish[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [dateFilter, setDateFilter] = useState<string>("today");
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,7 +152,7 @@ const LinzaSotuvi = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) {
@@ -155,48 +160,64 @@ const LinzaSotuvi = () => {
       return;
     }
 
-    try {
-      // Get the maximum tartib_raqam for this user
-      const { data: maxData, error: maxError } = await supabase
-        .from("linza_sotuvlari")
-        .select("tartib_raqam")
-        .eq("user_id", user.id)
-        .order("tartib_raqam", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (maxError) throw maxError;
-
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
-
-      const { error } = await supabase
-        .from("linza_sotuvlari")
-        .insert({
-          user_id: user.id,
-          sana: formatUzbekistanDate(selectedDate),
-          tartib_raqam: nextTartibRaqam,
-          kliyent: form.kliyent,
-          linza_turi: form.linzaTuri,
-          summa: parseFloat(form.summa) || 0,
-        });
-
-      if (error) throw error;
-
-      await loadSotuvlar();
-
-      setSelectedDate(new Date());
-      setForm({
-        kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
-        linzaTuri: "",
-        summa: "",
-      });
-
-      toast.success(t("lensSale.addSuccess"));
-    } catch (error: any) {
-      console.error("Error adding linza sotuvi:", error);
-      toast.error(t("common.error"));
+    // Check if already submitting or offline
+    if (isSubmitting || isOperationPending('linza-sotuvi-add')) {
+      return;
     }
-  };
+
+    // Guard against offline operations
+    await guardOperation(async () => {
+      return await withDuplicatePrevention('linza-sotuvi-add', async () => {
+        setIsSubmitting(true);
+        
+        try {
+          // Get the maximum tartib_raqam for this user
+          const { data: maxData, error: maxError } = await supabase
+            .from("linza_sotuvlari")
+            .select("tartib_raqam")
+            .eq("user_id", user.id)
+            .order("tartib_raqam", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (maxError) throw maxError;
+
+          const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
+          const { error } = await supabase
+            .from("linza_sotuvlari")
+            .insert({
+              user_id: user.id,
+              sana: formatUzbekistanDate(selectedDate),
+              tartib_raqam: nextTartibRaqam,
+              kliyent: form.kliyent,
+              linza_turi: form.linzaTuri,
+              summa: parseFloat(form.summa) || 0,
+            });
+
+          if (error) throw error;
+
+          await loadSotuvlar();
+
+          setSelectedDate(new Date());
+          setForm({
+            kliyent: script === 'cyrillic' ? "Мижоз" : "Mijoz",
+            linzaTuri: "",
+            summa: "",
+          });
+
+          toast.success(t("lensSale.addSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error adding linza sotuvi:", error);
+          toast.error(t("common.error"));
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [user, form, selectedDate, script, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
   const handleDelete = async () => {
     if (!deleteId || !user) return;
@@ -527,8 +548,19 @@ const LinzaSotuvi = () => {
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border">
-            <Button type="submit" className="bg-primary hover:bg-primary/90">
-              {t("lensSale.add")}
+            <Button 
+              type="submit" 
+              className="bg-primary hover:bg-primary/90"
+              disabled={isSubmitting || !isOnline}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("common.loading")}
+                </>
+              ) : (
+                t("lensSale.add")
+              )}
             </Button>
           </div>
         </form>

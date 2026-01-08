@@ -7,6 +7,8 @@ import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 import { BuyurtmaFormData } from "@/components/buyurtmalar/BuyurtmalarForm";
 import { safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
 import { withRetry } from "@/lib/retryUtils";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 
 export interface Buyurtma {
   id: string;
@@ -46,8 +48,11 @@ export const useBuyurtmalar = () => {
   const { t } = useLanguage();
   const [buyurtmalar, setBuyurtmalar] = useState<Buyurtma[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isLoadingRef = useRef(false);
   const retryCountRef = useRef(0);
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
 
   // Load buyurtmalar from database
   const loadBuyurtmalar = useCallback(async () => {
@@ -150,95 +155,111 @@ export const useBuyurtmalar = () => {
     };
   }, [user]);
 
-  // Optimistic create with background sync
+  // Optimistic create with background sync and duplicate prevention
   const createBuyurtma = useCallback(async (formData: BuyurtmaFormData, selectedDate: Date) => {
     if (!user) {
       toast.error(t("toast.loginRequired"));
       return;
     }
 
-    const oynaNarxi = safeParsePriceToNumber(formData.oynaNarxi);
-    const opravaNarxi = safeParsePriceToNumber(formData.opravaNarxi);
-    const jamiSumma = safeAdd(oynaNarxi, opravaNarxi);
-
-    // Generate temp ID for optimistic update
-    const tempId = `temp-${Date.now()}`;
-    const sana = formatUzbekistanDate(selectedDate);
-
-    // Optimistic item
-    const optimisticItem: Buyurtma = {
-      id: tempId,
-      sana,
-      createdAt: new Date().toISOString(),
-      tartibRaqam: buyurtmalar.length + 1,
-      mijoz: formData.mijoz.trim(),
-      telefon: formData.telefon?.trim() || undefined,
-      od: formData.od.trim(),
-      os: formData.os.trim(),
-      oynaTuri: formData.oynaTuri,
-      oynaNarxi,
-      opravaNarxi,
-      opravaTuri: formData.opravaTuri,
-      jamiSumma,
-    };
-
-    // Immediately add to UI
-    setBuyurtmalar(prev => [optimisticItem, ...prev]);
-    toast.success(t("orders.addSuccess"));
-
-    try {
-      // Get next tartibRaqam
-      const maxData = await withRetry(async () => {
-        const { data, error } = await supabase
-          .from("buyurtmalar")
-          .select("tartib_raqam")
-          .eq("user_id", user.id)
-          .order("tartib_raqam", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (error) throw error;
-        return data;
-      });
-
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
-
-      // Insert to database
-      const result = await withRetry(async () => {
-        const { data, error } = await supabase
-          .from("buyurtmalar")
-          .insert({
-            user_id: user.id,
-            sana,
-            tartib_raqam: nextTartibRaqam,
-            mijoz: formData.mijoz.trim(),
-            telefon: formData.telefon?.trim() || null,
-            od: formData.od.trim(),
-            os: formData.os.trim(),
-            oyna_tури: formData.oynaTuri,
-            oyna_narxi: oynaNarxi,
-            oprava_narxi: opravaNarxi,
-            oprava_turi: formData.opravaTuri,
-            jami_summa: jamiSumma,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
-      });
-
-      // Replace temp ID with real ID
-      setBuyurtmalar(prev => 
-        prev.map(b => b.id === tempId ? mapToLocal(result) : b)
-      );
-    } catch (error: any) {
-      console.error("Error creating buyurtma:", error);
-      // Rollback optimistic update
-      setBuyurtmalar(prev => prev.filter(b => b.id !== tempId));
-      toast.error(t("toast.saveError"));
+    // Check if already submitting
+    if (isSubmitting || isOperationPending('buyurtma-add')) {
+      return;
     }
-  }, [user, t, buyurtmalar.length]);
+
+    // Guard against offline operations
+    await guardOperation(async () => {
+      return await withDuplicatePrevention('buyurtma-add', async () => {
+        setIsSubmitting(true);
+
+        const oynaNarxi = safeParsePriceToNumber(formData.oynaNarxi);
+        const opravaNarxi = safeParsePriceToNumber(formData.opravaNarxi);
+        const jamiSumma = safeAdd(oynaNarxi, opravaNarxi);
+
+        // Generate temp ID for optimistic update
+        const tempId = `temp-${Date.now()}`;
+        const sana = formatUzbekistanDate(selectedDate);
+
+        // Optimistic item
+        const optimisticItem: Buyurtma = {
+          id: tempId,
+          sana,
+          createdAt: new Date().toISOString(),
+          tartibRaqam: buyurtmalar.length + 1,
+          mijoz: formData.mijoz.trim(),
+          telefon: formData.telefon?.trim() || undefined,
+          od: formData.od.trim(),
+          os: formData.os.trim(),
+          oynaTuri: formData.oynaTuri,
+          oynaNarxi,
+          opravaNarxi,
+          opravaTuri: formData.opravaTuri,
+          jamiSumma,
+        };
+
+        // Immediately add to UI
+        setBuyurtmalar(prev => [optimisticItem, ...prev]);
+        toast.success(t("orders.addSuccess"));
+
+        try {
+          // Get next tartibRaqam
+          const maxData = await withRetry(async () => {
+            const { data, error } = await supabase
+              .from("buyurtmalar")
+              .select("tartib_raqam")
+              .eq("user_id", user.id)
+              .order("tartib_raqam", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            if (error) throw error;
+            return data;
+          });
+
+          const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
+          // Insert to database
+          const result = await withRetry(async () => {
+            const { data, error } = await supabase
+              .from("buyurtmalar")
+              .insert({
+                user_id: user.id,
+                sana,
+                tartib_raqam: nextTartibRaqam,
+                mijoz: formData.mijoz.trim(),
+                telefon: formData.telefon?.trim() || null,
+                od: formData.od.trim(),
+                os: formData.os.trim(),
+                oyna_tури: formData.oynaTuri,
+                oyna_narxi: oynaNarxi,
+                oprava_narxi: opravaNarxi,
+                oprava_turi: formData.opravaTuri,
+                jami_summa: jamiSumma,
+              })
+              .select()
+              .single();
+
+            if (error) throw error;
+            return data;
+          });
+
+          // Replace temp ID with real ID
+          setBuyurtmalar(prev => 
+            prev.map(b => b.id === tempId ? mapToLocal(result) : b)
+          );
+          return true;
+        } catch (error: any) {
+          console.error("Error creating buyurtma:", error);
+          // Rollback optimistic update
+          setBuyurtmalar(prev => prev.filter(b => b.id !== tempId));
+          toast.error(t("toast.saveError"));
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [user, t, buyurtmalar.length, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending]);
 
   // Optimistic update
   const updateBuyurtma = useCallback(async (item: Buyurtma) => {
@@ -330,6 +351,8 @@ export const useBuyurtmalar = () => {
   return {
     buyurtmalar,
     loading,
+    isSubmitting,
+    isOnline,
     createBuyurtma,
     updateBuyurtma,
     deleteBuyurtma,
