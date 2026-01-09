@@ -261,92 +261,108 @@ export const useBuyurtmalar = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [user, t, buyurtmalar.length, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending]);
 
-  // Optimistic update
+  // Optimistic update with protection
   const updateBuyurtma = useCallback(async (item: Buyurtma) => {
     if (!user) return;
 
-    const previousItem = buyurtmalar.find(b => b.id === item.id);
-    
-    // Optimistic update
-    setBuyurtmalar(prev => 
-      prev.map(b => b.id === item.id ? item : b)
-    );
-
-    try {
-      await withRetry(async () => {
-        const { error } = await supabase
-          .from("buyurtmalar")
-          .update({
-            sana: item.sana,
-            mijoz: item.mijoz.trim(),
-            telefon: item.telefon?.trim() || null,
-            od: item.od.trim(),
-            os: item.os.trim(),
-            oyna_tури: item.oynaTuri,
-            oyna_narxi: Number(item.oynaNarxi) || 0,
-            oprava_narxi: Number(item.opravaNarxi) || 0,
-            oprava_turi: item.opravaTuri,
-            jami_summa: Number(item.jamiSumma) || 0,
-          })
-          .eq("id", item.id);
-
-        if (error) throw error;
-      });
-
-      toast.success(t("common.updateSuccess"));
-    } catch (error: any) {
-      console.error("Error updating buyurtma:", error);
-      // Rollback
-      if (previousItem) {
-        setBuyurtmalar(prev => 
-          prev.map(b => b.id === item.id ? previousItem : b)
-        );
-      }
-      toast.error(t("toast.updateError"));
+    if (isOperationPending(`buyurtma-update-${item.id}`)) {
+      return;
     }
-  }, [user, t, buyurtmalar]);
 
-  // Optimistic delete
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`buyurtma-update-${item.id}`, async () => {
+        const previousItem = buyurtmalar.find(b => b.id === item.id);
+        
+        // Optimistic update
+        setBuyurtmalar(prev => 
+          prev.map(b => b.id === item.id ? item : b)
+        );
+
+        try {
+          await withRetry(async () => {
+            const { error } = await supabase
+              .from("buyurtmalar")
+              .update({
+                sana: item.sana,
+                mijoz: item.mijoz.trim(),
+                telefon: item.telefon?.trim() || null,
+                od: item.od.trim(),
+                os: item.os.trim(),
+                oyna_tури: item.oynaTuri,
+                oyna_narxi: Number(item.oynaNarxi) || 0,
+                oprava_narxi: Number(item.opravaNarxi) || 0,
+                oprava_turi: item.opravaTuri,
+                jami_summa: Number(item.jamiSumma) || 0,
+              })
+              .eq("id", item.id);
+
+            if (error) throw error;
+          });
+
+          toast.success(t("common.updateSuccess"));
+        } catch (error: any) {
+          console.error("Error updating buyurtma:", error);
+          // Rollback
+          if (previousItem) {
+            setBuyurtmalar(prev => 
+              prev.map(b => b.id === item.id ? previousItem : b)
+            );
+          }
+          toast.error(t("toast.updateError"));
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [user, t, buyurtmalar, isOperationPending, guardOperation, withDuplicatePrevention]);
+
+  // Optimistic delete with protection
   const deleteBuyurtma = useCallback(async (id: string) => {
     if (!user) return;
 
-    const itemToDelete = buyurtmalar.find((b) => b.id === id);
-    if (!itemToDelete) return;
-
-    // Optimistic delete
-    setBuyurtmalar(prev => prev.filter(b => b.id !== id));
-
-    try {
-      // Backup to trash
-      await withRetry(async () => {
-        const { error } = await supabase.from("chiqindilar").insert([{
-          user_id: user.id,
-          item_id: id,
-          type: "buyurtmalar",
-          data: itemToDelete as any,
-          deleted_at: getUzbekistanISOString(),
-        }]);
-        if (error) throw error;
-      });
-
-      // Delete from table
-      await withRetry(async () => {
-        const { error } = await supabase
-          .from("buyurtmalar")
-          .delete()
-          .eq("id", id);
-
-        if (error) throw error;
-      });
-
-      toast.success(t("orders.deleteSuccess"));
-    } catch (error: any) {
-      console.error("Error deleting buyurtma:", error);
-      // Rollback
-      setBuyurtmalar(prev => [itemToDelete, ...prev]);
-      toast.error(t("toast.deleteError"));
+    if (isOperationPending(`buyurtma-delete-${id}`)) {
+      return;
     }
-  }, [user, t, buyurtmalar]);
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`buyurtma-delete-${id}`, async () => {
+        const itemToDelete = buyurtmalar.find((b) => b.id === id);
+        if (!itemToDelete) return;
+
+        // Optimistic delete
+        setBuyurtmalar(prev => prev.filter(b => b.id !== id));
+
+        try {
+          // Backup to trash
+          await withRetry(async () => {
+            const { error } = await supabase.from("chiqindilar").insert([{
+              user_id: user.id,
+              item_id: id,
+              type: "buyurtmalar",
+              data: itemToDelete as any,
+              deleted_at: getUzbekistanISOString(),
+            }]);
+            if (error) throw error;
+          });
+
+          // Delete from table
+          await withRetry(async () => {
+            const { error } = await supabase
+              .from("buyurtmalar")
+              .delete()
+              .eq("id", id);
+
+            if (error) throw error;
+          });
+
+          toast.success(t("orders.deleteSuccess"));
+        } catch (error: any) {
+          console.error("Error deleting buyurtma:", error);
+          // Rollback
+          setBuyurtmalar(prev => [itemToDelete, ...prev]);
+          toast.error(t("toast.deleteError"));
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [user, t, buyurtmalar, isOperationPending, guardOperation, withDuplicatePrevention]);
 
   return {
     buyurtmalar,

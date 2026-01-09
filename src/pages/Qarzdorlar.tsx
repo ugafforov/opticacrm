@@ -1,4 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,9 +62,12 @@ const Qarzdorlar = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
   const { 
     qarzdorlar, 
     loading, 
+    isSubmitting,
     addQarzdor, 
     updateQarzdor, 
     deleteQarzdor,
@@ -89,6 +95,8 @@ const Qarzdorlar = () => {
   
   const [editingItem, setEditingItem] = useState<Qarzdor | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isPaymentSubmitting, setIsPaymentSubmitting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Payment dialog states
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
@@ -127,7 +135,7 @@ const Qarzdorlar = () => {
     return { totalDebt, overdueDebt, overdueCount, totalCount };
   }, [qarzdorlar]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
 
     const success = await addQarzdor({
@@ -147,22 +155,27 @@ const Qarzdorlar = () => {
         izoh: "",
       });
     }
-  };
+  }, [addQarzdor, selectedDate, form]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleteId) return;
     await deleteQarzdor(deleteId);
     setDeleteId(null);
-  };
+  }, [deleteId, deleteQarzdor]);
 
   const handleEdit = (item: Qarzdor) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || isUpdating) return;
 
+    if (isOperationPending(`qarzdor-update-${editingItem.id}`)) {
+      return;
+    }
+
+    setIsUpdating(true);
     const success = await updateQarzdor(editingItem.id, {
       sana: editingItem.sana,
       mijoz: editingItem.mijoz,
@@ -174,7 +187,8 @@ const Qarzdorlar = () => {
     if (success) {
       setEditingItem(null);
     }
-  };
+    setIsUpdating(false);
+  }, [editingItem, isUpdating, isOperationPending, updateQarzdor]);
 
   // Payment handlers
   const openPaymentDialog = (qarzdor: Qarzdor) => {
@@ -185,9 +199,14 @@ const Qarzdorlar = () => {
     setPaymentDialogOpen(true);
   };
 
-  const handleAddPayment = async () => {
-    if (!paymentQarzdor || !paymentAmount) return;
+  const handleAddPayment = useCallback(async () => {
+    if (!paymentQarzdor || !paymentAmount || isPaymentSubmitting) return;
     
+    if (isOperationPending(`payment-add-${paymentQarzdor.id}`)) {
+      return;
+    }
+
+    setIsPaymentSubmitting(true);
     const success = await addPayment(paymentQarzdor.id, {
       summa: parseFloat(paymentAmount) || 0,
       sana: paymentDate,
@@ -198,8 +217,8 @@ const Qarzdorlar = () => {
       setPaymentDialogOpen(false);
       setPaymentQarzdor(null);
     }
-  };
-
+    setIsPaymentSubmitting(false);
+  }, [paymentQarzdor, paymentAmount, paymentDate, paymentNote, isPaymentSubmitting, isOperationPending, addPayment]);
   const openHistoryDialog = async (qarzdor: Qarzdor) => {
     setHistoryQarzdor(qarzdor);
     setHistoryDialogOpen(true);
@@ -587,7 +606,12 @@ const Qarzdorlar = () => {
             </div>
 
             <div className="flex items-end">
-              <Button type="submit" className="w-full" disabled={!form.mijoz || !form.qarzSummasi}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={!form.mijoz || !form.qarzSummasi || isSubmitting || !isOnline}
+              >
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {t("common.add")}
               </Button>
             </div>
