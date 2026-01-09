@@ -1,9 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 
 export interface QarzTolovi {
   id: string;
@@ -36,6 +38,9 @@ export const useQarzdorlar = () => {
   const { user } = useAuth();
   const [qarzdorlar, setQarzdorlar] = useState<Qarzdor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
 
   const loadQarzdorlar = useCallback(async () => {
     if (!user) return;
@@ -103,7 +108,7 @@ export const useQarzdorlar = () => {
     };
   }, [user, loadQarzdorlar]);
 
-  const addQarzdor = async (data: {
+  const addQarzdor = useCallback(async (data: {
     sana: Date;
     mijoz: string;
     telefon: string;
@@ -115,46 +120,59 @@ export const useQarzdorlar = () => {
       return false;
     }
 
-    try {
-      const { data: maxData, error: maxError } = await supabase
-        .from("qarzdorlar")
-        .select("tartib_raqam")
-        .eq("user_id", user.id)
-        .order("tartib_raqam", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (maxError) throw maxError;
-
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
-
-      const { error } = await supabase
-        .from("qarzdorlar")
-        .insert({
-          user_id: user.id,
-          sana: formatUzbekistanDate(data.sana),
-          tartib_raqam: nextTartibRaqam,
-          mijoz: data.mijoz,
-          telefon: data.telefon,
-          qarz_summasi: data.qarzSummasi,
-          qoldiq_summa: data.qarzSummasi,
-          holat: "tollanmagan",
-          izoh: data.izoh,
-        });
-
-      if (error) throw error;
-
-      await loadQarzdorlar();
-      toast.success(t("debtors.addSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error adding qarzdor:", error);
-      toast.error(t("toast.saveError"));
+    if (isSubmitting || isOperationPending('qarzdor-add')) {
       return false;
     }
-  };
 
-  const updateQarzdor = async (id: string, data: {
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention('qarzdor-add', async () => {
+        setIsSubmitting(true);
+        try {
+          const { data: maxData, error: maxError } = await supabase
+            .from("qarzdorlar")
+            .select("tartib_raqam")
+            .eq("user_id", user.id)
+            .order("tartib_raqam", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (maxError) throw maxError;
+
+          const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
+          const { error } = await supabase
+            .from("qarzdorlar")
+            .insert({
+              user_id: user.id,
+              sana: formatUzbekistanDate(data.sana),
+              tartib_raqam: nextTartibRaqam,
+              mijoz: data.mijoz,
+              telefon: data.telefon,
+              qarz_summasi: data.qarzSummasi,
+              qoldiq_summa: data.qarzSummasi,
+              holat: "tollanmagan",
+              izoh: data.izoh,
+            });
+
+          if (error) throw error;
+
+          await loadQarzdorlar();
+          toast.success(t("debtors.addSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error adding qarzdor:", error);
+          toast.error(t("toast.saveError"));
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, isSubmitting, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
+
+  const updateQarzdor = useCallback(async (id: string, data: {
     sana: string;
     mijoz: string;
     telefon: string;
@@ -163,140 +181,170 @@ export const useQarzdorlar = () => {
   }) => {
     if (!user) return false;
 
-    try {
-      // Get current payments total
-      const { data: payments } = await supabase
-        .from("qarz_tolovlari")
-        .select("summa")
-        .eq("qarzdor_id", id);
-      
-      const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-      const qoldiq = data.qarzSummasi - totalPaid;
-      
-      let holat: Qarzdor["holat"] = "tollanmagan";
-      if (qoldiq <= 0) {
-        holat = "tollangan";
-      } else if (totalPaid > 0) {
-        holat = "qisman";
-      }
-
-      const { error } = await supabase
-        .from("qarzdorlar")
-        .update({
-          sana: data.sana,
-          mijoz: data.mijoz,
-          telefon: data.telefon,
-          qarz_summasi: data.qarzSummasi,
-          qoldiq_summa: Math.max(0, qoldiq),
-          holat,
-          izoh: data.izoh,
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-
-      await loadQarzdorlar();
-      toast.success(t("common.updateSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error updating qarzdor:", error);
-      toast.error(t("toast.updateError"));
+    if (isOperationPending(`qarzdor-update-${id}`)) {
       return false;
     }
-  };
 
-  const deleteQarzdor = async (id: string) => {
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`qarzdor-update-${id}`, async () => {
+        try {
+          // Get current payments total
+          const { data: payments } = await supabase
+            .from("qarz_tolovlari")
+            .select("summa")
+            .eq("qarzdor_id", id);
+          
+          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
+          const qoldiq = data.qarzSummasi - totalPaid;
+          
+          let holat: Qarzdor["holat"] = "tollanmagan";
+          if (qoldiq <= 0) {
+            holat = "tollangan";
+          } else if (totalPaid > 0) {
+            holat = "qisman";
+          }
+
+          const { error } = await supabase
+            .from("qarzdorlar")
+            .update({
+              sana: data.sana,
+              mijoz: data.mijoz,
+              telefon: data.telefon,
+              qarz_summasi: data.qarzSummasi,
+              qoldiq_summa: Math.max(0, qoldiq),
+              holat,
+              izoh: data.izoh,
+            })
+            .eq("id", id);
+
+          if (error) throw error;
+
+          await loadQarzdorlar();
+          toast.success(t("common.updateSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error updating qarzdor:", error);
+          toast.error(t("toast.updateError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
+
+  const deleteQarzdor = useCallback(async (id: string) => {
     if (!user) return false;
 
     const itemToDelete = qarzdorlar.find((x) => x.id === id);
     if (!itemToDelete) return false;
 
-    try {
-      await supabase.from("chiqindilar").insert([{
-        user_id: user.id,
-        item_id: id,
-        type: "qarzdorlar",
-        data: itemToDelete as any,
-        deleted_at: getUzbekistanISOString(),
-      }]);
-
-      const { error } = await supabase
-        .from("qarzdorlar")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      await loadQarzdorlar();
-      toast.success(t("debtors.deleteSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error deleting qarzdor:", error);
-      toast.error(t("toast.deleteError"));
+    if (isOperationPending(`qarzdor-delete-${id}`)) {
       return false;
     }
-  };
+
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`qarzdor-delete-${id}`, async () => {
+        try {
+          await supabase.from("chiqindilar").insert([{
+            user_id: user.id,
+            item_id: id,
+            type: "qarzdorlar",
+            data: itemToDelete as any,
+            deleted_at: getUzbekistanISOString(),
+          }]);
+
+          const { error } = await supabase
+            .from("qarzdorlar")
+            .delete()
+            .eq("id", id);
+
+          if (error) throw error;
+
+          await loadQarzdorlar();
+          toast.success(t("debtors.deleteSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error deleting qarzdor:", error);
+          toast.error(t("toast.deleteError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, qarzdorlar, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
 
   // Payment functions
-  const addPayment = async (qarzdorId: string, data: {
+  const addPayment = useCallback(async (qarzdorId: string, data: {
     summa: number;
     sana: Date;
     izoh?: string;
   }) => {
     if (!user) return false;
 
-    try {
-      const qarzdor = qarzdorlar.find(q => q.id === qarzdorId);
-      if (!qarzdor) return false;
-
-      const { error: paymentError } = await supabase
-        .from("qarz_tolovlari")
-        .insert({
-          user_id: user.id,
-          qarzdor_id: qarzdorId,
-          summa: data.summa,
-          sana: formatUzbekistanDate(data.sana),
-          izoh: data.izoh || "",
-        });
-
-      if (paymentError) throw paymentError;
-
-      // Calculate new remaining amount
-      const { data: payments } = await supabase
-        .from("qarz_tolovlari")
-        .select("summa")
-        .eq("qarzdor_id", qarzdorId);
-      
-      const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-      const qoldiq = qarzdor.qarzSummasi - totalPaid;
-      
-      let holat: Qarzdor["holat"] = "tollanmagan";
-      if (qoldiq <= 0) {
-        holat = "tollangan";
-      } else if (totalPaid > 0) {
-        holat = "qisman";
-      }
-
-      // Update qarzdor status
-      const { error: updateError } = await supabase
-        .from("qarzdorlar")
-        .update({
-          qoldiq_summa: Math.max(0, qoldiq),
-          holat,
-        })
-        .eq("id", qarzdorId);
-
-      if (updateError) throw updateError;
-
-      await loadQarzdorlar();
-      toast.success(t("debtors.paymentSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error adding payment:", error);
-      toast.error(t("toast.saveError"));
+    if (isOperationPending(`payment-add-${qarzdorId}`)) {
       return false;
     }
-  };
+
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`payment-add-${qarzdorId}`, async () => {
+        try {
+          const qarzdor = qarzdorlar.find(q => q.id === qarzdorId);
+          if (!qarzdor) return false;
+
+          const { error: paymentError } = await supabase
+            .from("qarz_tolovlari")
+            .insert({
+              user_id: user.id,
+              qarzdor_id: qarzdorId,
+              summa: data.summa,
+              sana: formatUzbekistanDate(data.sana),
+              izoh: data.izoh || "",
+            });
+
+          if (paymentError) throw paymentError;
+
+          // Calculate new remaining amount
+          const { data: payments } = await supabase
+            .from("qarz_tolovlari")
+            .select("summa")
+            .eq("qarzdor_id", qarzdorId);
+          
+          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
+          const qoldiq = qarzdor.qarzSummasi - totalPaid;
+          
+          let holat: Qarzdor["holat"] = "tollanmagan";
+          if (qoldiq <= 0) {
+            holat = "tollangan";
+          } else if (totalPaid > 0) {
+            holat = "qisman";
+          }
+
+          // Update qarzdor status
+          const { error: updateError } = await supabase
+            .from("qarzdorlar")
+            .update({
+              qoldiq_summa: Math.max(0, qoldiq),
+              holat,
+            })
+            .eq("id", qarzdorId);
+
+          if (updateError) throw updateError;
+
+          await loadQarzdorlar();
+          toast.success(t("debtors.paymentSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error adding payment:", error);
+          toast.error(t("toast.saveError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, qarzdorlar, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
 
   const getPaymentHistory = async (qarzdorId: string): Promise<QarzTolovi[]> => {
     try {
@@ -322,53 +370,63 @@ export const useQarzdorlar = () => {
     }
   };
 
-  const deletePayment = async (paymentId: string, qarzdorId: string) => {
+  const deletePayment = useCallback(async (paymentId: string, qarzdorId: string) => {
     if (!user) return false;
 
-    try {
-      const { error: deleteError } = await supabase
-        .from("qarz_tolovlari")
-        .delete()
-        .eq("id", paymentId);
-
-      if (deleteError) throw deleteError;
-
-      // Recalculate remaining amount
-      const qarzdor = qarzdorlar.find(q => q.id === qarzdorId);
-      if (!qarzdor) return false;
-
-      const { data: payments } = await supabase
-        .from("qarz_tolovlari")
-        .select("summa")
-        .eq("qarzdor_id", qarzdorId);
-      
-      const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-      const qoldiq = qarzdor.qarzSummasi - totalPaid;
-      
-      let holat: Qarzdor["holat"] = "tollanmagan";
-      if (qoldiq <= 0) {
-        holat = "tollangan";
-      } else if (totalPaid > 0) {
-        holat = "qisman";
-      }
-
-      await supabase
-        .from("qarzdorlar")
-        .update({
-          qoldiq_summa: Math.max(0, qoldiq),
-          holat,
-        })
-        .eq("id", qarzdorId);
-
-      await loadQarzdorlar();
-      toast.success(t("common.deleteSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error deleting payment:", error);
-      toast.error(t("toast.deleteError"));
+    if (isOperationPending(`payment-delete-${paymentId}`)) {
       return false;
     }
-  };
+
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`payment-delete-${paymentId}`, async () => {
+        try {
+          const { error: deleteError } = await supabase
+            .from("qarz_tolovlari")
+            .delete()
+            .eq("id", paymentId);
+
+          if (deleteError) throw deleteError;
+
+          // Recalculate remaining amount
+          const qarzdor = qarzdorlar.find(q => q.id === qarzdorId);
+          if (!qarzdor) return false;
+
+          const { data: payments } = await supabase
+            .from("qarz_tolovlari")
+            .select("summa")
+            .eq("qarzdor_id", qarzdorId);
+          
+          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
+          const qoldiq = qarzdor.qarzSummasi - totalPaid;
+          
+          let holat: Qarzdor["holat"] = "tollanmagan";
+          if (qoldiq <= 0) {
+            holat = "tollangan";
+          } else if (totalPaid > 0) {
+            holat = "qisman";
+          }
+
+          await supabase
+            .from("qarzdorlar")
+            .update({
+              qoldiq_summa: Math.max(0, qoldiq),
+              holat,
+            })
+            .eq("id", qarzdorId);
+
+          await loadQarzdorlar();
+          toast.success(t("common.deleteSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error deleting payment:", error);
+          toast.error(t("toast.deleteError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, qarzdorlar, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
 
   // Contact tracking
   const markContacted = async (id: string) => {
@@ -409,6 +467,8 @@ export const useQarzdorlar = () => {
   return {
     qarzdorlar,
     loading,
+    isSubmitting,
+    isOnline,
     addQarzdor,
     updateQarzdor,
     deleteQarzdor,

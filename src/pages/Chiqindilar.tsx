@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { RotateCcw, Trash2 } from "lucide-react";
+import { RotateCcw, Trash2, Loader2 } from "lucide-react";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -19,8 +21,11 @@ interface TrashItem {
 const Chiqindilar = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
   const [trashItems, setTrashItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     itemId: string;
@@ -130,103 +135,139 @@ const Chiqindilar = () => {
     return transformed;
   };
 
-  const handleRestore = async (item: TrashItem) => {
-    if (!user) return;
+  const handleRestore = useCallback(async (item: TrashItem) => {
+    if (!user || isProcessing) return;
 
-    try {
-      const originalData = getItemData(item);
-
-      // Create a clean copy and remove frontend-only / conflicting fields
-      const data: any = { ...originalData };
-      delete data.id;
-      delete data.createdAt;
-      delete data.updatedAt;
-      delete data.created_at;
-      delete data.updated_at;
-      delete data.user_id;
-
-      // Map type to correct table name
-      const tableMap: Record<string, string> = {
-        buyurtmalar: "buyurtmalar",
-        tekshiruvlar: "tekshiruvlar",
-        tayyorKozoynaklar: "tayyor_kozoynaklar",
-        linzaSotuvlari: "linza_sotuvlari",
-        linzaRoyxatlari: "linza_royxatlari",
-      };
-
-      const tableName = tableMap[item.type];
-      if (!tableName) {
-        toast.error(t("toast.invalidType"));
-        return;
-      }
-
-      // Transform field names from camelCase to snake_case
-      const transformedData = transformFieldNames(data, item.type);
-
-      // Final data for restoration (ensure user_id for RLS)
-      const restoreData = {
-        ...transformedData,
-        user_id: user.id,
-      };
-
-      const { error: restoreError } = await supabase
-        .from(tableName as any)
-        .insert(restoreData);
-
-      if (restoreError) throw restoreError;
-
-      const { error: deleteError } = await supabase
-        .from("chiqindilar")
-        .delete()
-        .eq("id", item.id);
-
-      if (deleteError) throw deleteError;
-
-      await loadTrashItems();
-      toast.success(t("trash.restored"));
-      setConfirmDialog({ open: false, itemId: "", action: "delete" });
-    } catch (error: any) {
-      console.error("Error restoring item:", error);
-      toast.error(t("common.error"));
+    if (isOperationPending(`restore-${item.id}`)) {
+      return;
     }
-  };
-  const handlePermanentDelete = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from("chiqindilar")
-        .delete()
-        .eq("id", id);
 
-      if (error) throw error;
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`restore-${item.id}`, async () => {
+        setIsProcessing(true);
+        try {
+          const originalData = getItemData(item);
 
-      await loadTrashItems();
-      toast.success(t("trash.permanentDeleted"));
-      setConfirmDialog({ open: false, itemId: "", action: "delete" });
-    } catch (error: any) {
-      console.error("Error deleting permanently:", error);
-      toast.error(t("common.error"));
+          // Create a clean copy and remove frontend-only / conflicting fields
+          const data: any = { ...originalData };
+          delete data.id;
+          delete data.createdAt;
+          delete data.updatedAt;
+          delete data.created_at;
+          delete data.updated_at;
+          delete data.user_id;
+
+          // Map type to correct table name
+          const tableMap: Record<string, string> = {
+            buyurtmalar: "buyurtmalar",
+            tekshiruvlar: "tekshiruvlar",
+            tayyorKozoynaklar: "tayyor_kozoynaklar",
+            linzaSotuvlari: "linza_sotuvlari",
+            linzaRoyxatlari: "linza_royxatlari",
+          };
+
+          const tableName = tableMap[item.type];
+          if (!tableName) {
+            toast.error(t("toast.invalidType"));
+            return;
+          }
+
+          // Transform field names from camelCase to snake_case
+          const transformedData = transformFieldNames(data, item.type);
+
+          // Final data for restoration (ensure user_id for RLS)
+          const restoreData = {
+            ...transformedData,
+            user_id: user.id,
+          };
+
+          const { error: restoreError } = await supabase
+            .from(tableName as any)
+            .insert(restoreData);
+
+          if (restoreError) throw restoreError;
+
+          const { error: deleteError } = await supabase
+            .from("chiqindilar")
+            .delete()
+            .eq("id", item.id);
+
+          if (deleteError) throw deleteError;
+
+          await loadTrashItems();
+          toast.success(t("trash.restored"));
+          setConfirmDialog({ open: false, itemId: "", action: "delete" });
+        } catch (error: any) {
+          console.error("Error restoring item:", error);
+          toast.error(t("common.error"));
+        } finally {
+          setIsProcessing(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [user, isProcessing, isOperationPending, guardOperation, withDuplicatePrevention, t, getItemData, transformFieldNames, loadTrashItems]);
+
+  const handlePermanentDelete = useCallback(async (id: string) => {
+    if (isProcessing) return;
+
+    if (isOperationPending(`delete-${id}`)) {
+      return;
     }
-  };
 
-  const handleClearAll = async () => {
-    if (!user) return;
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`delete-${id}`, async () => {
+        setIsProcessing(true);
+        try {
+          const { error } = await supabase
+            .from("chiqindilar")
+            .delete()
+            .eq("id", id);
 
-    try {
-      const { error } = await supabase
-        .from("chiqindilar")
-        .delete()
-        .eq("user_id", user.id);
+          if (error) throw error;
 
-      if (error) throw error;
+          await loadTrashItems();
+          toast.success(t("trash.permanentDeleted"));
+          setConfirmDialog({ open: false, itemId: "", action: "delete" });
+        } catch (error: any) {
+          console.error("Error deleting permanently:", error);
+          toast.error(t("common.error"));
+        } finally {
+          setIsProcessing(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [isProcessing, isOperationPending, guardOperation, withDuplicatePrevention, t, loadTrashItems]);
 
-      await loadTrashItems();
-      toast.success(t("trash.clearedAll"));
-      setConfirmDialog({ open: false, itemId: "", action: "delete" });
-    } catch (error: any) {
-      console.error("Error clearing trash:", error);
-      toast.error(t("common.error"));
+  const handleClearAll = useCallback(async () => {
+    if (!user || isProcessing) return;
+
+    if (isOperationPending('clearAll')) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention('clearAll', async () => {
+        setIsProcessing(true);
+        try {
+          const { error } = await supabase
+            .from("chiqindilar")
+            .delete()
+            .eq("user_id", user.id);
+
+          if (error) throw error;
+
+          await loadTrashItems();
+          toast.success(t("trash.clearedAll"));
+          setConfirmDialog({ open: false, itemId: "", action: "delete" });
+        } catch (error: any) {
+          console.error("Error clearing trash:", error);
+          toast.error(t("common.error"));
+        } finally {
+          setIsProcessing(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [user, isProcessing, isOperationPending, guardOperation, withDuplicatePrevention, t, loadTrashItems]);
 
   const getItemLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -252,8 +293,10 @@ const Chiqindilar = () => {
             onClick={() =>
               setConfirmDialog({ open: true, itemId: "", action: "clearAll" })
             }
+            disabled={isProcessing || !isOnline}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            {isProcessing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {!isProcessing && <Trash2 className="w-4 h-4 mr-2" />}
             {t("trash.clearAll")}
           </Button>
         )}
