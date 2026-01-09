@@ -56,11 +56,29 @@ export function formatDisplayDate(dateString: string): string {
 }
 
 /**
- * Get ISO string for Uzbekistan timezone
+ * Get ISO string for Uzbekistan timezone (proper format for database)
  */
 export function getUzbekistanISOString(date?: Date): string {
-  const targetDate = date || getUzbekistanDate();
-  return targetDate.toLocaleString("sv-SE", { timeZone: UZ_TIMEZONE }).replace(" ", "T") + "Z";
+  const targetDate = date || new Date();
+  // Convert to Uzbekistan timezone and return proper ISO format
+  const uzDate = new Date(targetDate.toLocaleString("en-US", { timeZone: UZ_TIMEZONE }));
+  return uzDate.toISOString();
+}
+
+/**
+ * Format timestamp to Uzbekistan locale with timezone (for display)
+ */
+export function formatUzbekistanTimestamp(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleString("uz-UZ", { 
+    timeZone: UZ_TIMEZONE,
+    day: "2-digit",
+    month: "2-digit", 
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
 }
 
 /**

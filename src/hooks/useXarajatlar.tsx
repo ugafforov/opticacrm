@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
+import { useDataIntegrity } from "@/hooks/useDataIntegrity";
+import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 
 export interface Xarajat {
   id: string;
@@ -20,6 +22,9 @@ export const useXarajatlar = () => {
   const { user } = useAuth();
   const [xarajatlar, setXarajatlar] = useState<Xarajat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
+  const { isOnline, guardOperation } = useOnlineGuard();
 
   useEffect(() => {
     if (user) {
@@ -83,7 +88,7 @@ export const useXarajatlar = () => {
     }
   };
 
-  const addXarajat = async (data: {
+  const addXarajat = useCallback(async (data: {
     sana: Date;
     kategoriya: string;
     tavsif: string;
@@ -94,44 +99,57 @@ export const useXarajatlar = () => {
       return false;
     }
 
-    try {
-      // Get the maximum tartib_raqam for this user
-      const { data: maxData, error: maxError } = await supabase
-        .from("xarajatlar")
-        .select("tartib_raqam")
-        .eq("user_id", user.id)
-        .order("tartib_raqam", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (maxError) throw maxError;
-
-      const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
-
-      const { error } = await supabase
-        .from("xarajatlar")
-        .insert({
-          user_id: user.id,
-          sana: formatUzbekistanDate(data.sana),
-          tartib_raqam: nextTartibRaqam,
-          kategoriya: data.kategoriya,
-          tavsif: data.tavsif,
-          summa: data.summa,
-        });
-
-      if (error) throw error;
-
-      await loadXarajatlar();
-      toast.success(t("expenses.addSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error adding xarajat:", error);
-      toast.error(t("toast.saveError"));
+    if (isSubmitting || isOperationPending('xarajat-add')) {
       return false;
     }
-  };
 
-  const updateXarajat = async (id: string, data: {
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention('xarajat-add', async () => {
+        setIsSubmitting(true);
+        try {
+          // Get the maximum tartib_raqam for this user
+          const { data: maxData, error: maxError } = await supabase
+            .from("xarajatlar")
+            .select("tartib_raqam")
+            .eq("user_id", user.id)
+            .order("tartib_raqam", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (maxError) throw maxError;
+
+          const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
+
+          const { error } = await supabase
+            .from("xarajatlar")
+            .insert({
+              user_id: user.id,
+              sana: formatUzbekistanDate(data.sana),
+              tartib_raqam: nextTartibRaqam,
+              kategoriya: data.kategoriya,
+              tavsif: data.tavsif,
+              summa: data.summa,
+            });
+
+          if (error) throw error;
+
+          await loadXarajatlar();
+          toast.success(t("expenses.addSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error adding xarajat:", error);
+          toast.error(t("toast.saveError"));
+          return false;
+        } finally {
+          setIsSubmitting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, isSubmitting, isOperationPending, guardOperation, withDuplicatePrevention, loadXarajatlar]);
+
+  const updateXarajat = useCallback(async (id: string, data: {
     sana: string;
     kategoriya: string;
     tavsif: string;
@@ -139,65 +157,87 @@ export const useXarajatlar = () => {
   }) => {
     if (!user) return false;
 
-    try {
-      const { error } = await supabase
-        .from("xarajatlar")
-        .update({
-          sana: data.sana,
-          kategoriya: data.kategoriya,
-          tavsif: data.tavsif,
-          summa: data.summa,
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-
-      await loadXarajatlar();
-      toast.success(t("common.updateSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error updating xarajat:", error);
-      toast.error(t("toast.updateError"));
+    if (isOperationPending(`xarajat-update-${id}`)) {
       return false;
     }
-  };
 
-  const deleteXarajat = async (id: string) => {
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`xarajat-update-${id}`, async () => {
+        try {
+          const { error } = await supabase
+            .from("xarajatlar")
+            .update({
+              sana: data.sana,
+              kategoriya: data.kategoriya,
+              tavsif: data.tavsif,
+              summa: data.summa,
+            })
+            .eq("id", id);
+
+          if (error) throw error;
+
+          await loadXarajatlar();
+          toast.success(t("common.updateSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error updating xarajat:", error);
+          toast.error(t("toast.updateError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, isOperationPending, guardOperation, withDuplicatePrevention, loadXarajatlar]);
+
+  const deleteXarajat = useCallback(async (id: string) => {
     if (!user) return false;
 
     const itemToDelete = xarajatlar.find((x) => x.id === id);
     if (!itemToDelete) return false;
 
-    try {
-      // Move to trash
-      await supabase.from("chiqindilar").insert([{
-        user_id: user.id,
-        item_id: id,
-        type: "xarajatlar",
-        data: itemToDelete as any,
-        deleted_at: getUzbekistanISOString(),
-      }]);
-
-      const { error } = await supabase
-        .from("xarajatlar")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      await loadXarajatlar();
-      toast.success(t("expenses.deleteSuccess"));
-      return true;
-    } catch (error: any) {
-      console.error("Error deleting xarajat:", error);
-      toast.error(t("toast.deleteError"));
+    if (isOperationPending(`xarajat-delete-${id}`)) {
       return false;
     }
-  };
+
+    const result = await guardOperation(async () => {
+      return await withDuplicatePrevention(`xarajat-delete-${id}`, async () => {
+        try {
+          // Move to trash
+          await supabase.from("chiqindilar").insert([{
+            user_id: user.id,
+            item_id: id,
+            type: "xarajatlar",
+            data: itemToDelete as any,
+            deleted_at: getUzbekistanISOString(),
+          }]);
+
+          const { error } = await supabase
+            .from("xarajatlar")
+            .delete()
+            .eq("id", id);
+
+          if (error) throw error;
+
+          await loadXarajatlar();
+          toast.success(t("expenses.deleteSuccess"));
+          return true;
+        } catch (error: any) {
+          console.error("Error deleting xarajat:", error);
+          toast.error(t("toast.deleteError"));
+          return false;
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+
+    return result ?? false;
+  }, [user, t, xarajatlar, isOperationPending, guardOperation, withDuplicatePrevention, loadXarajatlar]);
 
   return {
     xarajatlar,
     loading,
+    isSubmitting,
+    isOnline,
     addXarajat,
     updateXarajat,
     deleteXarajat,
