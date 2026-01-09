@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { formatUzbekistanTimestamp } from "@/lib/utils";
 
 interface TrashItem {
   id: string;
@@ -317,7 +318,7 @@ const Chiqindilar = () => {
                   <div>
                     <p className="font-semibold">{getItemLabel(item.type)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t("trash.deletedAt")}: {new Date(item.deletedAt).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })}
+                      {t("trash.deletedAt")}: {formatUzbekistanTimestamp(item.deletedAt)}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {(data && (data.mijoz || data.kliyent)) || t("trash.noName")}

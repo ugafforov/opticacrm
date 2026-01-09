@@ -216,66 +216,91 @@ const TayyorKozoynaklar = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [user, form, selectedDate, script, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
-  const handleDelete = async () => {
-    if (!deleteId || !user) return;
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleDelete = useCallback(async () => {
+    if (!deleteId || !user || isDeleting) return;
     
-    const itemToDelete = kozoynaklar.find((k) => k.id === deleteId);
-    if (!itemToDelete) return;
-
-    try {
-      const { error: trashError } = await supabase.from("chiqindilar").insert([{
-        user_id: user.id,
-        item_id: deleteId,
-        type: "tayyorKozoynaklar",
-        data: itemToDelete as any,
-        deleted_at: getUzbekistanISOString(),
-      }]);
-
-      const { error } = await supabase
-        .from("tayyor_kozoynaklar")
-        .delete()
-        .eq("id", deleteId);
-
-      if (error) throw error;
-
-      await loadKozoynaklar();
-      setDeleteId(null);
-      toast.success(t("ready.deleteSuccess"));
-    } catch (error: any) {
-      console.error("Error deleting tayyor kozoynak:", error);
-      toast.error(t("common.error"));
+    if (isOperationPending(`tayyor-kozoynak-delete-${deleteId}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`tayyor-kozoynak-delete-${deleteId}`, async () => {
+        setIsDeleting(true);
+        const itemToDelete = kozoynaklar.find((k) => k.id === deleteId);
+        if (!itemToDelete) return;
+
+        try {
+          const { error: trashError } = await supabase.from("chiqindilar").insert([{
+            user_id: user.id,
+            item_id: deleteId,
+            type: "tayyorKozoynaklar",
+            data: itemToDelete as any,
+            deleted_at: getUzbekistanISOString(),
+          }]);
+
+          const { error } = await supabase
+            .from("tayyor_kozoynaklar")
+            .delete()
+            .eq("id", deleteId);
+
+          if (error) throw error;
+
+          await loadKozoynaklar();
+          setDeleteId(null);
+          toast.success(t("ready.deleteSuccess"));
+        } catch (error: any) {
+          console.error("Error deleting tayyor kozoynak:", error);
+          toast.error(t("common.error"));
+        } finally {
+          setIsDeleting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [deleteId, user, isDeleting, isOperationPending, guardOperation, withDuplicatePrevention, kozoynaklar, t]);
 
   const handleEdit = (item: TayyorKozoynak) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem || !user) return;
+    if (!editingItem || !user || isUpdating) return;
 
-    try {
-      const { error } = await supabase
-        .from("tayyor_kozoynaklar")
-        .update({
-          sana: editingItem.sana,
-          kliyent: editingItem.kliyent,
-          kozoynak_turi: editingItem.kozoynakTuri,
-          summa: editingItem.summa,
-        })
-        .eq("id", editingItem.id);
-
-      if (error) throw error;
-
-      await loadKozoynaklar();
-      setEditingItem(null);
-      toast.success(t("common.updateSuccess"));
-    } catch (error: any) {
-      console.error("Error updating tayyor kozoynak:", error);
-      toast.error(t("common.error"));
+    if (isOperationPending(`tayyor-kozoynak-update-${editingItem.id}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`tayyor-kozoynak-update-${editingItem.id}`, async () => {
+        setIsUpdating(true);
+        try {
+          const { error } = await supabase
+            .from("tayyor_kozoynaklar")
+            .update({
+              sana: editingItem.sana,
+              kliyent: editingItem.kliyent,
+              kozoynak_turi: editingItem.kozoynakTuri,
+              summa: editingItem.summa,
+            })
+            .eq("id", editingItem.id);
+
+          if (error) throw error;
+
+          await loadKozoynaklar();
+          setEditingItem(null);
+          toast.success(t("common.updateSuccess"));
+        } catch (error: any) {
+          console.error("Error updating tayyor kozoynak:", error);
+          toast.error(t("common.error"));
+        } finally {
+          setIsUpdating(false);
+        }
+      });
+    }, t('network.operationRequiresConnection'));
+  }, [editingItem, user, isUpdating, isOperationPending, guardOperation, withDuplicatePrevention, t]);
 
   const filteredKozoynaklar = kozoynaklar.filter((k) => {
     const query = searchQuery.toLowerCase();

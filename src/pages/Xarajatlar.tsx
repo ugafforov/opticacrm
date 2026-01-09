@@ -38,9 +38,9 @@ const Xarajatlar = () => {
   const { t, script } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const { xarajatlar, loading, addXarajat, updateXarajat, deleteXarajat } = useXarajatlar();
+  const { xarajatlar, loading, isSubmitting: hookSubmitting, isOnline, addXarajat, updateXarajat, deleteXarajat } = useXarajatlar();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
-  const { isOnline, guardOperation } = useOnlineGuard();
+  const { guardOperation } = useOnlineGuard();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
