@@ -216,65 +216,94 @@ const Tekshiruv = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [user, form, selectedDate, script, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
-  const handleDelete = async () => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleDelete = useCallback(async () => {
     if (!deleteId || !user) return;
     
     const itemToDelete = tekshiruvlar.find((t) => t.id === deleteId);
     if (!itemToDelete) return;
 
-    try {
-      const { error: trashError } = await supabase.from("chiqindilar").insert([{
-        user_id: user.id,
-        item_id: deleteId,
-        type: "tekshiruvlar",
-        data: itemToDelete as any,
-        deleted_at: getUzbekistanISOString(),
-      }]);
-
-      const { error } = await supabase
-        .from("tekshiruvlar")
-        .delete()
-        .eq("id", deleteId);
-
-      if (error) throw error;
-
-      await loadTekshiruvlar();
-      setDeleteId(null);
-      toast.success(t("exam.deleteSuccess"));
-    } catch (error: any) {
-      toast.error(t("toast.deleteError"));
+    if (isDeleting || isOperationPending(`tekshiruv-delete-${deleteId}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`tekshiruv-delete-${deleteId}`, async () => {
+        setIsDeleting(true);
+        try {
+          const { error: trashError } = await supabase.from("chiqindilar").insert([{
+            user_id: user.id,
+            item_id: deleteId,
+            type: "tekshiruvlar",
+            data: itemToDelete as any,
+            deleted_at: getUzbekistanISOString(),
+          }]);
+
+          const { error } = await supabase
+            .from("tekshiruvlar")
+            .delete()
+            .eq("id", deleteId);
+
+          if (error) throw error;
+
+          await loadTekshiruvlar();
+          setDeleteId(null);
+          toast.success(t("exam.deleteSuccess"));
+          return true;
+        } catch (error: any) {
+          toast.error(t("toast.deleteError"));
+          return false;
+        } finally {
+          setIsDeleting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [deleteId, user, tekshiruvlar, isDeleting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
   const handleEdit = (item: Tekshiruv) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !user) return;
 
-    try {
-      const { error } = await supabase
-        .from("tekshiruvlar")
-        .update({
-          sana: editingItem.sana,
-          mijoz: editingItem.mijoz,
-          refraksiyametriya: editingItem.refraksiyametriya,
-          tanometriya: editingItem.tanometriya,
-          jami_summa: editingItem.jamiSumma,
-        })
-        .eq("id", editingItem.id);
-
-      if (error) throw error;
-
-      await loadTekshiruvlar();
-      setEditingItem(null);
-      toast.success(t("common.updateSuccess"));
-    } catch (error: any) {
-      toast.error(t("toast.updateError"));
+    if (isUpdating || isOperationPending(`tekshiruv-update-${editingItem.id}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`tekshiruv-update-${editingItem.id}`, async () => {
+        setIsUpdating(true);
+        try {
+          const { error } = await supabase
+            .from("tekshiruvlar")
+            .update({
+              sana: editingItem.sana,
+              mijoz: editingItem.mijoz,
+              refraksiyametriya: editingItem.refraksiyametriya,
+              tanometriya: editingItem.tanometriya,
+              jami_summa: editingItem.jamiSumma,
+            })
+            .eq("id", editingItem.id);
+
+          if (error) throw error;
+
+          await loadTekshiruvlar();
+          setEditingItem(null);
+          toast.success(t("common.updateSuccess"));
+          return true;
+        } catch (error: any) {
+          toast.error(t("toast.updateError"));
+          return false;
+        } finally {
+          setIsUpdating(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [editingItem, user, isUpdating, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
   const filteredTekshiruvlar = tekshiruvlar.filter((t) => {
     const query = searchQuery.toLowerCase();
