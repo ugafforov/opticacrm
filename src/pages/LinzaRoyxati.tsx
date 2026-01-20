@@ -277,69 +277,98 @@ const LinzaRoyxati = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [user, form, selectedDate, isSubmitting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
-  const handleDelete = async (id: string) => {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleDelete = useCallback(async (id: string) => {
     if (!user) return;
 
     const itemToDelete = royxatlar.find((r) => r.id === id);
     if (!itemToDelete) return;
 
-    try {
-      const { error: trashError } = await supabase.from("chiqindilar").insert([{
-        user_id: user.id,
-        item_id: id,
-        type: "linzaRoyxatlari",
-        data: itemToDelete as any,
-        deleted_at: getUzbekistanISOString(),
-      }]);
-
-      const { error } = await supabase
-        .from("linza_royxatlari")
-        .delete()
-        .eq("id", id);
-
-      if (error) throw error;
-
-      await loadRoyxatlar();
-      toast.success(t("lens.deleteSuccess"));
-      setDeleteId(null);
-    } catch (error: any) {
-      console.error("Error deleting linza royxat:", error);
-      toast.error(t("common.error"));
+    if (isDeleting || isOperationPending(`linza-royxat-delete-${id}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`linza-royxat-delete-${id}`, async () => {
+        setIsDeleting(true);
+        try {
+          const { error: trashError } = await supabase.from("chiqindilar").insert([{
+            user_id: user.id,
+            item_id: id,
+            type: "linzaRoyxatlari",
+            data: itemToDelete as any,
+            deleted_at: getUzbekistanISOString(),
+          }]);
+
+          const { error } = await supabase
+            .from("linza_royxatlari")
+            .delete()
+            .eq("id", id);
+
+          if (error) throw error;
+
+          await loadRoyxatlar();
+          toast.success(t("lens.deleteSuccess"));
+          setDeleteId(null);
+          return true;
+        } catch (error: any) {
+          console.error("Error deleting linza royxat:", error);
+          toast.error(t("common.error"));
+          return false;
+        } finally {
+          setIsDeleting(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [user, royxatlar, isDeleting, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
   const handleEdit = (item: LinzaRoyxat) => {
     setEditingItem(item);
   };
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem || !user) return;
 
-    try {
-      const { error } = await supabase
-        .from("linza_royxatlari")
-        .update({
-          sana: editingItem.sana,
-          mijoz: editingItem.mijoz,
-          od: editingItem.od,
-          os: editingItem.os,
-          telefon: editingItem.telefon,
-          linza_turi: editingItem.linzaTuri,
-          tugilan_yili: editingItem.tugilanYili,
-        })
-        .eq("id", editingItem.id);
-
-      if (error) throw error;
-
-      await loadRoyxatlar();
-      setEditingItem(null);
-      toast.success(t("edit.success"));
-    } catch (error: any) {
-      console.error("Error updating linza royxat:", error);
-      toast.error(t("common.error"));
+    if (isUpdating || isOperationPending(`linza-royxat-update-${editingItem.id}`)) {
+      return;
     }
-  };
+
+    await guardOperation(async () => {
+      return await withDuplicatePrevention(`linza-royxat-update-${editingItem.id}`, async () => {
+        setIsUpdating(true);
+        try {
+          const { error } = await supabase
+            .from("linza_royxatlari")
+            .update({
+              sana: editingItem.sana,
+              mijoz: editingItem.mijoz,
+              od: editingItem.od,
+              os: editingItem.os,
+              telefon: editingItem.telefon,
+              linza_turi: editingItem.linzaTuri,
+              tugilan_yili: editingItem.tugilanYili,
+            })
+            .eq("id", editingItem.id);
+
+          if (error) throw error;
+
+          await loadRoyxatlar();
+          setEditingItem(null);
+          toast.success(t("edit.success"));
+          return true;
+        } catch (error: any) {
+          console.error("Error updating linza royxat:", error);
+          toast.error(t("common.error"));
+          return false;
+        } finally {
+          setIsUpdating(false);
+        }
+      });
+    }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
+  }, [editingItem, user, isUpdating, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
   const filteredRoyxatlar = royxatlar.filter((r) => {
     const query = searchQuery.toLowerCase().trim();
