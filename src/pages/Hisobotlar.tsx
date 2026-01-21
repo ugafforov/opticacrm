@@ -942,7 +942,7 @@ const Hisobotlar = () => {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
     const printContent = document.getElementById('printable-report');
     if (!printContent) {
       toast.error(t("toast.printTableNotFound"));
@@ -967,6 +967,14 @@ const Hisobotlar = () => {
     const dateRange = startDate && endDate 
       ? `${format(startDate, "dd.MM.yyyy")} - ${format(endDate, "dd.MM.yyyy")}`
       : "Barcha ma'lumotlar";
+    
+    // Sanitize the HTML content using DOMPurify to prevent XSS attacks
+    const DOMPurify = (await import('dompurify')).default;
+    const sanitizedContent = DOMPurify.sanitize(printContent.innerHTML, {
+      ALLOWED_TAGS: ['div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'br', 'hr'],
+      ALLOWED_ATTR: ['class', 'style'],
+      ALLOW_DATA_ATTR: false,
+    });
     
     doc.open();
     doc.write(`
@@ -996,7 +1004,7 @@ const Hisobotlar = () => {
           <h1>Hisobotlar</h1>
           <p class="print-date">Davr: ${dateRange}</p>
           <p class="print-date">Chop etilgan: ${formatDisplayDate(formatUzbekistanDateTime().split(' ')[0])}</p>
-          ${printContent.innerHTML}
+          ${sanitizedContent}
         </body>
       </html>
     `);
