@@ -90,6 +90,10 @@ const translations = {
     "lens.overdueFilter": "Муддати ўтганлар",
     "lens.allPatients": "Барчаси",
     "lens.checkupOverdue": "Текширувга келмаган",
+    "lens.contacted": "Боғланилди",
+    "lens.contactedSuccess": "Боғланилди деб белгиланди",
+    "lens.lastContact": "Охирги алоқа",
+    "lens.notContacted": "Боғланилмаган",
     "common.loading": "Юкланмоқда...",
     
     // Examination
@@ -566,6 +570,10 @@ const translations = {
     "lens.overdueFilter": "Muddati o'tganlar",
     "lens.allPatients": "Barchasi",
     "lens.checkupOverdue": "Tekshiruvga kelmagan",
+    "lens.contacted": "Bog'lanildi",
+    "lens.contactedSuccess": "Bog'lanildi deb belgilandi",
+    "lens.lastContact": "Oxirgi aloqa",
+    "lens.notContacted": "Bog'lanilmagan",
     "common.loading": "Yuklanmoqda...",
     
     // Examination

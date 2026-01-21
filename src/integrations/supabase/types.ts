@@ -156,6 +156,7 @@ export type Database = {
           mijoz: string
           od: string
           os: string
+          oxirgi_aloqa: string | null
           sana: string
           tartib_raqam: number
           telefon: string
@@ -170,6 +171,7 @@ export type Database = {
           mijoz: string
           od: string
           os: string
+          oxirgi_aloqa?: string | null
           sana: string
           tartib_raqam?: number
           telefon: string
@@ -184,6 +186,7 @@ export type Database = {
           mijoz?: string
           od?: string
           os?: string
+          oxirgi_aloqa?: string | null
           sana?: string
           tartib_raqam?: number
           telefon?: string
