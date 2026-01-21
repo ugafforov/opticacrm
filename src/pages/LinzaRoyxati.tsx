@@ -375,26 +375,28 @@ const LinzaRoyxati = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [editingItem, user, isUpdating, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
-  // Handle mark contacted
-  const handleMarkContacted = useCallback(async (id: string) => {
+  // Handle toggle contacted status
+  const handleToggleContacted = useCallback(async (id: string, currentStatus: string | null) => {
     if (!user || !isOnline) return;
     
     try {
+      const newValue = currentStatus ? null : getUzbekistanISOString();
+      
       const { error } = await supabase
         .from("linza_royxatlari")
-        .update({ oxirgi_aloqa: getUzbekistanISOString() })
+        .update({ oxirgi_aloqa: newValue })
         .eq("id", id);
       
       if (error) throw error;
       
       // Update local state
       setRoyxatlar(prev => prev.map(r => 
-        r.id === id ? { ...r, oxirgiAloqa: getUzbekistanISOString() } : r
+        r.id === id ? { ...r, oxirgiAloqa: newValue } : r
       ));
       
-      toast.success(t("lens.contactedSuccess"));
+      toast.success(newValue ? t("lens.contactedSuccess") : t("lens.notContacted"));
     } catch (error: any) {
-      console.error("Error marking contacted:", error);
+      console.error("Error toggling contacted:", error);
       toast.error(t("common.error"));
     }
   }, [user, isOnline, t]);
@@ -1032,17 +1034,18 @@ const LinzaRoyxati = () => {
                           }
                         </span>
                       </div>
-                      {!r.oxirgiAloqa && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleMarkContacted(r.id)}
-                          className="text-green-600 border-green-300 hover:bg-green-50"
-                          disabled={!isOnline}
-                        >
-                          {t("lens.contacted")}
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleContacted(r.id, r.oxirgiAloqa)}
+                        className={r.oxirgiAloqa 
+                          ? "text-muted-foreground border-muted hover:bg-muted" 
+                          : "text-green-600 border-green-300 hover:bg-green-50"
+                        }
+                        disabled={!isOnline}
+                      >
+                        {r.oxirgiAloqa ? t("lens.notContacted") : t("lens.contacted")}
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -1100,8 +1103,8 @@ const LinzaRoyxati = () => {
                               <div className="flex items-center justify-center">
                                 <Switch
                                   checked={!!r.oxirgiAloqa}
-                                  onCheckedChange={() => !r.oxirgiAloqa && handleMarkContacted(r.id)}
-                                  disabled={!!r.oxirgiAloqa || !isOnline}
+                                  onCheckedChange={() => handleToggleContacted(r.id, r.oxirgiAloqa)}
+                                  disabled={!isOnline}
                                   className={r.oxirgiAloqa ? "data-[state=checked]:bg-green-500" : ""}
                                 />
                               </div>
