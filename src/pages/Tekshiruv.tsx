@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
-import * as XLSX from 'xlsx';
+import { exportDataToExcel } from '@/lib/excelExport';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from "sonner";
@@ -354,7 +354,7 @@ const Tekshiruv = () => {
 
   const totalSum = filteredTekshiruvlar.reduce((sum, t) => sum + t.jamiSumma, 0);
 
-  const exportToExcel = () => {
+  const handleExportToExcel = async () => {
     const dateTime = formatUzbekistanDateTime();
     
     // Metadata
@@ -374,15 +374,18 @@ const Tekshiruv = () => {
       [t("exam.amount")]: tek.jamiSumma,
     }));
 
-    const metaWs = XLSX.utils.json_to_sheet(metadata);
-    const dataWs = XLSX.utils.json_to_sheet(data);
-    
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, dataWs, t("common.sheet"));
-    XLSX.utils.book_append_sheet(wb, metaWs, t("common.metadata"));
-    
-    XLSX.writeFile(wb, `Tekshiruvlar_${formatUzbekistanDate()}.xlsx`);
-    toast.success(t("toast.excelSuccess"));
+    try {
+      await exportDataToExcel({
+        fileName: `Tekshiruvlar_${formatUzbekistanDate()}.xlsx`,
+        sheetName: t("common.sheet"),
+        metadataSheetName: t("common.metadata"),
+        data,
+        metadata,
+      });
+      toast.success(t("toast.excelSuccess"));
+    } catch (error) {
+      toast.error(t("toast.exportError"));
+    }
   };
 
   const exportToPDF = async () => {
@@ -659,7 +662,7 @@ const Tekshiruv = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={exportToExcel}
+                onClick={handleExportToExcel}
                 className="gap-2"
               >
                 <Download className="w-4 h-4" />

@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CalendarIcon, FileDown, Printer } from "lucide-react";
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import { exportDataToExcel } from "@/lib/excelExport";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
@@ -764,14 +764,13 @@ const Hisobotlar = () => {
         metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       }
 
-      const metaWs = XLSX.utils.json_to_sheet(metadata);
-      const dataWs = XLSX.utils.json_to_sheet(data);
-      
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, dataWs, "Ma'lumotlar");
-      XLSX.utils.book_append_sheet(wb, metaWs, "Metadata");
-      
-      XLSX.writeFile(wb, `${sheetName}.xlsx`);
+      await exportDataToExcel({
+        fileName: `${sheetName}.xlsx`,
+        sheetName: "Ma'lumotlar",
+        metadataSheetName: "Metadata",
+        data,
+        metadata,
+      });
       toast.success(t("toast.excelSuccess"));
     } catch (error: any) {
       toast.error(t("toast.exportError"));
