@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     // Parse request body
     const { email, password, fullName, role } = await req.json();
 
-    // Validate inputs
+    // Validate inputs - required fields
     if (!email || !password || !fullName || !role) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
@@ -45,6 +45,33 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate role enum
+    if (role !== 'admin' && role !== 'user') {
+      return new Response(JSON.stringify({ error: 'Invalid role. Must be "admin" or "user"' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email) || email.length > 255) {
+      return new Response(JSON.stringify({ error: 'Invalid email format' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate full name length
+    const trimmedFullName = fullName.trim();
+    if (trimmedFullName.length < 2 || trimmedFullName.length > 100) {
+      return new Response(JSON.stringify({ error: 'Full name must be between 2 and 100 characters' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Validate password length
     if (password.length < 8) {
       return new Response(JSON.stringify({ error: 'Password must be at least 8 characters' }), {
         status: 400,
