@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle, Phone, PhoneCall } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, differenceInMonths } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, differenceInMonths, differenceInDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import * as XLSX from 'xlsx';
@@ -408,6 +408,27 @@ const LinzaRoyxati = () => {
     return differenceInMonths(today, checkupDate);
   };
 
+  const getTimeSinceCheckup = (sana: string): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkupDate = new Date(sana.split('-').reverse().join('-'));
+    checkupDate.setHours(0, 0, 0, 0);
+    
+    const totalDays = differenceInDays(today, checkupDate);
+    const months = Math.floor(totalDays / 30);
+    const days = totalDays % 30;
+    
+    if (months < 1) {
+      return `${totalDays} ${t("lens.daysAgo")}`;
+    }
+    
+    if (days === 0) {
+      return `${months} ${t("lens.monthsAgo")}`;
+    }
+    
+    return `${months} ${t("lens.month")}, ${days} ${t("lens.daysAgo")}`;
+  };
+
   const getRowClassName = (sana: string): string => {
     const monthsDiff = getMonthsSinceCheckup(sana);
     
@@ -422,22 +443,23 @@ const LinzaRoyxati = () => {
 
   const getOverdueIndicator = (sana: string) => {
     const monthsDiff = getMonthsSinceCheckup(sana);
+    const timeText = getTimeSinceCheckup(sana);
     
     if (monthsDiff >= 6) {
       return (
         <Badge variant="destructive" className="text-xs font-medium">
-          {monthsDiff} {t("lens.monthsAgo")}
+          {timeText}
         </Badge>
       );
     }
     if (monthsDiff >= 3) {
       return (
         <Badge variant="outline" className="text-xs font-medium border-yellow-500 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30">
-          {monthsDiff} {t("lens.monthsAgo")}
+          {timeText}
         </Badge>
       );
     }
-    return null;
+    return <span className="text-muted-foreground text-sm">{timeText}</span>;
   };
 
   // KPI Statistics

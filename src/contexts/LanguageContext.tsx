@@ -94,6 +94,8 @@ const translations = {
     "lens.contactedSuccess": "Боғланилди деб белгиланди",
     "lens.lastContact": "Охирги алоқа",
     "lens.notContacted": "Боғланилмаган",
+    "lens.daysAgo": "кун олдин",
+    "lens.month": "ой",
     "common.loading": "Юкланмоқда...",
     
     // Examination
@@ -575,6 +577,8 @@ const translations = {
     "lens.contactedSuccess": "Bog'lanildi deb belgilandi",
     "lens.lastContact": "Oxirgi aloqa",
     "lens.notContacted": "Bog'lanilmagan",
+    "lens.daysAgo": "kun oldin",
+    "lens.month": "oy",
     "common.loading": "Yuklanmoqda...",
     
     // Examination
