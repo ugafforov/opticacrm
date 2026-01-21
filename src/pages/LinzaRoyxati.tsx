@@ -12,9 +12,10 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2 } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, differenceInMonths } from "date-fns";
+import { Badge } from "@/components/ui/badge";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -70,6 +71,7 @@ const LinzaRoyxati = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const [selectedPatient, setSelectedPatient] = useState<LinzaRoyxat | null>(null);
+  const [overdueFilter, setOverdueFilter] = useState<"all" | "3months" | "6months">("all");
   const [form, setForm] = useState({
     mijoz: "",
     od: "",
@@ -370,6 +372,55 @@ const LinzaRoyxati = () => {
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [editingItem, user, isUpdating, guardOperation, withDuplicatePrevention, isOperationPending, t]);
 
+  // Helper functions for overdue detection
+  const getMonthsSinceCheckup = (sana: string): number => {
+    const today = new Date();
+    const checkupDate = new Date(sana.split('-').reverse().join('-'));
+    return differenceInMonths(today, checkupDate);
+  };
+
+  const getRowClassName = (sana: string): string => {
+    const monthsDiff = getMonthsSinceCheckup(sana);
+    
+    if (monthsDiff >= 6) {
+      return "bg-red-100 dark:bg-red-950/40 border-l-4 border-l-red-500";
+    }
+    if (monthsDiff >= 3) {
+      return "bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-l-yellow-500";
+    }
+    return "";
+  };
+
+  const getOverdueIndicator = (sana: string) => {
+    const monthsDiff = getMonthsSinceCheckup(sana);
+    
+    if (monthsDiff >= 6) {
+      return (
+        <Badge variant="destructive" className="text-xs font-medium">
+          {monthsDiff} {t("lens.monthsAgo")}
+        </Badge>
+      );
+    }
+    if (monthsDiff >= 3) {
+      return (
+        <Badge variant="outline" className="text-xs font-medium border-yellow-500 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/30">
+          {monthsDiff} {t("lens.monthsAgo")}
+        </Badge>
+      );
+    }
+    return null;
+  };
+
+  // KPI Statistics
+  const overdue3MonthsCount = royxatlar.filter(r => {
+    const months = getMonthsSinceCheckup(r.sana);
+    return months >= 3 && months < 6;
+  }).length;
+
+  const overdue6MonthsCount = royxatlar.filter(r => {
+    return getMonthsSinceCheckup(r.sana) >= 6;
+  }).length;
+
   const filteredRoyxatlar = royxatlar.filter((r) => {
     const query = searchQuery.toLowerCase().trim();
     const searchDigits = query.replace(/\D/g, "");
@@ -383,6 +434,11 @@ const LinzaRoyxati = () => {
     );
 
     if (!matchesSearch) return false;
+
+    // Apply overdue filter
+    const monthsDiff = getMonthsSinceCheckup(r.sana);
+    if (overdueFilter === "3months" && monthsDiff < 3) return false;
+    if (overdueFilter === "6months" && monthsDiff < 6) return false;
 
     if (dateFilter === "all") return true;
 
@@ -432,16 +488,22 @@ const LinzaRoyxati = () => {
     ];
     
     // Main data
-    const data = filteredRoyxatlar.map((r) => ({
-      [t("lens.number")]: r.tartibRaqam,
-      [t("common.date")]: formatDisplayDate(r.sana),
-      [t("lens.client")]: r.mijoz,
-      [t("lens.birthYear")]: r.tugilanYili || "",
-      [t("form.rightEye")]: r.od,
-      [t("form.leftEye")]: r.os,
-      [t("lens.phone")]: r.telefon,
-      [t("lens.lensType")]: r.linzaTuri,
-    }));
+    const data = filteredRoyxatlar.map((r) => {
+      const monthsDiff = getMonthsSinceCheckup(r.sana);
+      const overdueStatus = monthsDiff >= 6 ? `${monthsDiff} ${t("lens.monthsAgo")} ⚠️` : 
+                           monthsDiff >= 3 ? `${monthsDiff} ${t("lens.monthsAgo")}` : "-";
+      return {
+        [t("lens.number")]: r.tartibRaqam,
+        [t("common.date")]: formatDisplayDate(r.sana),
+        [t("lens.lastCheckup")]: overdueStatus,
+        [t("lens.client")]: r.mijoz,
+        [t("lens.birthYear")]: r.tugilanYili || "",
+        [t("form.rightEye")]: r.od,
+        [t("form.leftEye")]: r.os,
+        [t("lens.phone")]: r.telefon,
+        [t("lens.lensType")]: r.linzaTuri,
+      };
+    });
 
     const metaWs = XLSX.utils.json_to_sheet(metadata);
     const dataWs = XLSX.utils.json_to_sheet(data);
@@ -467,20 +529,25 @@ const LinzaRoyxati = () => {
         t("common.dateAndTime")
       );
 
-      const tableData = filteredRoyxatlar.map((r) => [
-        r.tartibRaqam,
-        formatDisplayDate(r.sana),
-        r.mijoz,
-        r.tugilanYili || "",
-        r.od,
-        r.os,
-        r.telefon,
-        r.linzaTuri,
-      ]);
+      const tableData = filteredRoyxatlar.map((r) => {
+        const monthsDiff = getMonthsSinceCheckup(r.sana);
+        const overdueStatus = monthsDiff >= 3 ? `${monthsDiff} ${t("lens.monthsAgo")}` : "-";
+        return [
+          r.tartibRaqam,
+          formatDisplayDate(r.sana),
+          overdueStatus,
+          r.mijoz,
+          r.tugilanYili || "",
+          r.od,
+          r.os,
+          r.telefon,
+          r.linzaTuri,
+        ];
+      });
 
       autoTable(doc, {
         startY,
-        head: [[t("lens.number"), t("common.date"), t("lens.client"), t("lens.birthYear"), 'OD', 'OS', t("lens.phone"), t("lens.lensType")]],
+        head: [[t("lens.number"), t("common.date"), t("lens.lastCheckup"), t("lens.client"), t("lens.birthYear"), 'OD', 'OS', t("lens.phone"), t("lens.lensType")]],
         body: tableData,
         styles: { 
           font: script === 'cyrillic' ? 'Roboto' : 'helvetica',
@@ -694,6 +761,52 @@ const LinzaRoyxati = () => {
         </form>
       </Card>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card 
+          className={`p-4 cursor-pointer transition-all ${overdueFilter === "all" ? "ring-2 ring-primary" : "hover:shadow-md"}`}
+          onClick={() => setOverdueFilter("all")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("lens.totalPatients")}</p>
+              <p className="text-2xl font-bold">{royxatlar.length}</p>
+            </div>
+          </div>
+        </Card>
+        <Card 
+          className={`p-4 cursor-pointer transition-all ${overdueFilter === "3months" ? "ring-2 ring-yellow-500" : "hover:shadow-md"}`}
+          onClick={() => setOverdueFilter("3months")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-950/50 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("lens.overdue3Months")}</p>
+              <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{overdue3MonthsCount + overdue6MonthsCount}</p>
+            </div>
+          </div>
+        </Card>
+        <Card 
+          className={`p-4 cursor-pointer transition-all ${overdueFilter === "6months" ? "ring-2 ring-red-500" : "hover:shadow-md"}`}
+          onClick={() => setOverdueFilter("6months")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-100 dark:bg-red-950/50 rounded-lg">
+              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("lens.overdue6Months")}</p>
+              <p className="text-2xl font-bold text-red-600 dark:text-red-400">{overdue6MonthsCount}</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
       <div className="bg-card rounded-lg p-4 border border-border">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <h3 className="text-lg font-semibold">{t("lens.list")}</h3>
@@ -771,10 +884,13 @@ const LinzaRoyxati = () => {
               </div>
             ) : (
               currentRoyxatlar.map((r, index) => (
-              <div key={r.id} className="bg-card border border-border rounded-lg p-4 space-y-3">
+              <div key={r.id} className={`bg-card border border-border rounded-lg p-4 space-y-3 ${getRowClassName(r.sana)}`}>
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
-                    <div className="font-semibold text-lg">№ {startIndex + index + 1}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-lg">№ {startIndex + index + 1}</span>
+                      {getOverdueIndicator(r.sana)}
+                    </div>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -890,6 +1006,7 @@ const LinzaRoyxati = () => {
                 <tr>
                   <th className="px-4 py-2 text-left">{t("lens.number")}</th>
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
+                  <th className="px-4 py-2 text-left">{t("lens.lastCheckup")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.client")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.birthYear")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
@@ -901,7 +1018,7 @@ const LinzaRoyxati = () => {
               </thead>
               <tbody>
                 {currentRoyxatlar.map((r, index) => (
-                  <tr key={r.id} className="border-b border-border">
+                  <tr key={r.id} className={`border-b border-border ${getRowClassName(r.sana)}`}>
                     <td className="px-4 py-2">{startIndex + index + 1}</td>
                     <td className="px-4 py-2">
                       <TooltipProvider>
@@ -914,6 +1031,9 @@ const LinzaRoyxati = () => {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                    </td>
+                    <td className="px-4 py-2">
+                      {getOverdueIndicator(r.sana)}
                     </td>
                     <td className="px-4 py-2">
                       <button 
