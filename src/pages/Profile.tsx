@@ -70,19 +70,56 @@ const Profile = () => {
     }
   };
 
+  // Validate file magic bytes to ensure actual image content
+  const validateImageMagicBytes = async (file: File): Promise<boolean> => {
+    const buffer = await file.slice(0, 12).arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    
+    // Check for common image magic bytes
+    // JPEG: FF D8 FF
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return true;
+    // PNG: 89 50 4E 47 0D 0A 1A 0A
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return true;
+    // GIF: 47 49 46 38
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x38) return true;
+    // WebP: 52 49 46 46 ... 57 45 42 50
+    if (bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+        bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50) return true;
+    // BMP: 42 4D
+    if (bytes[0] === 0x42 && bytes[1] === 0x4D) return true;
+    
+    return false;
+  };
+
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      toast.error("Faqat rasm fayllarini yuklash mumkin");
+    // Whitelist allowed extensions (no SVG to prevent XSS)
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+    const fileExt = file.name.split(".").pop()?.toLowerCase();
+    
+    if (!fileExt || !allowedExtensions.includes(fileExt)) {
+      toast.error("Faqat rasm formatlarini yuklash mumkin (JPG, PNG, GIF, WebP)");
+      return;
+    }
+
+    // Validate MIME type (client-side check)
+    if (!file.type.startsWith("image/") || file.type === "image/svg+xml") {
+      toast.error("Faqat rasm fayllarini yuklash mumkin (SVG ruxsat etilmagan)");
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       toast.error("Rasm hajmi 2MB dan oshmasligi kerak");
+      return;
+    }
+
+    // Validate magic bytes to ensure actual image content
+    const isValidImage = await validateImageMagicBytes(file);
+    if (!isValidImage) {
+      toast.error("Fayl formati noto'g'ri yoki buzilgan");
       return;
     }
 
