@@ -82,6 +82,14 @@ const translations = {
     "lens.editRecord": "Ёзувни таҳрирлаш",
     "lens.deleteRecord": "Ёзувни ўчириш",
     "lens.confirmDeleteRecord": "Бу ёзувни ўчирмоқчимисиз?",
+    "lens.totalPatients": "Жами беморлар",
+    "lens.overdue3Months": "3+ ой",
+    "lens.overdue6Months": "6+ ой",
+    "lens.lastCheckup": "Охирги текширув",
+    "lens.monthsAgo": "ой олдин",
+    "lens.overdueFilter": "Муддати ўтганлар",
+    "lens.allPatients": "Барчаси",
+    "lens.checkupOverdue": "Текширувга келмаган",
     "common.loading": "Юкланмоқда...",
     
     // Examination
@@ -550,6 +558,14 @@ const translations = {
     "lens.editRecord": "Yozuvni tahrirlash",
     "lens.deleteRecord": "Yozuvni o'chirish",
     "lens.confirmDeleteRecord": "Bu yozuvni o'chirmoqchimisiz?",
+    "lens.totalPatients": "Jami bemorlar",
+    "lens.overdue3Months": "3+ oy",
+    "lens.overdue6Months": "6+ oy",
+    "lens.lastCheckup": "Oxirgi tekshiruv",
+    "lens.monthsAgo": "oy oldin",
+    "lens.overdueFilter": "Muddati o'tganlar",
+    "lens.allPatients": "Barchasi",
+    "lens.checkupOverdue": "Tekshiruvga kelmagan",
     "common.loading": "Yuklanmoqda...",
     
     // Examination
