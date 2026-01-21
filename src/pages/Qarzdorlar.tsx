@@ -74,7 +74,7 @@ const Qarzdorlar = () => {
     addPayment,
     getPaymentHistory,
     deletePayment,
-    markContacted,
+    toggleContacted,
     getDebtAgeCategory
   } = useQarzdorlar();
 
@@ -235,8 +235,8 @@ const Qarzdorlar = () => {
     setPaymentHistory(history);
   };
 
-  const handleMarkContacted = async (id: string) => {
-    await markContacted(id);
+  const handleToggleContacted = async (id: string, currentStatus: string | null) => {
+    await toggleContacted(id, currentStatus);
   };
 
   // Get status badge - simplified with clear colors
@@ -769,8 +769,8 @@ const Qarzdorlar = () => {
                     <Button
                       variant={x.oxirgiAloqa ? "outline" : "secondary"}
                       size="sm"
-                      onClick={() => handleMarkContacted(x.id)}
-                      className="gap-1"
+                      onClick={() => handleToggleContacted(x.id, x.oxirgiAloqa)}
+                      className={x.oxirgiAloqa ? "gap-1 text-green-600 border-green-300" : "gap-1"}
                     >
                       <PhoneCall className="w-4 h-4" />
                     </Button>
@@ -884,13 +884,18 @@ const Qarzdorlar = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleMarkContacted(x.id)}
+                                  onClick={() => handleToggleContacted(x.id, x.oxirgiAloqa)}
                                   className={x.oxirgiAloqa ? "text-green-600 hover:bg-green-100" : "hover:bg-yellow-100 hover:text-yellow-600"}
                                 >
                                   <PhoneCall className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>{t("debtors.markContacted")}</TooltipContent>
+                              <TooltipContent>
+                                {x.oxirgiAloqa 
+                                  ? `${t("debtors.lastContact")}: ${formatDisplayDate(x.oxirgiAloqa.split('T')[0])}` 
+                                  : t("debtors.markContacted")
+                                }
+                              </TooltipContent>
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
