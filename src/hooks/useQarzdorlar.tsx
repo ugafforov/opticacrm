@@ -428,29 +428,39 @@ export const useQarzdorlar = () => {
     return result ?? false;
   }, [user, t, qarzdorlar, isOperationPending, guardOperation, withDuplicatePrevention, loadQarzdorlar]);
 
-  // Contact tracking
-  const markContacted = async (id: string) => {
-    if (!user) return false;
+  // Contact tracking - toggle on/off with optimistic update
+  const toggleContacted = useCallback(async (id: string, currentStatus: string | null) => {
+    if (!user || !isOnline) return false;
+
+    const newValue = currentStatus ? null : getUzbekistanISOString();
+    
+    // Optimistic update - update UI immediately
+    setQarzdorlar(prev => prev.map(q => 
+      q.id === id ? { ...q, oxirgiAloqa: newValue } : q
+    ));
 
     try {
       const { error } = await supabase
         .from("qarzdorlar")
         .update({
-          oxirgi_aloqa: new Date().toISOString(),
+          oxirgi_aloqa: newValue,
         })
         .eq("id", id);
 
       if (error) throw error;
 
-      await loadQarzdorlar();
-      toast.success(t("debtors.contactMarked"));
+      toast.success(newValue ? t("debtors.contactMarked") : t("debtors.contactUnmarked"));
       return true;
     } catch (error: any) {
-      console.error("Error marking contact:", error);
+      console.error("Error toggling contact:", error);
+      // Rollback on error
+      setQarzdorlar(prev => prev.map(q => 
+        q.id === id ? { ...q, oxirgiAloqa: currentStatus } : q
+      ));
       toast.error(t("toast.updateError"));
       return false;
     }
-  };
+  }, [user, isOnline, t]);
 
   // Helper to get debt age category
   const getDebtAgeCategory = (sana: string): "new" | "warning" | "danger" | "critical" => {
@@ -475,7 +485,7 @@ export const useQarzdorlar = () => {
     addPayment,
     getPaymentHistory,
     deletePayment,
-    markContacted,
+    toggleContacted,
     getDebtAgeCategory,
     refetch: loadQarzdorlar,
   };
