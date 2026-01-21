@@ -12,10 +12,11 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle } from "lucide-react";
+import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle, Phone, PhoneCall } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, differenceInMonths } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -51,6 +52,7 @@ interface LinzaRoyxat {
   telefon: string;
   linzaTuri: string;
   tugilanYili: number | null;
+  oxirgiAloqa: string | null;
 }
 
 const LinzaRoyxati = () => {
@@ -143,6 +145,7 @@ const LinzaRoyxati = () => {
         telefon: item.telefon,
         linzaTuri: item.linza_turi,
         tugilanYili: item.tugilan_yili,
+        oxirgiAloqa: item.oxirgi_aloqa,
       })) || [];
 
       setRoyxatlar(mapped);
@@ -371,6 +374,30 @@ const LinzaRoyxati = () => {
       });
     }, t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
   }, [editingItem, user, isUpdating, guardOperation, withDuplicatePrevention, isOperationPending, t]);
+
+  // Handle mark contacted
+  const handleMarkContacted = useCallback(async (id: string) => {
+    if (!user || !isOnline) return;
+    
+    try {
+      const { error } = await supabase
+        .from("linza_royxatlari")
+        .update({ oxirgi_aloqa: getUzbekistanISOString() })
+        .eq("id", id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setRoyxatlar(prev => prev.map(r => 
+        r.id === id ? { ...r, oxirgiAloqa: getUzbekistanISOString() } : r
+      ));
+      
+      toast.success(t("lens.contactedSuccess"));
+    } catch (error: any) {
+      console.error("Error marking contacted:", error);
+      toast.error(t("common.error"));
+    }
+  }, [user, isOnline, t]);
 
   // Helper functions for overdue detection
   const getMonthsSinceCheckup = (sana: string): number => {
@@ -989,6 +1016,35 @@ const LinzaRoyxati = () => {
                     <span className="text-muted-foreground">{t("lens.lensType")}:</span>
                     <span className="ml-2">{r.linzaTuri}</span>
                   </div>
+                  {/* Contact toggle for overdue patients */}
+                  {getMonthsSinceCheckup(r.sana) >= 3 && (
+                    <div className="flex items-center justify-between pt-2 border-t border-border mt-2">
+                      <div className="flex items-center gap-2">
+                        {r.oxirgiAloqa ? (
+                          <PhoneCall className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <span className="text-sm">
+                          {r.oxirgiAloqa 
+                            ? `${t("lens.lastContact")}: ${formatDisplayDate(r.oxirgiAloqa.split('T')[0])}`
+                            : t("lens.notContacted")
+                          }
+                        </span>
+                      </div>
+                      {!r.oxirgiAloqa && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleMarkContacted(r.id)}
+                          className="text-green-600 border-green-300 hover:bg-green-50"
+                          disabled={!isOnline}
+                        >
+                          {t("lens.contacted")}
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))
@@ -1007,6 +1063,7 @@ const LinzaRoyxati = () => {
                   <th className="px-4 py-2 text-left">{t("lens.number")}</th>
                   <th className="px-4 py-2 text-left">{t("common.date")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.lastCheckup")}</th>
+                  <th className="px-4 py-2 text-center">{t("lens.contacted")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.client")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.birthYear")}</th>
                   <th className="px-4 py-2 text-left">{t("lens.phone")}</th>
@@ -1034,6 +1091,32 @@ const LinzaRoyxati = () => {
                     </td>
                     <td className="px-4 py-2">
                       {getOverdueIndicator(r.sana)}
+                    </td>
+                    <td className="px-4 py-2 text-center">
+                      {getMonthsSinceCheckup(r.sana) >= 3 ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center justify-center">
+                                <Switch
+                                  checked={!!r.oxirgiAloqa}
+                                  onCheckedChange={() => !r.oxirgiAloqa && handleMarkContacted(r.id)}
+                                  disabled={!!r.oxirgiAloqa || !isOnline}
+                                  className={r.oxirgiAloqa ? "data-[state=checked]:bg-green-500" : ""}
+                                />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {r.oxirgiAloqa 
+                                ? `${t("lens.lastContact")}: ${formatDisplayDate(r.oxirgiAloqa.split('T')[0])}`
+                                : t("lens.notContacted")
+                              }
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       <button 
