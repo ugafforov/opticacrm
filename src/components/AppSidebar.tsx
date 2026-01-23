@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { 
   Glasses, 
@@ -13,7 +13,9 @@ import {
   Wallet, 
   UserX,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  PanelLeftClose,
+  PanelLeft
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +34,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 
 const AppSidebar = () => {
   const location = useLocation();
@@ -62,7 +65,7 @@ const AppSidebar = () => {
     ...(isAdmin ? [{ to: "/admin/users", label: t("nav.users"), icon: Users }] : []),
   ];
 
-  const renderNavItem = (item: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) => {
+  const NavItem = ({ item }: { item: { to: string; label: string; icon: React.ComponentType<{ className?: string }> } }) => {
     const Icon = item.icon;
     const isActive = location.pathname === item.to;
 
@@ -70,7 +73,8 @@ const AppSidebar = () => {
       <Link
         to={item.to}
         className={cn(
-          "relative flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 group/item",
+          "relative flex items-center w-full rounded-xl text-sm font-medium transition-all duration-300 group/item overflow-hidden",
+          isCollapsed ? "justify-center p-3" : "gap-3 px-3 py-2.5",
           isActive
             ? "text-white"
             : "text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
@@ -87,25 +91,38 @@ const AppSidebar = () => {
             }}
           />
         )}
-        <span className="relative z-10 flex items-center gap-3">
-          <Icon className={cn(
-            "w-5 h-5 shrink-0 transition-transform duration-200 group-hover/item:scale-110",
-            isActive && "drop-shadow-sm"
-          )} />
+        <Icon className={cn(
+          "relative z-10 shrink-0 transition-transform duration-200 group-hover/item:scale-110",
+          isCollapsed ? "w-6 h-6" : "w-5 h-5",
+          isActive && "drop-shadow-sm"
+        )} />
+        <AnimatePresence mode="wait">
           {!isCollapsed && (
-            <span className="truncate">{item.label}</span>
+            <motion.span 
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative z-10 truncate whitespace-nowrap"
+            >
+              {item.label}
+            </motion.span>
           )}
-        </span>
+        </AnimatePresence>
       </Link>
     );
 
     if (isCollapsed) {
       return (
-        <Tooltip key={item.to}>
+        <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             {linkContent}
           </TooltipTrigger>
-          <TooltipContent side="right" className="font-medium">
+          <TooltipContent 
+            side="right" 
+            sideOffset={12}
+            className="font-medium bg-popover border border-border shadow-lg"
+          >
             {item.label}
           </TooltipContent>
         </Tooltip>
@@ -117,23 +134,37 @@ const AppSidebar = () => {
 
   const NavGroup = ({ 
     label, 
-    items 
+    items,
+    showSeparator = true
   }: { 
     label: string; 
-    items: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }[] 
+    items: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
+    showSeparator?: boolean;
   }) => (
-    <SidebarGroup>
-      {!isCollapsed && (
-        <SidebarGroupLabel className="text-xs uppercase tracking-wider text-sidebar-foreground/50 px-3 mb-1">
-          {label}
-        </SidebarGroupLabel>
+    <SidebarGroup className="px-2">
+      <AnimatePresence mode="wait">
+        {!isCollapsed && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider text-sidebar-foreground/40 px-3 mb-1.5 font-semibold">
+              {label}
+            </SidebarGroupLabel>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {isCollapsed && showSeparator && (
+        <Separator className="my-2 bg-sidebar-border/50" />
       )}
       <SidebarGroupContent>
         <SidebarMenu className="space-y-1">
           {items.map((item) => (
             <SidebarMenuItem key={item.to}>
               <SidebarMenuButton asChild className="p-0 h-auto hover:bg-transparent">
-                {renderNavItem(item)}
+                <NavItem item={item} />
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -145,27 +176,46 @@ const AppSidebar = () => {
   return (
     <Sidebar 
       collapsible="icon" 
-      className="border-r border-sidebar-border bg-sidebar/95 backdrop-blur-md"
+      className="border-r border-sidebar-border/50 bg-sidebar/98 backdrop-blur-xl shadow-lg"
     >
-      <SidebarHeader className="p-4 border-b border-sidebar-border/50">
-        <Link to="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="p-2 rounded-xl gradient-primary shadow-premium group-hover:scale-105 transition-transform duration-300">
-            <Glasses className="w-6 h-6 text-white" />
+      <SidebarHeader className={cn(
+        "border-b border-sidebar-border/30 transition-all duration-300",
+        isCollapsed ? "p-3" : "p-4"
+      )}>
+        <Link to="/" className={cn(
+          "flex items-center group cursor-pointer transition-all duration-300",
+          isCollapsed ? "justify-center" : "gap-3"
+        )}>
+          <div className={cn(
+            "rounded-xl gradient-primary shadow-premium group-hover:scale-105 transition-transform duration-300 flex items-center justify-center",
+            isCollapsed ? "p-2.5" : "p-2"
+          )}>
+            <Glasses className={cn(
+              "text-white transition-all duration-300",
+              isCollapsed ? "w-6 h-6" : "w-5 h-5"
+            )} />
           </div>
-          {!isCollapsed && (
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-lg font-bold text-sidebar-foreground group-hover:text-primary transition-colors"
-            >
-              {t("app.title")}
-            </motion.span>
-          )}
+          <AnimatePresence mode="wait">
+            {!isCollapsed && (
+              <motion.span 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="text-lg font-bold text-sidebar-foreground group-hover:text-primary transition-colors whitespace-nowrap"
+              >
+                {t("app.title")}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="p-3 space-y-4 overflow-y-auto scrollbar-hide">
-        <NavGroup label={t("nav.main") || "Asosiy"} items={mainNavItems} />
+      <SidebarContent className={cn(
+        "overflow-y-auto scrollbar-hide transition-all duration-300",
+        isCollapsed ? "py-3 px-1" : "p-3 space-y-2"
+      )}>
+        <NavGroup label={t("nav.main") || "Asosiy"} items={mainNavItems} showSeparator={false} />
         <NavGroup label={t("nav.products") || "Mahsulotlar"} items={productNavItems} />
         <NavGroup label={t("nav.finance") || "Moliya"} items={financeNavItems} />
         {otherNavItems.length > 0 && (
@@ -173,25 +223,41 @@ const AppSidebar = () => {
         )}
       </SidebarContent>
 
-      <SidebarFooter className="p-3 border-t border-sidebar-border/50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebar}
-          className={cn(
-            "w-full justify-center gap-2 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-200",
-            isCollapsed && "px-0"
+      <SidebarFooter className={cn(
+        "border-t border-sidebar-border/30 transition-all duration-300",
+        isCollapsed ? "p-2" : "p-3"
+      )}>
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSidebar}
+              className={cn(
+                "w-full text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 transition-all duration-300 rounded-xl",
+                isCollapsed ? "justify-center p-3" : "justify-start gap-3 px-3"
+              )}
+            >
+              {isCollapsed ? (
+                <PanelLeft className="w-5 h-5" />
+              ) : (
+                <>
+                  <PanelLeftClose className="w-5 h-5" />
+                  <span className="text-sm">{t("sidebar.collapse") || "Yig'ish"}</span>
+                </>
+              )}
+            </Button>
+          </TooltipTrigger>
+          {isCollapsed && (
+            <TooltipContent 
+              side="right" 
+              sideOffset={12}
+              className="font-medium bg-popover border border-border shadow-lg"
+            >
+              {t("sidebar.expand") || "Yoyish"}
+            </TooltipContent>
           )}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <>
-              <ChevronLeft className="w-5 h-5" />
-              <span className="text-xs">{t("sidebar.collapse") || "Yig'ish"}</span>
-            </>
-          )}
-        </Button>
+        </Tooltip>
       </SidebarFooter>
     </Sidebar>
   );
