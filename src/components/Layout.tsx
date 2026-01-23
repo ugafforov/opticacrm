@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { WifiOff } from "lucide-react";
+import { WifiOff, Menu, Glasses } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -9,6 +10,7 @@ import UserProfile from "./UserProfile";
 import Footer from "./Footer";
 import AppSidebar from "./AppSidebar";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
@@ -19,17 +21,32 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
-    <div className="min-h-screen flex bg-background">
-      <AppSidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
-      
-      <div 
-        className={cn(
-          "flex-1 flex flex-col min-w-0 transition-[margin-left] duration-200 ease-out",
-          sidebarOpen ? "ml-60" : "ml-16"
-        )}
-      >
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-          <div className="px-4 py-2.5 flex items-center justify-end gap-4">
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Fixed header with logo - outside sidebar */}
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-background border-b border-border">
+        <div className="h-full flex items-center justify-between px-4">
+          {/* Left side: hamburger + logo */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-10 w-10 shrink-0"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shrink-0">
+                <Glasses className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground whitespace-nowrap">
+                {t("app.title")}
+              </span>
+            </Link>
+          </div>
+
+          {/* Right side: network status, language, user */}
+          <div className="flex items-center gap-3">
             {!isOnline && (
               <div className="flex items-center gap-1 text-destructive text-sm">
                 <WifiOff className="w-4 h-4" />
@@ -39,13 +56,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <LanguageSwitcher />
             <UserProfile user={user} onSignOut={signOut} />
           </div>
-        </header>
+        </div>
+      </header>
+
+      {/* Main content area below fixed header */}
+      <div className="flex flex-1 pt-14">
+        <AppSidebar isOpen={sidebarOpen} />
         
-        <main className="flex-1 p-4 lg:p-6">
-          {children}
-        </main>
-        
-        <Footer />
+        <div 
+          className={cn(
+            "flex-1 flex flex-col min-w-0 transition-[margin-left] duration-200 ease-out",
+            sidebarOpen ? "ml-60" : "ml-16"
+          )}
+        >
+          <main className="flex-1 p-4 lg:p-6">
+            {children}
+          </main>
+          
+          <Footer />
+        </div>
       </div>
       
       <ConnectionIndicator />
