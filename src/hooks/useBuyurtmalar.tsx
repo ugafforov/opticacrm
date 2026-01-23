@@ -50,13 +50,20 @@ export const useBuyurtmalar = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isLoadingRef = useRef(false);
+  const hasLoadedRef = useRef(false);
   const retryCountRef = useRef(0);
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
   const { isOnline, guardOperation } = useOnlineGuard();
 
-  // Load buyurtmalar from database
-  const loadBuyurtmalar = useCallback(async () => {
+  // Load buyurtmalar from database - only once per session
+  const loadBuyurtmalar = useCallback(async (force = false) => {
     if (!user || isLoadingRef.current) return;
+    
+    // Skip if already loaded and not forced
+    if (hasLoadedRef.current && !force) {
+      setLoading(false);
+      return;
+    }
     
     isLoadingRef.current = true;
     try {
@@ -73,6 +80,7 @@ export const useBuyurtmalar = () => {
       }, { maxRetries: 3 });
 
       setBuyurtmalar(data?.map(mapToLocal) || []);
+      hasLoadedRef.current = true;
       retryCountRef.current = 0;
     } catch (error: any) {
       console.error("Error loading buyurtmalar:", error);
@@ -84,7 +92,7 @@ export const useBuyurtmalar = () => {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [user, t]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -372,6 +380,6 @@ export const useBuyurtmalar = () => {
     createBuyurtma,
     updateBuyurtma,
     deleteBuyurtma,
-    refresh: loadBuyurtmalar,
+    refresh: () => loadBuyurtmalar(true),
   };
 };
