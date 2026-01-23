@@ -81,7 +81,7 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
   };
 
   // Get the sign out label from translations
-  const signOutLabel = t("auth.signOut");
+  const signOutLabel = t("auth.logout");
 
   return (
     <TooltipProvider>
