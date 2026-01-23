@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +83,10 @@ const LinzaSotuvi = () => {
   const [editingItem, setEditingItem] = useState<LinzaSotish | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Caching refs to prevent re-fetching
+  const hasLoadedRef = useRef(false);
+  const isLoadingRef = useRef(false);
+
   useEffect(() => {
     if (user) {
       loadSotuvlar();
@@ -107,13 +111,42 @@ const LinzaSotuvi = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'linza_sotuvlari',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadSotuvlar();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setSotuvlar(prev => {
+            if (prev.some(s => s.id === newItem.id)) return prev;
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'linza_sotuvlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setSotuvlar(prev => prev.map(s => s.id === updatedItem.id ? updatedItem : s));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'linza_sotuvlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setSotuvlar(prev => prev.filter(s => s.id !== (payload.old as any).id));
         }
       )
       .subscribe();
@@ -123,7 +156,24 @@ const LinzaSotuvi = () => {
     };
   }, [user]);
 
-  const loadSotuvlar = async () => {
+  const mapToLocal = (item: any): LinzaSotish => ({
+    id: item.id,
+    sana: item.sana,
+    createdAt: item.created_at,
+    tartibRaqam: item.tartib_raqam,
+    kliyent: item.kliyent,
+    linzaTuri: item.linza_turi,
+    summa: item.summa,
+  });
+
+  const loadSotuvlar = async (force = false) => {
+    if (isLoadingRef.current) return;
+    if (hasLoadedRef.current && !force) {
+      setLoading(false);
+      return;
+    }
+    
+    isLoadingRef.current = true;
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -133,22 +183,14 @@ const LinzaSotuvi = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        kliyent: item.kliyent,
-        linzaTuri: item.linza_turi,
-        summa: item.summa,
-      })) || [];
-
-      setSotuvlar(mapped);
+      setSotuvlar(data?.map(mapToLocal) || []);
+      hasLoadedRef.current = true;
     } catch (error: any) {
       console.error("Error loading linza sotuvlari:", error);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
   };
 
@@ -510,12 +552,12 @@ const LinzaSotuvi = () => {
         <p className="text-muted-foreground">{t("lensSale.subtitle")}</p>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+                <Button variant="outline" className="w-full sm:w-[200px] justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {format(selectedDate, "dd-MM-yyyy")}
                 </Button>
@@ -533,9 +575,9 @@ const LinzaSotuvi = () => {
             </Popover>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="kliyent">{t("lensSale.client")}</Label>
+              <Label htmlFor="kliyent" className="text-sm">{t("lensSale.client")}</Label>
               <Input
                 id="kliyent"
                 value={form.kliyent}
@@ -545,7 +587,7 @@ const LinzaSotuvi = () => {
             </div>
 
             <div>
-              <Label htmlFor="linzaTuri">{t("lensSale.type")}</Label>
+              <Label htmlFor="linzaTuri" className="text-sm">{t("lensSale.type")}</Label>
               <SelectWithOther
                 id="linzaTuri"
                 value={form.linzaTuri}
@@ -566,7 +608,7 @@ const LinzaSotuvi = () => {
             </div>
 
             <div>
-              <Label htmlFor="summa">{t("lensSale.amount")} ({t("common.sum")})</Label>
+              <Label htmlFor="summa" className="text-sm">{t("lensSale.amount")} ({t("common.sum")})</Label>
               <PriceInput
                 id="summa"
                 value={form.summa}
@@ -575,10 +617,10 @@ const LinzaSotuvi = () => {
             </div>
           </div>
 
-          <div className="flex justify-end pt-4 border-t border-border">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary/90"
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90"
               disabled={isSubmitting || !isOnline}
             >
               {isSubmitting ? (
@@ -594,75 +636,69 @@ const LinzaSotuvi = () => {
         </form>
       </Card>
 
-      <div className="bg-card rounded-lg p-4 border border-border">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <h3 className="text-lg font-semibold">{t("lensSale.list")}</h3>
-            <div className="text-lg font-bold text-primary">
+      <div className="bg-card rounded-lg p-3 sm:p-4 border border-border">
+        {/* Header with title and total */}
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-base sm:text-lg font-semibold">{t("lensSale.list")}</h3>
+            <div className="text-sm sm:text-lg font-bold text-primary">
               {t("orders.total")}: {formatPrice(totalSum)} {t("common.currency")}
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="Sana filtri" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
-                <SelectItem value="today">{t("dateFilter.today")}</SelectItem>
-                <SelectItem value="yesterday">{t("dateFilter.yesterday")}</SelectItem>
-                <SelectItem value="thisWeek">{t("dateFilter.thisWeek")}</SelectItem>
-                <SelectItem value="lastWeek">{t("dateFilter.lastWeek")}</SelectItem>
-                <SelectItem value="thisMonth">{t("dateFilter.thisMonth")}</SelectItem>
-                <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
-              </SelectContent>
-            </Select>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
-              <Input
-                placeholder={t("lensSale.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10"
-              />
-              {searchQuery && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
-                >
-                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                </Button>
-              )}
+          
+          {/* Filters and actions row */}
+          <div className="flex flex-col gap-2">
+            {/* Date filter and search */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={dateFilter} onValueChange={setDateFilter}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Sana filtri" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                  <SelectItem value="today">{t("dateFilter.today")}</SelectItem>
+                  <SelectItem value="yesterday">{t("dateFilter.yesterday")}</SelectItem>
+                  <SelectItem value="thisWeek">{t("dateFilter.thisWeek")}</SelectItem>
+                  <SelectItem value="lastWeek">{t("dateFilter.lastWeek")}</SelectItem>
+                  <SelectItem value="thisMonth">{t("dateFilter.thisMonth")}</SelectItem>
+                  <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <div className="relative flex-1 sm:max-w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
+                <Input
+                  placeholder={t("lensSale.search")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+                  >
+                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                )}
+              </div>
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportToExcel}
-                className="gap-2"
-              >
+            
+            {/* Export buttons - compact on mobile */}
+            <div className="flex gap-2 flex-wrap">
+              <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-1.5 flex-1 sm:flex-none">
                 <Download className="w-4 h-4" />
-                Excel
+                <span className="hidden xs:inline">Excel</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToPDF}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-1.5 flex-1 sm:flex-none">
                 <Download className="w-4 h-4" />
-                PDF
+                <span className="hidden xs:inline">PDF</span>
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrint}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 flex-1 sm:flex-none">
                 <Printer className="w-4 h-4" />
-                Print
+                <span className="hidden xs:inline">Print</span>
               </Button>
             </div>
           </div>
