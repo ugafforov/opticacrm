@@ -1,4 +1,4 @@
-import { Glasses, WifiOff } from "lucide-react";
+import { WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -16,23 +16,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="glass sticky top-0 z-40 border-b border-border/50 shadow-sm animate-fade-in-down">
-            <div className="px-4 py-3 flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="lg:hidden h-9 w-9 shrink-0" />
-                <h1 className="text-xl font-bold text-primary flex items-center gap-2 group cursor-default lg:hidden">
-                  <Glasses className="w-6 h-6 transition-all duration-500 group-hover:rotate-12 group-hover:scale-110" />
-                  <span className="transition-all duration-500 group-hover:tracking-wide">{t("app.title")}</span>
-                </h1>
-              </div>
+          <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+            <div className="px-4 py-2.5 flex items-center justify-between gap-4">
+              <SidebarTrigger className="h-8 w-8 shrink-0" />
               
-              <div className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+              <div className="flex items-center gap-3">
                 {!isOnline && (
-                  <div className="flex items-center gap-1 text-destructive text-sm animate-pulse">
+                  <div className="flex items-center gap-1 text-destructive text-sm">
                     <WifiOff className="w-4 h-4" />
                     <span className="hidden sm:inline">{t("network.lost")}</span>
                   </div>
@@ -43,10 +37,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </header>
           
-          <main className="flex-1 px-4 py-6 lg:px-6 lg:py-8">
-            <div className="backdrop-blur-sm">
-              {children}
-            </div>
+          <main className="flex-1 p-4 lg:p-6">
+            {children}
           </main>
           
           <Footer />
