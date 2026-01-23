@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 import { 
   Glasses, 
   ShoppingCart, 
@@ -55,9 +56,13 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
-        {/* Active indicator line */}
+        {/* Animated active indicator line */}
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+          <motion.div 
+            layoutId="activeIndicator"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          />
         )}
         <Icon className="h-5 w-5 shrink-0" />
         {isOpen && (
@@ -80,7 +85,6 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
     return linkContent;
   };
 
-  // Get the sign out label from translations
   const signOutLabel = t("auth.logout");
 
   return (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WifiOff, Menu, Glasses } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -12,11 +12,26 @@ import AppSidebar from "./AppSidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
+const SIDEBAR_STORAGE_KEY = "sidebar-open";
+
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
   const { user, signOut } = useAuth();
   const { isOnline } = useNetworkStatus();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  // Initialize from localStorage
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  });
+
+  // Save to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
+  }, [sidebarOpen]);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
