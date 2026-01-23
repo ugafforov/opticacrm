@@ -20,6 +20,14 @@ const translations = {
     "nav.reports": "Ҳисоботлар",
     "nav.trash": "Чиқиндилар",
     "nav.expenses": "Харажатлар",
+    "nav.debtors": "Қарздорлар",
+    "nav.users": "Фойдаланувчилар",
+    "nav.main": "Асосий",
+    "nav.products": "Маҳсулотлар",
+    "nav.finance": "Молия",
+    "nav.other": "Бошқа",
+    "sidebar.collapse": "Йиғиш",
+    "sidebar.expand": "Ёйиш",
     "app.title": "Оптика CRM",
     
     // Orders page
@@ -226,7 +234,6 @@ const translations = {
     "expenses.totalExpenses": "Жами харажат",
 
     // Debtors
-    "nav.debtors": "Қарздорлар",
     "debtors.title": "Қарздорлар",
     "debtors.subtitle": "Қарздор мижозларни бошқариш",
     "debtors.list": "Қарздорлар рўйхати",
@@ -424,9 +431,6 @@ const translations = {
     "admin.deleteTitle": "Фойдаланувчини ўчириш",
     "admin.deleteDesc": "Бу фойдаланувчи ва унинг барча маълумотлари ўчирилади. Давом етасизми?",
 
-    // Nav additional
-    "nav.users": "Фойдаланувчилар",
-
     // Toast messages
     "toast.loadError": "Маълумотларни юклашда хатолик юз берди",
     "toast.loginRequired": "Илтимос, тизимга киринг",
@@ -503,6 +507,14 @@ const translations = {
     "nav.reports": "Hisobotlar",
     "nav.trash": "Chiqindilar",
     "nav.expenses": "Xarajatlar",
+    "nav.debtors": "Qarzdorlar",
+    "nav.users": "Foydalanuvchilar",
+    "nav.main": "Asosiy",
+    "nav.products": "Mahsulotlar",
+    "nav.finance": "Moliya",
+    "nav.other": "Boshqa",
+    "sidebar.collapse": "Yig'ish",
+    "sidebar.expand": "Yoyish",
     "app.title": "Optika CRM",
     
     // Orders page
@@ -712,7 +724,6 @@ const translations = {
     "expenses.totalExpenses": "Jami xarajat",
 
     // Debtors
-    "nav.debtors": "Qarzdorlar",
     "debtors.title": "Qarzdorlar",
     "debtors.subtitle": "Qarzdor mijozlarni boshqarish",
     "debtors.list": "Qarzdorlar ro'yxati",
@@ -908,9 +919,6 @@ const translations = {
     "admin.addedDate": "Qo'shilgan sana",
     "admin.deleteTitle": "Foydalanuvchini o'chirish",
     "admin.deleteDesc": "Bu foydalanuvchi va uning barcha ma'lumotlari o'chiriladi. Davom etasizmi?",
-
-    // Nav additional
-    "nav.users": "Foydalanuvchilar",
 
     // Toast messages
     "toast.loadError": "Ma'lumotlarni yuklashda xatolik yuz berdi",
