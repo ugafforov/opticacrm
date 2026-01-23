@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ConnectionIndicator } from "./ConnectionIndicator";
 import LanguageSwitcher from "./LanguageSwitcher";
 import UserProfile from "./UserProfile";
@@ -18,8 +19,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t } = useLanguage();
   const { user, signOut } = useAuth();
   const { isOnline } = useNetworkStatus();
+  const isMobile = useIsMobile();
   
-  // Initialize from localStorage
+  // Initialize from localStorage (desktop only)
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem(SIDEBAR_STORAGE_KEY);
@@ -28,12 +30,22 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     return true;
   });
 
-  // Save to localStorage when changed
+  // On mobile, sidebar is closed by default
   useEffect(() => {
-    localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
-  }, [sidebarOpen]);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [isMobile]);
+
+  // Save to localStorage when changed (desktop only)
+  useEffect(() => {
+    if (!isMobile) {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarOpen));
+    }
+  }, [sidebarOpen, isMobile]);
 
   const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -76,12 +88,20 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content area below fixed header */}
       <div className="flex flex-1 pt-14">
-        <AppSidebar isOpen={sidebarOpen} />
+        {/* Mobile backdrop */}
+        {isMobile && sidebarOpen && (
+          <div 
+            className="fixed inset-0 z-30 bg-black/50 backdrop-blur-sm"
+            onClick={closeSidebar}
+          />
+        )}
+        
+        <AppSidebar isOpen={sidebarOpen} isMobile={isMobile} onClose={closeSidebar} />
         
         <div 
           className={cn(
             "flex-1 flex flex-col min-w-0 transition-[margin-left] duration-200 ease-out",
-            sidebarOpen ? "ml-52" : "ml-16"
+            isMobile ? "ml-0" : (sidebarOpen ? "ml-52" : "ml-16")
           )}
         >
           <main className="flex-1 p-4 lg:p-6">

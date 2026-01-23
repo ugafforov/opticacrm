@@ -12,7 +12,8 @@ import {
   Users, 
   Wallet, 
   UserX,
-  LogOut
+  LogOut,
+  X
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,9 +23,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AppSidebarProps {
   isOpen: boolean;
+  isMobile?: boolean;
+  onClose?: () => void;
 }
 
-const AppSidebar = ({ isOpen }: AppSidebarProps) => {
+const AppSidebar = ({ isOpen, isMobile = false, onClose }: AppSidebarProps) => {
   const location = useLocation();
   const { t } = useLanguage();
   const { isAdmin, signOut } = useAuth();
@@ -46,9 +49,18 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
     const Icon = item.icon;
     const isActive = location.pathname === item.to;
 
+    const handleClick = () => {
+      if (isMobile && onClose) {
+        onClose();
+      }
+    };
+
+    const showLabel = isOpen || isMobile;
+
     const linkContent = (
       <Link
         to={item.to}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
           isActive
@@ -57,13 +69,13 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
         )}
       >
         <Icon className="h-5 w-5 shrink-0" />
-        {isOpen && (
+        {showLabel && (
           <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
         )}
       </Link>
     );
 
-    if (!isOpen) {
+    if (!isOpen && !isMobile) {
       return (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
@@ -79,14 +91,35 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
 
   const signOutLabel = t("auth.logout");
 
+  // Mobile: slide in/out animation
+  // Desktop: width transition
+  const sidebarClasses = isMobile
+    ? cn(
+        "fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-card border-r border-border flex flex-col transition-transform duration-300 ease-out w-64",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )
+    : cn(
+        "fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-out",
+        isOpen ? "w-52" : "w-16"
+      );
+
   return (
     <TooltipProvider>
-      <aside
-        className={cn(
-          "fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-out",
-          isOpen ? "w-52" : "w-16"
+      <aside className={sidebarClasses}>
+        {/* Mobile close button */}
+        {isMobile && isOpen && (
+          <div className="flex items-center justify-end p-2 border-b border-border">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         )}
-      >
+        
         {/* Navigation with scroll */}
         <ScrollArea className="flex-1 py-3">
           <nav className="flex flex-col gap-1 px-2">
@@ -98,7 +131,7 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
 
         {/* Footer with logout */}
         <div className="p-2 border-t border-border shrink-0">
-          {!isOpen ? (
+          {!isOpen && !isMobile ? (
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <Button
