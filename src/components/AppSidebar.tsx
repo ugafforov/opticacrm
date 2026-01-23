@@ -51,13 +51,13 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
         to={item.to}
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative",
-          isActive
-            ? "text-primary bg-primary/10"
-            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          isOpen 
+            ? (isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:bg-muted hover:text-foreground")
+            : (isActive ? "text-primary" : "text-muted-foreground hover:text-foreground")
         )}
       >
-        {/* Animated active indicator line */}
-        {isActive && (
+        {/* Animated active indicator line - only show when sidebar is open */}
+        {isActive && isOpen && (
           <motion.div 
             layoutId="activeIndicator"
             className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
