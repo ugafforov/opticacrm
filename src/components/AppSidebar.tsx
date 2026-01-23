@@ -84,7 +84,7 @@ const AppSidebar = ({ isOpen }: AppSidebarProps) => {
       <aside
         className={cn(
           "fixed left-0 top-14 z-40 h-[calc(100vh-3.5rem)] bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-out",
-          isOpen ? "w-60" : "w-16"
+          isOpen ? "w-52" : "w-16"
         )}
       >
         {/* Navigation with scroll */}
