@@ -6,10 +6,6 @@ interface PageTransitionProps {
 }
 
 const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 8,
-  },
   animate: {
     opacity: 1,
     y: 0,
@@ -25,7 +21,8 @@ export const PageTransition = ({ children }: PageTransitionProps) => {
   return (
     <motion.div
       variants={pageVariants}
-      initial="initial"
+      // Avoid any flash when the tab/window regains focus (component may re-mount in some cases)
+      initial={false}
       animate="animate"
       transition={pageTransition}
     >
