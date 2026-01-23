@@ -86,12 +86,12 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
   const totalAmount = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+              <Button variant="outline" className="w-full sm:w-[200px] justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {format(selectedDate, "dd-MM-yyyy")}
               </Button>
@@ -109,9 +109,10 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
           </Popover>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <div className="flex-1 min-w-[180px]">
-            <Label htmlFor="mijoz">{t("form.clientName")}</Label>
+        {/* Mobile-optimized grid layout */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:flex xl:flex-wrap gap-3">
+          <div className="col-span-2 sm:col-span-1 xl:flex-1 xl:min-w-[180px]">
+            <Label htmlFor="mijoz" className="text-sm">{t("form.clientName")}</Label>
             <Input
               id="mijoz"
               value={form.mijoz}
@@ -120,8 +121,8 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[180px]">
-            <Label htmlFor="telefon">{t("form.phone")}</Label>
+          <div className="col-span-2 sm:col-span-1 xl:flex-1 xl:min-w-[180px]">
+            <Label htmlFor="telefon" className="text-sm">{t("form.phone")}</Label>
             <Input
               id="telefon"
               type="tel"
@@ -131,8 +132,8 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[100px]">
-            <Label htmlFor="od" className="text-xs">{t("form.rightEye")}</Label>
+          <div className="col-span-1 xl:flex-1 xl:min-w-[100px]">
+            <Label htmlFor="od" className="text-sm">{t("form.rightEye")}</Label>
             <Input
               id="od"
               value={form.od}
@@ -143,8 +144,8 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[100px]">
-            <Label htmlFor="os" className="text-xs">{t("form.leftEye")}</Label>
+          <div className="col-span-1 xl:flex-1 xl:min-w-[100px]">
+            <Label htmlFor="os" className="text-sm">{t("form.leftEye")}</Label>
             <Input
               id="os"
               value={form.os}
@@ -155,7 +156,7 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[150px]">
+          <div className="col-span-1 xl:flex-1 xl:min-w-[150px]">
             <Label htmlFor="oynaTuri" className="text-sm">{t("form.lensType")}</Label>
             <SelectWithOther
               id="oynaTuri"
@@ -174,7 +175,7 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[150px]">
+          <div className="col-span-1 xl:flex-1 xl:min-w-[150px]">
             <Label htmlFor="oynaNarxi" className="text-sm">{t("form.lensPrice")}</Label>
             <PriceInput
               id="oynaNarxi"
@@ -183,7 +184,7 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[150px]">
+          <div className="col-span-1 xl:flex-1 xl:min-w-[150px]">
             <Label htmlFor="opravaTuri" className="text-sm">{t("form.frameType")}</Label>
             <SelectWithOther
               id="opravaTuri"
@@ -201,7 +202,7 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
             />
           </div>
 
-          <div className="flex-1 min-w-[150px]">
+          <div className="col-span-1 xl:flex-1 xl:min-w-[150px]">
             <Label htmlFor="opravaNarxi" className="text-sm">{t("form.framePrice")}</Label>
             <PriceInput
               id="opravaNarxi"
@@ -211,13 +212,13 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
           </div>
         </div>
 
-        <div className="flex justify-between items-center pt-4 border-t border-border">
-          <div className="text-lg font-semibold">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-4 border-t border-border">
+          <div className="text-base sm:text-lg font-semibold">
             {t("orders.totalAmount")}: {formatPrice(totalAmount)} {t("common.currency")}
           </div>
           <Button 
             type="submit" 
-            className="bg-primary hover:bg-primary/90"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90"
             disabled={isSubmitting || !isOnline}
           >
             {isSubmitting ? (
