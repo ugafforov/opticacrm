@@ -1,29 +1,42 @@
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 
 interface PageTransitionProps {
   children: ReactNode;
 }
 
 const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 12,
+  },
   animate: {
     opacity: 1,
     y: 0,
   },
+  exit: {
+    opacity: 0,
+    y: -8,
+  },
 };
 
 const pageTransition = {
-  duration: 0.2,
-  ease: [0.22, 1, 0.36, 1] as const,
+  type: "tween" as const,
+  duration: 0.25,
+  ease: [0.25, 0.46, 0.45, 0.94] as const,
 };
 
 export const PageTransition = ({ children }: PageTransitionProps) => {
+  const location = useLocation();
+  
   return (
     <motion.div
+      key={location.pathname}
       variants={pageVariants}
-      // Avoid any flash when the tab/window regains focus (component may re-mount in some cases)
-      initial={false}
+      initial="initial"
       animate="animate"
+      exit="exit"
       transition={pageTransition}
     >
       {children}
