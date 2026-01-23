@@ -11,27 +11,24 @@ import {
   Users, 
   Wallet, 
   UserX,
-  PanelLeftClose,
-  PanelLeft
+  Menu,
+  LogOut
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  useSidebar,
-} from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+const AppSidebar = ({ isOpen, onToggle }: AppSidebarProps) => {
   const location = useLocation();
   const { t } = useLanguage();
-  const { isAdmin } = useAuth();
-  const { state, toggleSidebar } = useSidebar();
-  const isCollapsed = state === "collapsed";
+  const { isAdmin, signOut } = useAuth();
 
   const navItems = [
     { to: "/", label: t("nav.orders"), icon: ShoppingCart },
@@ -46,99 +43,114 @@ const AppSidebar = () => {
     ...(isAdmin ? [{ to: "/admin/users", label: t("nav.users"), icon: Users }] : []),
   ];
 
-  const NavLink = ({ item }: { item: typeof navItems[0] }) => {
+  const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const Icon = item.icon;
     const isActive = location.pathname === item.to;
 
-    const link = (
+    const linkContent = (
       <Link
         to={item.to}
         className={cn(
-          "flex items-center gap-3 rounded-lg transition-colors",
-          isCollapsed ? "justify-center p-2.5" : "px-3 py-2",
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative",
           isActive
-            ? "bg-primary text-primary-foreground"
-            : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            ? "text-primary bg-primary/10"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
+        {/* Active indicator line */}
+        {isActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+        )}
         <Icon className="h-5 w-5 shrink-0" />
-        {!isCollapsed && (
-          <span className="text-sm font-medium truncate">{item.label}</span>
+        {isOpen && (
+          <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
         )}
       </Link>
     );
 
-    if (isCollapsed) {
+    if (!isOpen) {
       return (
         <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>{link}</TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8}>
+          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+          <TooltipContent side="right" sideOffset={10}>
             {item.label}
           </TooltipContent>
         </Tooltip>
       );
     }
 
-    return link;
+    return linkContent;
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border bg-card">
-      <SidebarHeader className={cn("border-b border-border", isCollapsed ? "p-2" : "p-3")}>
-        <Link 
-          to="/" 
-          className={cn(
-            "flex items-center gap-2",
-            isCollapsed ? "justify-center" : ""
+    <TooltipProvider>
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-40 h-screen bg-card border-r border-border flex flex-col transition-[width] duration-200 ease-out",
+          isOpen ? "w-60" : "w-16"
+        )}
+      >
+        {/* Header with hamburger menu */}
+        <div className="flex items-center gap-3 p-3 border-b border-border shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggle}
+            className="h-10 w-10 shrink-0"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          {isOpen && (
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shrink-0">
+                <Glasses className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-semibold text-foreground whitespace-nowrap">
+                {t("app.title")}
+              </span>
+            </Link>
           )}
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Glasses className="h-4 w-4 text-primary-foreground" />
-          </div>
-          {!isCollapsed && (
-            <span className="font-semibold text-foreground">{t("app.title")}</span>
-          )}
-        </Link>
-      </SidebarHeader>
+        </div>
 
-      <SidebarContent className={cn("flex-1 overflow-y-auto", isCollapsed ? "p-1.5" : "p-2")}>
-        <nav className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <NavLink key={item.to} item={item} />
-          ))}
-        </nav>
-      </SidebarContent>
+        {/* Navigation with scroll */}
+        <ScrollArea className="flex-1 py-2">
+          <nav className="flex flex-col gap-1 px-2">
+            {navItems.map((item) => (
+              <NavItem key={item.to} item={item} />
+            ))}
+          </nav>
+        </ScrollArea>
 
-      <SidebarFooter className={cn("border-t border-border", isCollapsed ? "p-2" : "p-3")}>
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
+        {/* Footer with logout */}
+        <div className="p-2 border-t border-border shrink-0">
+          {!isOpen ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  onClick={signOut}
+                  className="w-full justify-center text-destructive hover:text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={10}>
+                {t("auth.signOut")}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
             <Button
               variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              className={cn(
-                "w-full text-muted-foreground hover:text-foreground",
-                isCollapsed ? "justify-center p-2" : "justify-start gap-2"
-              )}
+              onClick={signOut}
+              className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
             >
-              {isCollapsed ? (
-                <PanelLeft className="h-5 w-5" />
-              ) : (
-                <>
-                  <PanelLeftClose className="h-5 w-5" />
-                  <span className="text-sm">{t("sidebar.collapse")}</span>
-                </>
-              )}
+              <LogOut className="h-5 w-5" />
+              <span className="text-sm font-medium">{t("auth.signOut")}</span>
             </Button>
-          </TooltipTrigger>
-          {isCollapsed && (
-            <TooltipContent side="right" sideOffset={8}>
-              {t("sidebar.expand")}
-            </TooltipContent>
           )}
-        </Tooltip>
-      </SidebarFooter>
-    </Sidebar>
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 };
 
