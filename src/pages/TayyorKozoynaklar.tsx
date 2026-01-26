@@ -116,8 +116,9 @@ const TayyorKozoynaklar = () => {
         (payload) => {
           const newItem = mapToLocal(payload.new);
           setKozoynaklar(prev => {
-            if (prev.some(k => k.id === newItem.id)) return prev;
-            return [newItem, ...prev];
+            const withoutTemp = prev.filter(k => !k.id.startsWith('temp-'));
+            if (withoutTemp.some(k => k.id === newItem.id)) return withoutTemp;
+            return [newItem, ...withoutTemp];
           });
         }
       )
@@ -223,20 +224,38 @@ const TayyorKozoynaklar = () => {
 
           const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-          const { error } = await supabase
+          const tempId = `temp-${Date.now()}`;
+          const sana = formatUzbekistanDate(selectedDate);
+          const optimisticItem: TayyorKozoynak = {
+            id: tempId,
+            sana,
+            createdAt: new Date().toISOString(),
+            tartibRaqam: nextTartibRaqam,
+            kliyent: form.kliyent,
+            kozoynakTuri: form.kozoynakTuri,
+            summa: parseFloat(form.summa) || 0,
+          };
+
+          setKozoynaklar(prev => [optimisticItem, ...prev]);
+
+          const { data: created, error } = await supabase
             .from("tayyor_kozoynaklar")
             .insert({
               user_id: user.id,
-              sana: formatUzbekistanDate(selectedDate),
+              sana,
               tartib_raqam: nextTartibRaqam,
               kliyent: form.kliyent,
               kozoynak_turi: form.kozoynakTuri,
               summa: parseFloat(form.summa) || 0,
-            });
+            })
+            .select("*")
+            .single();
 
           if (error) throw error;
 
-          // Real-time orqali keladi, shuning uchun loadKozoynaklar chaqirmaymiz
+          if (created) {
+            setKozoynaklar(prev => prev.map(k => k.id === tempId ? mapToLocal(created) : k));
+          }
 
           setSelectedDate(new Date());
           setForm({
@@ -249,6 +268,7 @@ const TayyorKozoynaklar = () => {
           return true;
         } catch (error: any) {
           console.error("Error adding tayyor kozoynak:", error);
+          setKozoynaklar(prev => prev.filter(k => !k.id.startsWith('temp-')));
           toast.error(t("common.error"));
           return false;
         } finally {

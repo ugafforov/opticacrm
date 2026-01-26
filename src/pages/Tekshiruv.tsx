@@ -113,8 +113,10 @@ const Tekshiruv = () => {
         (payload) => {
           const newItem = mapToLocal(payload.new);
           setTekshiruvlar(prev => {
-            if (prev.some(t => t.id === newItem.id)) return prev;
-            return [newItem, ...prev];
+            // Remove any optimistic temp rows (we only allow 1 submit at a time)
+            const withoutTemp = prev.filter(t => !t.id.startsWith('temp-'));
+            if (withoutTemp.some(t => t.id === newItem.id)) return withoutTemp;
+            return [newItem, ...withoutTemp];
           });
         }
       )
@@ -222,21 +224,41 @@ const Tekshiruv = () => {
 
           const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-          const { error } = await supabase
+          // Optimistic UI (so the row appears immediately with the success toast)
+          const tempId = `temp-${Date.now()}`;
+          const sana = formatUzbekistanDate(selectedDate);
+          const optimisticItem: Tekshiruv = {
+            id: tempId,
+            sana,
+            createdAt: new Date().toISOString(),
+            tartibRaqam: nextTartibRaqam,
+            mijoz: form.mijoz,
+            refraksiyametriya: form.refraksiyametriya,
+            tanometriya: form.tanometriya,
+            jamiSumma: summa,
+          };
+          setTekshiruvlar(prev => [optimisticItem, ...prev]);
+
+          const { data: created, error } = await supabase
             .from("tekshiruvlar")
             .insert({
               user_id: user.id,
-              sana: formatUzbekistanDate(selectedDate),
+              sana,
               tartib_raqam: nextTartibRaqam,
               mijoz: form.mijoz,
               refraksiyametriya: form.refraksiyametriya,
               tanometriya: form.tanometriya,
               jami_summa: summa,
-            });
+            })
+            .select("*")
+            .single();
 
           if (error) throw error;
 
-          // Real-time orqali keladi, shuning uchun loadTekshiruvlar chaqirmaymiz
+          // Replace temp row with real row (works even if realtime is delayed/off)
+          if (created) {
+            setTekshiruvlar(prev => prev.map(t => t.id === tempId ? mapToLocal(created) : t));
+          }
 
           setSelectedDate(new Date());
           setForm({
@@ -249,6 +271,8 @@ const Tekshiruv = () => {
           toast.success(t("exam.addSuccess"));
           return true;
         } catch (error: any) {
+          // Rollback optimistic row if insert failed
+          setTekshiruvlar(prev => prev.filter(t => !t.id.startsWith('temp-')));
           toast.error(t("toast.saveError"));
           return false;
         } finally {
