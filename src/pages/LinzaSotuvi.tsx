@@ -119,8 +119,9 @@ const LinzaSotuvi = () => {
         (payload) => {
           const newItem = mapToLocal(payload.new);
           setSotuvlar(prev => {
-            if (prev.some(s => s.id === newItem.id)) return prev;
-            return [newItem, ...prev];
+            const withoutTemp = prev.filter(s => !s.id.startsWith('temp-'));
+            if (withoutTemp.some(s => s.id === newItem.id)) return withoutTemp;
+            return [newItem, ...withoutTemp];
           });
         }
       )
@@ -226,20 +227,38 @@ const LinzaSotuvi = () => {
 
           const nextTartibRaqam = maxData ? maxData.tartib_raqam + 1 : 1;
 
-          const { error } = await supabase
+          const tempId = `temp-${Date.now()}`;
+          const sana = formatUzbekistanDate(selectedDate);
+          const optimisticItem: LinzaSotish = {
+            id: tempId,
+            sana,
+            createdAt: new Date().toISOString(),
+            tartibRaqam: nextTartibRaqam,
+            kliyent: form.kliyent,
+            linzaTuri: form.linzaTuri,
+            summa: parseFloat(form.summa) || 0,
+          };
+
+          setSotuvlar(prev => [optimisticItem, ...prev]);
+
+          const { data: created, error } = await supabase
             .from("linza_sotuvlari")
             .insert({
               user_id: user.id,
-              sana: formatUzbekistanDate(selectedDate),
+              sana,
               tartib_raqam: nextTartibRaqam,
               kliyent: form.kliyent,
               linza_turi: form.linzaTuri,
               summa: parseFloat(form.summa) || 0,
-            });
+            })
+            .select("*")
+            .single();
 
           if (error) throw error;
 
-          // Real-time orqali keladi, shuning uchun loadSotuvlar chaqirmaymiz
+          if (created) {
+            setSotuvlar(prev => prev.map(s => s.id === tempId ? mapToLocal(created) : s));
+          }
 
           setSelectedDate(new Date());
           setForm({
@@ -252,6 +271,7 @@ const LinzaSotuvi = () => {
           return true;
         } catch (error: any) {
           console.error("Error adding linza sotuvi:", error);
+          setSotuvlar(prev => prev.filter(s => !s.id.startsWith('temp-')));
           toast.error(t("common.error"));
           return false;
         } finally {
