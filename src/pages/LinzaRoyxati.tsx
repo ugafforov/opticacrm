@@ -100,6 +100,20 @@ const LinzaRoyxati = () => {
     }
   }, [user]);
 
+  const mapToLocal = (item: any): LinzaRoyxat => ({
+    id: item.id,
+    sana: item.sana,
+    createdAt: item.created_at,
+    tartibRaqam: item.tartib_raqam,
+    mijoz: item.mijoz,
+    od: item.od,
+    os: item.os,
+    telefon: item.telefon,
+    linzaTuri: item.linza_turi,
+    tugilanYili: item.tugilan_yili,
+    oxirgiAloqa: item.oxirgi_aloqa,
+  });
+
   useEffect(() => {
     if (!user) return;
 
@@ -108,13 +122,42 @@ const LinzaRoyxati = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'linza_royxatlari',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadRoyxatlar();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setRoyxatlar(prev => {
+            if (prev.some(r => r.id === newItem.id)) return prev;
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'linza_royxatlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setRoyxatlar(prev => prev.map(r => r.id === updatedItem.id ? updatedItem : r));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'linza_royxatlari',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setRoyxatlar(prev => prev.filter(r => r.id !== (payload.old as any).id));
         }
       )
       .subscribe();
@@ -134,21 +177,7 @@ const LinzaRoyxati = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        mijoz: item.mijoz,
-        od: item.od,
-        os: item.os,
-        telefon: item.telefon,
-        linzaTuri: item.linza_turi,
-        tugilanYili: item.tugilan_yili,
-        oxirgiAloqa: item.oxirgi_aloqa,
-      })) || [];
-
-      setRoyxatlar(mapped);
+      setRoyxatlar(data?.map(mapToLocal) || []);
     } catch (error: any) {
       console.error("Error loading linza royxatlari:", error);
       toast.error(t("common.error"));

@@ -32,6 +32,16 @@ export const useXarajatlar = () => {
     }
   }, [user]);
 
+  const mapToLocal = (item: any): Xarajat => ({
+    id: item.id,
+    sana: item.sana,
+    createdAt: item.created_at,
+    tartibRaqam: item.tartib_raqam,
+    kategoriya: item.kategoriya,
+    tavsif: item.tavsif || "",
+    summa: item.summa,
+  });
+
   useEffect(() => {
     if (!user) return;
 
@@ -40,13 +50,42 @@ export const useXarajatlar = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'xarajatlar',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadXarajatlar();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setXarajatlar(prev => {
+            if (prev.some(x => x.id === newItem.id)) return prev;
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'xarajatlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setXarajatlar(prev => prev.map(x => x.id === updatedItem.id ? updatedItem : x));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'xarajatlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setXarajatlar(prev => prev.filter(x => x.id !== (payload.old as any).id));
         }
       )
       .subscribe();
@@ -69,17 +108,7 @@ export const useXarajatlar = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        kategoriya: item.kategoriya,
-        tavsif: item.tavsif || "",
-        summa: item.summa,
-      })) || [];
-
-      setXarajatlar(mapped);
+      setXarajatlar(data?.map(mapToLocal) || []);
     } catch (error: any) {
       console.error("Error loading xarajatlar:", error);
       toast.error(t("toast.loadError"));
