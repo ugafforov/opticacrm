@@ -236,7 +236,7 @@ const Tekshiruv = () => {
 
           if (error) throw error;
 
-          await loadTekshiruvlar();
+          // Real-time orqali keladi, shuning uchun loadTekshiruvlar chaqirmaymiz
 
           setSelectedDate(new Date());
           setForm({
@@ -290,7 +290,7 @@ const Tekshiruv = () => {
 
           if (error) throw error;
 
-          await loadTekshiruvlar();
+          // Real-time orqali o'chiriladi
           setDeleteId(null);
           toast.success(t("exam.deleteSuccess"));
           return true;
@@ -333,7 +333,7 @@ const Tekshiruv = () => {
 
           if (error) throw error;
 
-          await loadTekshiruvlar();
+          // Real-time orqali yangilanadi
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
           return true;

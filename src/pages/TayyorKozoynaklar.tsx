@@ -236,7 +236,7 @@ const TayyorKozoynaklar = () => {
 
           if (error) throw error;
 
-          await loadKozoynaklar();
+          // Real-time orqali keladi, shuning uchun loadKozoynaklar chaqirmaymiz
 
           setSelectedDate(new Date());
           setForm({
@@ -290,7 +290,7 @@ const TayyorKozoynaklar = () => {
 
           if (error) throw error;
 
-          await loadKozoynaklar();
+          // Real-time orqali o'chiriladi
           setDeleteId(null);
           toast.success(t("ready.deleteSuccess"));
         } catch (error: any) {
@@ -331,7 +331,7 @@ const TayyorKozoynaklar = () => {
 
           if (error) throw error;
 
-          await loadKozoynaklar();
+          // Real-time orqali yangilanadi
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
