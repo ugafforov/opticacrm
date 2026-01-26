@@ -39,6 +39,14 @@ const Chiqindilar = () => {
     }
   }, [user]);
 
+  const mapToLocal = (item: any): TrashItem => ({
+    id: item.id,
+    type: item.type,
+    data: item.data,
+    deletedAt: item.deleted_at,
+    itemId: item.item_id,
+  });
+
   useEffect(() => {
     if (!user) return;
 
@@ -47,13 +55,29 @@ const Chiqindilar = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'chiqindilar',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadTrashItems();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setTrashItems(prev => {
+            if (prev.some(t => t.id === newItem.id)) return prev;
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'chiqindilar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setTrashItems(prev => prev.filter(t => t.id !== (payload.old as any).id));
         }
       )
       .subscribe();
@@ -73,15 +97,7 @@ const Chiqindilar = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        type: item.type,
-        data: item.data,
-        deletedAt: item.deleted_at,
-        itemId: item.item_id,
-      })) || [];
-
-      setTrashItems(mapped);
+      setTrashItems(data?.map(mapToLocal) || []);
     } catch (error: any) {
       console.error("Error loading trash:", error);
       toast.error(t("common.error"));

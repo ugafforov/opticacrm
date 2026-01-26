@@ -42,6 +42,20 @@ export const useQarzdorlar = () => {
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
   const { isOnline, guardOperation } = useOnlineGuard();
 
+  const mapToLocal = useCallback((item: any): Qarzdor => ({
+    id: item.id,
+    sana: item.sana,
+    createdAt: item.created_at,
+    tartibRaqam: item.tartib_raqam,
+    mijoz: item.mijoz,
+    telefon: item.telefon || "",
+    qarzSummasi: item.qarz_summasi,
+    qoldiqSumma: item.qoldiq_summa ?? item.qarz_summasi,
+    holat: (item.holat || "tollanmagan") as Qarzdor["holat"],
+    oxirgiAloqa: item.oxirgi_aloqa,
+    izoh: item.izoh || "",
+  }), []);
+
   const loadQarzdorlar = useCallback(async () => {
     if (!user) return;
     
@@ -55,28 +69,14 @@ export const useQarzdorlar = () => {
 
       if (error) throw error;
 
-      const mapped = data?.map((item) => ({
-        id: item.id,
-        sana: item.sana,
-        createdAt: item.created_at,
-        tartibRaqam: item.tartib_raqam,
-        mijoz: item.mijoz,
-        telefon: item.telefon || "",
-        qarzSummasi: item.qarz_summasi,
-        qoldiqSumma: item.qoldiq_summa ?? item.qarz_summasi,
-        holat: (item.holat || "tollanmagan") as Qarzdor["holat"],
-        oxirgiAloqa: item.oxirgi_aloqa,
-        izoh: item.izoh || "",
-      })) || [];
-
-      setQarzdorlar(mapped);
+      setQarzdorlar(data?.map(mapToLocal) || []);
     } catch (error: any) {
       console.error("Error loading qarzdorlar:", error);
       toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [user, t]);
+  }, [user, t, mapToLocal]);
 
   useEffect(() => {
     if (user) {
@@ -92,13 +92,42 @@ export const useQarzdorlar = () => {
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
           table: 'qarzdorlar',
           filter: `user_id=eq.${user.id}`
         },
-        () => {
-          loadQarzdorlar();
+        (payload) => {
+          const newItem = mapToLocal(payload.new);
+          setQarzdorlar(prev => {
+            if (prev.some(q => q.id === newItem.id)) return prev;
+            return [newItem, ...prev];
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'qarzdorlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedItem = mapToLocal(payload.new);
+          setQarzdorlar(prev => prev.map(q => q.id === updatedItem.id ? updatedItem : q));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'qarzdorlar',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          setQarzdorlar(prev => prev.filter(q => q.id !== (payload.old as any).id));
         }
       )
       .subscribe();
@@ -106,7 +135,7 @@ export const useQarzdorlar = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, loadQarzdorlar]);
+  }, [user, mapToLocal]);
 
   const addQarzdor = useCallback(async (data: {
     sana: Date;
