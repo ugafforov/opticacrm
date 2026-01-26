@@ -185,7 +185,7 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          await loadQarzdorlar();
+          // Real-time orqali keladi
           toast.success(t("debtors.addSuccess"));
           return true;
         } catch (error: any) {
@@ -248,7 +248,7 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          await loadQarzdorlar();
+          // Real-time orqali yangilanadi
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
@@ -290,7 +290,7 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          await loadQarzdorlar();
+          // Real-time orqali o'chiriladi
           toast.success(t("debtors.deleteSuccess"));
           return true;
         } catch (error: any) {

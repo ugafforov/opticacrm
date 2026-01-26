@@ -211,7 +211,7 @@ const Chiqindilar = () => {
 
           if (deleteError) throw deleteError;
 
-          await loadTrashItems();
+          // Real-time orqali o'chiriladi
           toast.success(t("trash.restored"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {
@@ -242,7 +242,7 @@ const Chiqindilar = () => {
 
           if (error) throw error;
 
-          await loadTrashItems();
+          // Real-time orqali o'chiriladi
           toast.success(t("trash.permanentDeleted"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {
@@ -273,7 +273,7 @@ const Chiqindilar = () => {
 
           if (error) throw error;
 
-          await loadTrashItems();
+          // Real-time orqali yangilanadi
           toast.success(t("trash.clearedAll"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {

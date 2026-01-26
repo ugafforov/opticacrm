@@ -288,7 +288,7 @@ const LinzaRoyxati = () => {
             toast.success(t("lens.addSuccess"));
           }
 
-          await loadRoyxatlar();
+          // Real-time orqali yangilanadi
 
           setSelectedDate(new Date());
           setForm({
@@ -343,7 +343,7 @@ const LinzaRoyxati = () => {
 
           if (error) throw error;
 
-          await loadRoyxatlar();
+          // Real-time orqali o'chiriladi
           toast.success(t("lens.deleteSuccess"));
           setDeleteId(null);
           return true;
@@ -389,7 +389,7 @@ const LinzaRoyxati = () => {
 
           if (error) throw error;
 
-          await loadRoyxatlar();
+          // Real-time orqali yangilanadi
           setEditingItem(null);
           toast.success(t("edit.success"));
           return true;

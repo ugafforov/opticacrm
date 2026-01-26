@@ -239,7 +239,7 @@ const LinzaSotuvi = () => {
 
           if (error) throw error;
 
-          await loadSotuvlar();
+          // Real-time orqali keladi, shuning uchun loadSotuvlar chaqirmaymiz
 
           setSelectedDate(new Date());
           setForm({
@@ -293,7 +293,7 @@ const LinzaSotuvi = () => {
 
           if (error) throw error;
 
-          await loadSotuvlar();
+          // Real-time orqali o'chiriladi
           setDeleteId(null);
           toast.success(t("lensSale.deleteSuccess"));
         } catch (error: any) {
@@ -334,7 +334,7 @@ const LinzaSotuvi = () => {
 
           if (error) throw error;
 
-          await loadSotuvlar();
+          // Real-time orqali yangilanadi
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
