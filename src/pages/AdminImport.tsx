@@ -33,7 +33,9 @@ const TABLE_SCHEMAS = {
     name: "Тайёр кўзойнаклар",
     columns: ["id", "user_id", "tartib_raqam", "sana", "kliyent", "kozoynak_turi", "summa", "created_at", "updated_at"],
     requiredFields: ["sana", "kliyent", "kozoynak_turi", "tartib_raqam"],
-    fieldMapping: {}
+    fieldMapping: {
+      "linza_turi": "kozoynak_turi" // Map linza_turi from old data to kozoynak_turi
+    }
   },
   linza_sotuvlari: {
     name: "Линза сотувлари",
