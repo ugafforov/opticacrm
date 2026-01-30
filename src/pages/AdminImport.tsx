@@ -212,25 +212,6 @@ const AdminImport = () => {
             newRow[mappedKey] = value;
           }
           
-          // Handle NOT NULL constraints with default values
-          // kozoynak_turi for tayyor_kozoynaklar
-          if (selectedTable === 'tayyor_kozoynaklar' && !newRow.kozoynak_turi) {
-            newRow.kozoynak_turi = 'Boshqa';
-          }
-          // linza_turi for linza_sotuvlari and linza_royxatlari
-          if ((selectedTable === 'linza_sotuvlari' || selectedTable === 'linza_royxatlari') && !newRow.linza_turi) {
-            newRow.linza_turi = 'Boshqa';
-          }
-          // kategoriya for xarajatlar
-          if (selectedTable === 'xarajatlar' && !newRow.kategoriya) {
-            newRow.kategoriya = 'Boshqa';
-          }
-          // oprava_turi and oyna_tури for buyurtmalar
-          if (selectedTable === 'buyurtmalar') {
-            if (!newRow.oprava_turi) newRow.oprava_turi = 'Boshqa';
-            if (!newRow['oyna_tури']) newRow['oyna_tури'] = 'Boshqa';
-          }
-          
           // Always set current user as the owner
           newRow.user_id = user.id;
           
