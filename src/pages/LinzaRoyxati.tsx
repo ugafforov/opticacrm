@@ -288,7 +288,8 @@ const LinzaRoyxati = () => {
             toast.success(t("lens.addSuccess"));
           }
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadRoyxatlar();
 
           setSelectedDate(new Date());
           setForm({
@@ -343,7 +344,8 @@ const LinzaRoyxati = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash
+          await loadRoyxatlar();
           toast.success(t("lens.deleteSuccess"));
           setDeleteId(null);
           return true;
@@ -389,7 +391,8 @@ const LinzaRoyxati = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadRoyxatlar();
           setEditingItem(null);
           toast.success(t("edit.success"));
           return true;
