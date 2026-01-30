@@ -95,58 +95,55 @@ const AdminImport = () => {
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [progress, setProgress] = useState(0);
 
-  // Parse CSV with semicolon delimiter (Lovable Cloud export format)
+  // Parse the Lovable-exported CSV (which contains JSON)
   const parseCSV = useCallback((content: string): ParsedData => {
     const errors: string[] = [];
     let rows: Record<string, any>[] = [];
     let headers: string[] = [];
 
     try {
-      const lines = content.trim().split('\n').filter(line => line.trim());
+      // Clean up the content
+      let jsonContent = content.trim();
       
-      if (lines.length < 2) {
-        errors.push("Файлда етарли маълумот йўқ (камида сарлавҳа ва бир қатор керак)");
-        return { headers: [], rows: [], errors };
+      // Remove 'json_agg' header if present (Lovable export format)
+      if (jsonContent.toLowerCase().startsWith('json_agg')) {
+        jsonContent = jsonContent.replace(/^json_agg\s*\n?/i, '');
       }
-
-      // First line is headers - split by semicolon
-      headers = lines[0].split(';').map(h => h.trim());
       
-      // Parse data rows
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(';');
-        
-        if (values.length !== headers.length) {
-          // Skip malformed rows but continue
-          continue;
-        }
-        
-        const row: Record<string, any> = {};
-        headers.forEach((header, idx) => {
-          let value: any = values[idx]?.trim() || null;
-          
-          // Convert numeric strings to numbers for numeric fields
-          if (value && !isNaN(Number(value)) && ['summa', 'qarz_summasi', 'qoldiq_summa', 'oyna_narxi', 'oprava_narxi', 'jami_summa', 'tartib_raqam', 'tugilan_yili'].includes(header)) {
-            value = Number(value);
+      // Handle quoted JSON content (wrapped in double quotes)
+      if (jsonContent.startsWith('"') && jsonContent.endsWith('"')) {
+        jsonContent = jsonContent.slice(1, -1);
+        // Replace escaped quotes
+        jsonContent = jsonContent.replace(/""/g, '"');
+      }
+      
+      // Try to parse as JSON array
+      let data: any[];
+      try {
+        data = JSON.parse(jsonContent);
+      } catch {
+        // Maybe it's JSONL format (one JSON object per line)
+        const lines = jsonContent.split('\n').filter(line => line.trim());
+        data = lines.map(line => {
+          try {
+            return JSON.parse(line.trim());
+          } catch {
+            return null;
           }
-          
-          // Convert boolean strings
-          if (value === 'true') value = true;
-          if (value === 'false') value = false;
-          
-          row[header] = value;
-        });
-        
-        rows.push(row);
+        }).filter(item => item !== null);
       }
 
-      if (rows.length === 0) {
-        errors.push("Файлда маълумот топилмади");
+      if (!Array.isArray(data) || data.length === 0) {
+        errors.push("Файлда маълумот топилмади ёки формат нотўғри");
         return { headers: [], rows: [], errors };
       }
+
+      // Extract headers from first object
+      headers = Object.keys(data[0]);
+      rows = data;
 
     } catch (e) {
-      errors.push(`CSV таҳлил қилишда хатолик: ${e instanceof Error ? e.message : 'Номаълум хатолик'}`);
+      errors.push(`JSON таҳлил қилишда хатолик: ${e instanceof Error ? e.message : 'Номаълум хатолик'}`);
     }
 
     return { headers, rows, errors };
