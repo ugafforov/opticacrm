@@ -185,7 +185,8 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali keladi
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadQarzdorlar();
           toast.success(t("debtors.addSuccess"));
           return true;
         } catch (error: any) {
@@ -248,7 +249,8 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadQarzdorlar();
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
@@ -290,7 +292,8 @@ export const useQarzdorlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash
+          await loadQarzdorlar();
           toast.success(t("debtors.deleteSuccess"));
           return true;
         } catch (error: any) {

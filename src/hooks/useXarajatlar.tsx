@@ -162,7 +162,8 @@ export const useXarajatlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali keladi, shuning uchun loadXarajatlar chaqirmaymiz
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadXarajatlar();
           toast.success(t("expenses.addSuccess"));
           return true;
         } catch (error: any) {
@@ -205,7 +206,8 @@ export const useXarajatlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadXarajatlar();
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
@@ -248,7 +250,8 @@ export const useXarajatlar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash
+          await loadXarajatlar();
           toast.success(t("expenses.deleteSuccess"));
           return true;
         } catch (error: any) {
