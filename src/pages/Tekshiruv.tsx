@@ -314,7 +314,8 @@ const Tekshiruv = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadTekshiruvlar(true);
           setDeleteId(null);
           toast.success(t("exam.deleteSuccess"));
           return true;
@@ -357,7 +358,8 @@ const Tekshiruv = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadTekshiruvlar(true);
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
           return true;

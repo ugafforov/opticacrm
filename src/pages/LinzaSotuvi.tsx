@@ -313,7 +313,8 @@ const LinzaSotuvi = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadSotuvlar(true);
           setDeleteId(null);
           toast.success(t("lensSale.deleteSuccess"));
         } catch (error: any) {
@@ -354,7 +355,8 @@ const LinzaSotuvi = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadSotuvlar(true);
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {

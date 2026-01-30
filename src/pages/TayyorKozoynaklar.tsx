@@ -310,7 +310,8 @@ const TayyorKozoynaklar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali o'chiriladi
+          // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
+          await loadKozoynaklar(true);
           setDeleteId(null);
           toast.success(t("ready.deleteSuccess"));
         } catch (error: any) {
@@ -351,7 +352,8 @@ const TayyorKozoynaklar = () => {
 
           if (error) throw error;
 
-          // Real-time orqali yangilanadi
+          // Darhol ma'lumotlarni yangilash
+          await loadKozoynaklar(true);
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
