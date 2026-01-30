@@ -20,6 +20,7 @@ const Xarajatlar = lazy(() => import("./pages/Xarajatlar"));
 const Qarzdorlar = lazy(() => import("./pages/Qarzdorlar"));
 const Chiqindilar = lazy(() => import("./pages/Chiqindilar"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminImport = lazy(() => import("./pages/AdminImport"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -36,6 +37,7 @@ const preloadPages = () => {
   import("./pages/Qarzdorlar");
   import("./pages/Chiqindilar");
   import("./pages/AdminUsers");
+  import("./pages/AdminImport");
   import("./pages/Profile");
   import("./pages/NotFound");
   import("./pages/Auth");
@@ -85,6 +87,7 @@ const AppRoutes = () => {
       <Route path="/qarzdorlar" element={<ProtectedRoute><Layout><SuspensePage><Qarzdorlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/admin/import" element={<ProtectedRoute><Layout><SuspensePage><AdminImport /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="*" element={<Suspense fallback={null}><PageTransition><NotFound /></PageTransition></Suspense>} />
     </Routes>

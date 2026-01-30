@@ -13,7 +13,8 @@ import {
   Wallet, 
   UserX,
   LogOut,
-  X
+  X,
+  Upload
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,7 +43,10 @@ const AppSidebar = ({ isOpen, isMobile = false, onClose }: AppSidebarProps) => {
     { to: "/qarzdorlar", label: t("nav.debtors"), icon: UserX },
     { to: "/hisobotlar", label: t("nav.reports"), icon: BarChart3 },
     { to: "/chiqindilar", label: t("nav.trash"), icon: Trash2 },
-    ...(isAdmin ? [{ to: "/admin/users", label: t("nav.users"), icon: Users }] : []),
+    ...(isAdmin ? [
+      { to: "/admin/users", label: t("nav.users"), icon: Users },
+      { to: "/admin/import", label: t("nav.import"), icon: Upload }
+    ] : []),
   ];
 
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
