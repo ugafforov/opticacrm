@@ -60,6 +60,12 @@ const TABLE_SCHEMAS = {
     columns: ["id", "user_id", "tartib_raqam", "sana", "mijoz", "telefon", "qarz_summasi", "qoldiq_summa", "holat", "izoh", "oxirgi_aloqa", "created_at", "updated_at"],
     requiredFields: ["sana", "mijoz", "qarz_summasi"],
     fieldMapping: {}
+  },
+  bemor_tarixi: {
+    name: "Бемор тарихи",
+    columns: ["id", "user_id", "bemor_id", "sana", "mijoz", "telefon", "od", "os", "linza_turi", "tugilan_yili", "created_at"],
+    requiredFields: ["sana", "od", "os", "linza_turi", "bemor_id"],
+    fieldMapping: {}
   }
 };
 
