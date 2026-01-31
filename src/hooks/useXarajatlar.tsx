@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -25,12 +25,10 @@ export const useXarajatlar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
   const { isOnline, guardOperation } = useOnlineGuard();
-
-  useEffect(() => {
-    if (user) {
-      loadXarajatlar();
-    }
-  }, [user]);
+  
+  // Optimization: prevent duplicate loads
+  const isLoadingRef = useRef(false);
+  const hasLoadedRef = useRef(false);
 
   const mapToLocal = (item: any): Xarajat => ({
     id: item.id,
@@ -41,6 +39,44 @@ export const useXarajatlar = () => {
     tavsif: item.tavsif || "",
     summa: item.summa,
   });
+
+  // Load xarajatlar - with optimization to prevent duplicate loads
+  const loadXarajatlar = useCallback(async (force = false) => {
+    if (!user || isLoadingRef.current) return;
+    
+    // Skip if already loaded and not forced
+    if (hasLoadedRef.current && !force) {
+      setLoading(false);
+      return;
+    }
+    
+    isLoadingRef.current = true;
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("xarajatlar")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setXarajatlar(data?.map(mapToLocal) || []);
+      hasLoadedRef.current = true;
+    } catch (error: any) {
+      console.error("Error loading xarajatlar:", error);
+      toast.error(t("toast.loadError"));
+    } finally {
+      setLoading(false);
+      isLoadingRef.current = false;
+    }
+  }, [user, t]);
+
+  useEffect(() => {
+    if (user) {
+      loadXarajatlar();
+    }
+  }, [user, loadXarajatlar]);
 
   useEffect(() => {
     if (!user) return;
@@ -94,28 +130,6 @@ export const useXarajatlar = () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
-
-  const loadXarajatlar = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("xarajatlar")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      setXarajatlar(data?.map(mapToLocal) || []);
-    } catch (error: any) {
-      console.error("Error loading xarajatlar:", error);
-      toast.error(t("toast.loadError"));
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const addXarajat = useCallback(async (data: {
     sana: Date;
@@ -273,6 +287,6 @@ export const useXarajatlar = () => {
     addXarajat,
     updateXarajat,
     deleteXarajat,
-    refetch: loadXarajatlar,
+    refetch: () => loadXarajatlar(true),
   };
 };

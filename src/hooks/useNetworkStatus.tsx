@@ -1,52 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'sonner';
-import { useLanguage } from '@/contexts/LanguageContext';
-
-interface NetworkStatus {
-  isOnline: boolean;
-  wasOffline: boolean;
-}
+import { useNetworkContext } from "@/contexts/NetworkContext";
 
 /**
- * Hook to monitor network connectivity status
- * Shows toast notifications when connection is lost/restored
+ * Hook wrapper for NetworkContext
+ * All network state is cached in NetworkContext to prevent duplicate event listeners
  */
-export function useNetworkStatus(): NetworkStatus {
-  const { t } = useLanguage();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [wasOffline, setWasOffline] = useState(false);
-
-  const handleOnline = useCallback(() => {
-    setIsOnline(true);
-    if (wasOffline) {
-      toast.success(t('network.restored') || 'Internet aloqa tiklandi', {
-        duration: 3000,
-        id: 'network-status',
-      });
-    }
-    setWasOffline(false);
-  }, [wasOffline, t]);
-
-  const handleOffline = useCallback(() => {
-    setIsOnline(false);
-    setWasOffline(true);
-    toast.error(t('network.lost') || 'Internet aloqa yo\'q', {
-      duration: Infinity,
-      id: 'network-status',
-      description: t('network.checkConnection') || 'Internetga ulanishni tekshiring',
-    });
-  }, [t]);
-
-  useEffect(() => {
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [handleOnline, handleOffline]);
-
+export function useNetworkStatus() {
+  const { isOnline, wasOffline } = useNetworkContext();
   return { isOnline, wasOffline };
 }
 
@@ -54,19 +13,6 @@ export function useNetworkStatus(): NetworkStatus {
  * Hook to ensure operations only run when online
  */
 export function useOnlineGuard() {
-  const { t } = useLanguage();
-  const { isOnline } = useNetworkStatus();
-
-  const guardOperation = useCallback(async <T,>(
-    operation: () => Promise<T>,
-    offlineMessage?: string
-  ): Promise<T | null> => {
-    if (!isOnline) {
-      toast.error(offlineMessage || t('network.operationRequiresConnection') || 'Bu amal internet aloqasini talab qiladi');
-      return null;
-    }
-    return operation();
-  }, [isOnline, t]);
-
+  const { isOnline, guardOperation } = useNetworkContext();
   return { isOnline, guardOperation };
 }
