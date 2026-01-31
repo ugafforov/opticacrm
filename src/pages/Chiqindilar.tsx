@@ -10,6 +10,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatUzbekistanTimestamp } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface TrashItem {
   id: string;
@@ -99,7 +100,7 @@ const Chiqindilar = () => {
 
       setTrashItems(data?.map(mapToLocal) || []);
     } catch (error: any) {
-      console.error("Error loading trash:", error);
+      logger.error("Error loading trash:", error);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
@@ -216,7 +217,7 @@ const Chiqindilar = () => {
           toast.success(t("trash.restored"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {
-          console.error("Error restoring item:", error);
+          logger.error("Error restoring item:", error);
           toast.error(t("common.error"));
         } finally {
           setIsProcessing(false);
@@ -248,7 +249,7 @@ const Chiqindilar = () => {
           toast.success(t("trash.permanentDeleted"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {
-          console.error("Error deleting permanently:", error);
+          logger.error("Error deleting permanently:", error);
           toast.error(t("common.error"));
         } finally {
           setIsProcessing(false);
@@ -280,7 +281,7 @@ const Chiqindilar = () => {
           toast.success(t("trash.clearedAll"));
           setConfirmDialog({ open: false, itemId: "", action: "delete" });
         } catch (error: any) {
-          console.error("Error clearing trash:", error);
+          logger.error("Error clearing trash:", error);
           toast.error(t("common.error"));
         } finally {
           setIsProcessing(false);

@@ -3,6 +3,8 @@
  * Critical for production reliability
  */
 
+import { logger } from "@/lib/logger";
+
 interface RetryOptions {
   maxRetries?: number;
   baseDelay?: number;
@@ -72,7 +74,7 @@ export async function withRetry<T>(
         opts.maxDelay
       );
       
-      console.warn(`Retry attempt ${attempt + 1}/${opts.maxRetries} after ${delay}ms`, error);
+      logger.warn(`Retry attempt ${attempt + 1}/${opts.maxRetries} after ${delay}ms`, error);
       
       await new Promise(resolve => setTimeout(resolve, delay));
     }

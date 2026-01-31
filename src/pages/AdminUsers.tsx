@@ -11,6 +11,7 @@ import { Trash2, UserPlus } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useNavigate } from "react-router-dom";
 import { adminUserSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 
 interface UserWithRole {
   id: string;

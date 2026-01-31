@@ -19,6 +19,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { EditDialog } from "@/components/EditDialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { logger } from "@/lib/logger";
 
 interface PatientHistory {
   id: string;
@@ -55,6 +57,7 @@ export const PatientCard = ({
   onUpdate,
 }: PatientCardProps) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [history, setHistory] = useState<PatientHistory[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -93,7 +96,7 @@ export const PatientCard = ({
 
       setHistory(data || []);
     } catch (error) {
-      console.error("Error loading patient history:", error);
+      logger.error("Error loading patient history:", error);
     } finally {
       setLoading(false);
     }
@@ -102,7 +105,7 @@ export const PatientCard = ({
   const handleAddNewRecord = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!patientId) return;
+    if (!patientId || !user) return;
 
     try {
       setSubmitting(true);
@@ -111,7 +114,7 @@ export const PatientCard = ({
         .from("bemor_tarixi")
         .insert({
           bemor_id: patientId,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          user_id: user.id,
           sana: currentDate,
           od: currentOd,
           os: currentOs,
@@ -147,7 +150,7 @@ export const PatientCard = ({
       if (onUpdate) onUpdate();
       
     } catch (error) {
-      console.error("Error adding new record:", error);
+      logger.error("Error adding new record:", error);
       toast.error(t("common.error"));
     } finally {
       setSubmitting(false);
@@ -188,7 +191,7 @@ export const PatientCard = ({
       await loadHistory();
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error("Error updating history record:", error);
+      logger.error("Error updating history record:", error);
       toast.error(t("common.error"));
     } finally {
       setSubmitting(false);
@@ -211,7 +214,7 @@ export const PatientCard = ({
       await loadHistory();
       if (onUpdate) onUpdate();
     } catch (error) {
-      console.error("Error deleting history record:", error);
+      logger.error("Error deleting history record:", error);
       toast.error(t("common.error"));
     } finally {
       setSubmitting(false);

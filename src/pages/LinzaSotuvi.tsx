@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 import {
   Pagination,
   PaginationContent,
@@ -188,7 +189,7 @@ const LinzaSotuvi = () => {
       setSotuvlar(data?.map(mapToLocal) || []);
       hasLoadedRef.current = true;
     } catch (error: any) {
-      console.error("Error loading linza sotuvlari:", error);
+      logger.error("Error loading linza sotuvlari:", error);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
@@ -271,7 +272,7 @@ const LinzaSotuvi = () => {
           toast.success(t("lensSale.addSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error adding linza sotuvi:", error);
+          logger.error("Error adding linza sotuvi:", error);
           setSotuvlar(prev => prev.filter(s => !s.id.startsWith('temp-')));
           toast.error(t("common.error"));
           return false;
@@ -319,7 +320,7 @@ const LinzaSotuvi = () => {
           setDeleteId(null);
           toast.success(t("lensSale.deleteSuccess"));
         } catch (error: any) {
-          console.error("Error deleting linza sotuvi:", error);
+          logger.error("Error deleting linza sotuvi:", error);
           toast.error(t("common.error"));
         } finally {
           setIsDeleting(false);
@@ -361,7 +362,7 @@ const LinzaSotuvi = () => {
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
-          console.error("Error updating linza sotuvi:", error);
+          logger.error("Error updating linza sotuvi:", error);
           toast.error(t("common.error"));
         } finally {
           setIsUpdating(false);
@@ -502,7 +503,7 @@ const LinzaSotuvi = () => {
     doc.save(`Linza_Sotuvi_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useMemo, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 interface AuthContextType {
   user: User | null;
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase.rpc("is_admin", { _user_id: userId });
       
       if (error) {
-        console.error("Error checking admin status:", error);
+        logger.error("Error checking admin status:", error);
         setIsAdmin(false);
         return;
       }
@@ -35,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAdmin(!!data);
       setAdminChecked(userId);
     } catch (error) {
-      console.error("Error checking admin status:", error);
+      logger.error("Error checking admin status:", error);
       setIsAdmin(false);
     }
   }, [adminChecked]);

@@ -32,6 +32,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 import {
   Pagination,
   PaginationContent,
@@ -508,7 +509,7 @@ const Tekshiruv = () => {
     doc.save(`Tekshiruvlar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

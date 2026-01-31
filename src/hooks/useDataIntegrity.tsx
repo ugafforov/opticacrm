@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { logger } from '@/lib/logger';
 
 /**
  * Hook to ensure data integrity across the application
@@ -21,7 +22,7 @@ export function useDataIntegrity() {
     operation: () => Promise<T>
   ): Promise<T | null> => {
     if (pendingOperations.current.has(operationKey)) {
-      console.warn(`Duplicate operation prevented: ${operationKey}`);
+      logger.warn(`Duplicate operation prevented: ${operationKey}`);
       return null;
     }
 
@@ -87,7 +88,7 @@ export function useAuditLog() {
       const updatedLogs = [logEntry, ...existingLogs].slice(0, 100); // Keep last 100
       sessionStorage.setItem('audit_log', JSON.stringify(updatedLogs));
     } catch (error) {
-      console.error('Failed to store audit log:', error);
+      logger.error('Failed to store audit log:', error);
     }
 
     // Also log to console in development

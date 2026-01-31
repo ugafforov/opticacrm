@@ -32,6 +32,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { logger } from "@/lib/logger";
 import {
   Pagination,
   PaginationContent,
@@ -179,7 +180,7 @@ const LinzaRoyxati = () => {
 
       setRoyxatlar(data?.map(mapToLocal) || []);
     } catch (error: any) {
-      console.error("Error loading linza royxatlari:", error);
+      logger.error("Error loading linza royxatlari:", error);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
@@ -302,7 +303,7 @@ const LinzaRoyxati = () => {
           });
           return true;
         } catch (error: any) {
-          console.error("Error adding/updating linza royxat:", error);
+          logger.error("Error adding/updating linza royxat:", error);
           toast.error(t("common.error"));
           return false;
         } finally {
@@ -350,7 +351,7 @@ const LinzaRoyxati = () => {
           setDeleteId(null);
           return true;
         } catch (error: any) {
-          console.error("Error deleting linza royxat:", error);
+          logger.error("Error deleting linza royxat:", error);
           toast.error(t("common.error"));
           return false;
         } finally {
@@ -397,7 +398,7 @@ const LinzaRoyxati = () => {
           toast.success(t("edit.success"));
           return true;
         } catch (error: any) {
-          console.error("Error updating linza royxat:", error);
+          logger.error("Error updating linza royxat:", error);
           toast.error(t("common.error"));
           return false;
         } finally {
@@ -428,7 +429,7 @@ const LinzaRoyxati = () => {
       
       toast.success(newValue ? t("lens.contactedSuccess") : t("lens.notContacted"));
     } catch (error: any) {
-      console.error("Error toggling contacted:", error);
+      logger.error("Error toggling contacted:", error);
       toast.error(t("common.error"));
     }
   }, [user, isOnline, t]);
@@ -657,7 +658,7 @@ const LinzaRoyxati = () => {
     doc.save(`Linza_Royxati_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

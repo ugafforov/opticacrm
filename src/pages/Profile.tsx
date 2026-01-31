@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { User, Mail, Save, Upload, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const profileSchema = z.object({
   full_name: z.string().trim().min(2, "Ism kamida 2 ta harfdan iborat bo'lishi kerak").max(100, "Ism 100 ta harfdan oshmasligi kerak"),
@@ -167,7 +168,7 @@ const Profile = () => {
       toast.success("Avatar yangilandi!");
     } catch (error: any) {
       toast.error(t("toast.error"));
-      console.error("Avatar upload error:", error);
+      logger.error("Avatar upload error:", error);
     } finally {
       setUploading(false);
     }

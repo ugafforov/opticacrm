@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { logger } from "@/lib/logger";
 
 export interface Xarajat {
   id: string;
@@ -64,7 +65,7 @@ export const useXarajatlar = () => {
       setXarajatlar(data?.map(mapToLocal) || []);
       hasLoadedRef.current = true;
     } catch (error: any) {
-      console.error("Error loading xarajatlar:", error);
+      logger.error("Error loading xarajatlar:", error);
       toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
@@ -181,7 +182,7 @@ export const useXarajatlar = () => {
           toast.success(t("expenses.addSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error adding xarajat:", error);
+          logger.error("Error adding xarajat:", error);
           toast.error(t("toast.saveError"));
           return false;
         } finally {
@@ -225,7 +226,7 @@ export const useXarajatlar = () => {
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error updating xarajat:", error);
+          logger.error("Error updating xarajat:", error);
           toast.error(t("toast.updateError"));
           return false;
         }
@@ -269,7 +270,7 @@ export const useXarajatlar = () => {
           toast.success(t("expenses.deleteSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error deleting xarajat:", error);
+          logger.error("Error deleting xarajat:", error);
           toast.error(t("toast.deleteError"));
           return false;
         }

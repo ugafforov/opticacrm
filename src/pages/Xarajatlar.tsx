@@ -26,6 +26,7 @@ import { DateFilterSelect } from "@/components/DateFilterSelect";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 import {
   Pagination,
   PaginationContent,
@@ -269,9 +270,9 @@ const Xarajatlar = () => {
       });
 
       doc.save(`Xarajatlar_${formatUzbekistanDate()}.pdf`);
-      toast.success(t("toast.pdfSuccess"));
+    toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };
