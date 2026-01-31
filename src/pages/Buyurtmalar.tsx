@@ -20,6 +20,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn, formatPhoneNumber, formatOdOs } from "@/lib/utils";
+import { safeSum } from "@/lib/safeCalculations";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
@@ -84,7 +85,7 @@ const Buyurtmalar = () => {
 
       <BuyurtmalarTable
         buyurtmalar={paginatedItems}
-        totalSum={dateFiltered.reduce((sum, b) => sum + b.jamiSumma, 0)}
+        totalSum={safeSum(dateFiltered.map(b => b.jamiSumma))}
         onEdit={setEditingItem}
         onDelete={setDeleteId}
         onExportExcel={exportToExcel}

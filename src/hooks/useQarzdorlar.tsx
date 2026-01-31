@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { safeSum, safeSubtract } from "@/lib/safeCalculations";
 
 export interface QarzTolovi {
   id: string;
@@ -224,8 +225,8 @@ export const useQarzdorlar = () => {
             .select("summa")
             .eq("qarzdor_id", id);
           
-          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-          const qoldiq = data.qarzSummasi - totalPaid;
+          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const qoldiq = safeSubtract(data.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
           if (qoldiq <= 0) {
@@ -343,8 +344,8 @@ export const useQarzdorlar = () => {
             .select("summa")
             .eq("qarzdor_id", qarzdorId);
           
-          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-          const qoldiq = qarzdor.qarzSummasi - totalPaid;
+          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const qoldiq = safeSubtract(qarzdor.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
           if (qoldiq <= 0) {
@@ -428,8 +429,8 @@ export const useQarzdorlar = () => {
             .select("summa")
             .eq("qarzdor_id", qarzdorId);
           
-          const totalPaid = payments?.reduce((sum, p) => sum + Number(p.summa), 0) || 0;
-          const qoldiq = qarzdor.qarzSummasi - totalPaid;
+          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const qoldiq = safeSubtract(qarzdor.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
           if (qoldiq <= 0) {

@@ -88,6 +88,37 @@ const Hisobotlar = () => {
   const [debtorStatusData, setDebtorStatusData] = useState<DebtorStatusData[]>([]);
   const [paymentTrendData, setPaymentTrendData] = useState<PaymentTrendData[]>([]);
 
+  // Real-time subscription - ma'lumotlar o'zgarganda avtomatik yangilanadi
+  useEffect(() => {
+    if (!user) return;
+
+    // All tables that affect reports
+    const tables = ['buyurtmalar', 'tekshiruvlar', 'tayyor_kozoynaklar', 'linza_sotuvlari', 'xarajatlar', 'qarzdorlar', 'qarz_tolovlari'];
+    
+    const channels = tables.map(tableName => 
+      supabase
+        .channel(`hisobot-${tableName}-changes`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: tableName,
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            // Istalgan o'zgarish bo'lganda hisobotlarni qayta yuklash
+            loadReportData();
+          }
+        )
+        .subscribe()
+    );
+
+    return () => {
+      channels.forEach(channel => supabase.removeChannel(channel));
+    };
+  }, [user, period, startDate, endDate, showComparison, selectedType]);
+
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const currentIncome = payload[0].value;
@@ -268,8 +299,8 @@ const Hisobotlar = () => {
       const currentLinzaSotuvlari = linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana));
       const currentXarajatlar = xarajatlar.filter((x: any) => !startDate && !endDate ? true : isDateInRange(x.sana));
 
-      // Calculate total expenses
-      const expenseTotal = currentXarajatlar.reduce((sum: number, x: any) => sum + (x.summa || 0), 0);
+      // Calculate total expenses with safe calculation
+      const expenseTotal = safeSum(currentXarajatlar.map((x: any) => x.summa || 0));
       setTotalXarajat(expenseTotal);
 
       // Calculate expense category data
@@ -279,7 +310,7 @@ const Hisobotlar = () => {
         if (!expenseCategories[category]) {
           expenseCategories[category] = { total: 0, count: 0 };
         }
-        expenseCategories[category].total += x.summa || 0;
+        expenseCategories[category].total = safeAdd(expenseCategories[category].total, x.summa || 0);
         expenseCategories[category].count += 1;
       });
 
@@ -314,35 +345,35 @@ const Hisobotlar = () => {
         previousLinzaSotuvlari = linzaSotuvlari.filter((l: any) => isDateInPreviousRange(l.sana, prevStart, prevEnd));
       }
 
-      // Calculate section totals with comparison
+      // Calculate section totals with safe calculations
       const sections: SectionData[] = [
         {
           name: t("nav.orders"),
-          total: currentBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0),
+          total: safeSum(currentBuyurtmalar.map((b: any) => b.jami_summa || 0)),
           count: currentBuyurtmalar.length,
           color: "hsl(var(--chart-1))",
-          previousTotal: showComparison ? previousBuyurtmalar.reduce((sum, b) => sum + (b.jami_summa || 0), 0) : undefined,
+          previousTotal: showComparison ? safeSum(previousBuyurtmalar.map((b: any) => b.jami_summa || 0)) : undefined,
         },
         {
           name: t("nav.examination"),
-          total: currentTekshiruvlar.reduce((sum, t) => sum + (t.jami_summa || 0), 0),
+          total: safeSum(currentTekshiruvlar.map((t: any) => t.jami_summa || 0)),
           count: currentTekshiruvlar.length,
           color: "hsl(var(--chart-2))",
-          previousTotal: showComparison ? previousTekshiruvlar.reduce((sum, t) => sum + (t.jami_summa || 0), 0) : undefined,
+          previousTotal: showComparison ? safeSum(previousTekshiruvlar.map((t: any) => t.jami_summa || 0)) : undefined,
         },
         {
           name: t("nav.readyGlasses"),
-          total: currentTayyorKozoynaklar.reduce((sum, k) => sum + (k.summa || 0), 0),
+          total: safeSum(currentTayyorKozoynaklar.map((k: any) => k.summa || 0)),
           count: currentTayyorKozoynaklar.length,
           color: "hsl(var(--chart-3))",
-          previousTotal: showComparison ? previousTayyorKozoynaklar.reduce((sum, k) => sum + (k.summa || 0), 0) : undefined,
+          previousTotal: showComparison ? safeSum(previousTayyorKozoynaklar.map((k: any) => k.summa || 0)) : undefined,
         },
         {
           name: t("nav.lensSales"),
-          total: currentLinzaSotuvlari.reduce((sum, l) => sum + (l.summa || 0), 0),
+          total: safeSum(currentLinzaSotuvlari.map((l: any) => l.summa || 0)),
           count: currentLinzaSotuvlari.length,
           color: "hsl(var(--chart-4))",
-          previousTotal: showComparison ? previousLinzaSotuvlari.reduce((sum, l) => sum + (l.summa || 0), 0) : undefined,
+          previousTotal: showComparison ? safeSum(previousLinzaSotuvlari.map((l: any) => l.summa || 0)) : undefined,
         },
       ];
 
@@ -446,13 +477,13 @@ const Hisobotlar = () => {
 
       setReportData(groupedData);
 
-      // Calculate debtor statistics - independent of date filter (all debtors)
+      // Calculate debtor statistics - independent of date filter (all debtors) with safe calculations
       const currentQarzdorlar = qarzdorlar;
       const currentTolovlar = tolovlar;
 
-      const totalDebtAmount = currentQarzdorlar.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0);
-      const totalCollectedAmount = currentTolovlar.reduce((sum: number, t: any) => sum + (t.summa || 0), 0);
-      const remainingDebtAmount = currentQarzdorlar.reduce((sum: number, q: any) => sum + (q.qoldiq_summa || 0), 0);
+      const totalDebtAmount = safeSum(currentQarzdorlar.map((q: any) => q.qarz_summasi || 0));
+      const totalCollectedAmount = safeSum(currentTolovlar.map((t: any) => t.summa || 0));
+      const remainingDebtAmount = safeSum(currentQarzdorlar.map((q: any) => q.qoldiq_summa || 0));
 
       const paidDebtors = currentQarzdorlar.filter((q: any) => q.holat === 'tollangan');
       const partialDebtors = currentQarzdorlar.filter((q: any) => q.holat === 'qisman');
@@ -479,19 +510,19 @@ const Hisobotlar = () => {
         {
           name: t("reports.paidDebtors"),
           count: paidDebtors.length,
-          total: paidDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          total: safeSum(paidDebtors.map((q: any) => q.qarz_summasi || 0)),
           color: statusColors.paid,
         },
         {
           name: t("reports.partialDebtors"),
           count: partialDebtors.length,
-          total: partialDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          total: safeSum(partialDebtors.map((q: any) => q.qarz_summasi || 0)),
           color: statusColors.partial,
         },
         {
           name: t("reports.unpaidDebtors"),
           count: unpaidDebtors.length,
-          total: unpaidDebtors.reduce((sum: number, q: any) => sum + (q.qarz_summasi || 0), 0),
+          total: safeSum(unpaidDebtors.map((q: any) => q.qarz_summasi || 0)),
           color: statusColors.unpaid,
         },
       ].filter(s => s.count > 0);
@@ -676,8 +707,8 @@ const Hisobotlar = () => {
     return itemDateOnly >= prevStartOnly && itemDateOnly <= prevEndOnly;
   };
 
-  const totalTushum = reportData.reduce((sum, item) => sum + item.tushum, 0);
-  const previousTotalTushum = showComparison ? reportData.reduce((sum, item) => sum + (item.oldatgiTushum || 0), 0) : 0;
+  const totalTushum = safeSum(reportData.map(item => item.tushum));
+  const previousTotalTushum = showComparison ? safeSum(reportData.map(item => item.oldatgiTushum || 0)) : 0;
   const totalChange = previousTotalTushum > 0 ? ((totalTushum - previousTotalTushum) / previousTotalTushum) * 100 : 0;
   
   const exportToExcel = async (type: "period" | "section" | "detailed") => {
@@ -723,10 +754,10 @@ const Hisobotlar = () => {
         ];
         data = sections.map(section => ({
           [t("reports.bySection")]: section.name,
-          [t("reports.income")]: section.data.reduce((sum: number, item: any) => sum + (item[section.key] || 0), 0)
+          [t("reports.income")]: safeSum(section.data.map((item: any) => item[section.key] || 0))
         }));
         sheetName = `${t("reports.title")} - ${t("reports.bySection")}`;
-        const totalIncome = sectionData.reduce((sum, s) => sum + s.total, 0);
+        const totalIncome = safeSum(sectionData.map(s => s.total));
         metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       } else {
         const allData = [
