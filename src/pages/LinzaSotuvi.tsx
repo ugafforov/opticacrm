@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { safeSum } from "@/lib/safeCalculations";
 import {
   Pagination,
   PaginationContent,
@@ -416,7 +417,7 @@ const LinzaSotuvi = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentSotuvlar = filteredSotuvlar.slice(startIndex, endIndex);
 
-  const totalSum = filteredSotuvlar.reduce((sum, s) => sum + s.summa, 0);
+  const totalSum = safeSum(filteredSotuvlar.map(s => s.summa));
 
   const handleExportToExcel = async () => {
     const dateTime = formatUzbekistanDateTime();

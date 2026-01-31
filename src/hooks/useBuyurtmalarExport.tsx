@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatUzbekistanDate, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { Buyurtma } from "./useBuyurtmalar";
+import { safeSum } from "@/lib/safeCalculations";
 
 export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
   const { t, script } = useLanguage();
@@ -33,7 +34,7 @@ export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
     return frameMap[frameType] || frameType;
   };
 
-  const totalSum = buyurtmalar.reduce((sum, b) => sum + b.jamiSumma, 0);
+  const totalSum = safeSum(buyurtmalar.map(b => b.jamiSumma));
 
   const handleExportToExcel = async () => {
     const dateTime = formatUzbekistanDateTime();

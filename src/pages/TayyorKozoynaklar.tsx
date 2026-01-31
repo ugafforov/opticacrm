@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { safeSum } from "@/lib/safeCalculations";
 import {
   Pagination,
   PaginationContent,
@@ -413,7 +414,7 @@ const TayyorKozoynaklar = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentKozoynaklar = filteredKozoynaklar.slice(startIndex, endIndex);
 
-  const totalSum = filteredKozoynaklar.reduce((sum, k) => sum + k.summa, 0);
+  const totalSum = safeSum(filteredKozoynaklar.map(k => k.summa));
 
   const handleExportToExcel = async () => {
     const dateTime = formatUzbekistanDateTime();

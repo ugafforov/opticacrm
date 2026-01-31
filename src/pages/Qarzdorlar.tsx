@@ -22,6 +22,7 @@ import { formatUzbekistanDate, formatUzbekistanDateTime, formatDisplayDate } fro
 import { PriceInput } from "@/components/PriceInput";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { useQarzdorlar, Qarzdor, QarzTolovi, DebtorStatus } from "@/hooks/useQarzdorlar";
+import { safeSum } from "@/lib/safeCalculations";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
@@ -113,16 +114,16 @@ const Qarzdorlar = () => {
 
   // Calculate KPI stats
   const kpiStats = useMemo(() => {
-    const totalDebt = qarzdorlar.reduce((sum, x) => sum + x.qoldiqSumma, 0);
+    const totalDebt = safeSum(qarzdorlar.map(x => x.qoldiqSumma));
     const today = new Date();
     
-    const overdueDebt = qarzdorlar
-      .filter(x => {
-        if (x.holat === "tollangan") return false;
-        const debtDate = new Date(x.sana.split('-').reverse().join('-'));
-        return differenceInDays(today, debtDate) > 30;
-      })
-      .reduce((sum, x) => sum + x.qoldiqSumma, 0);
+    const overdueItems = qarzdorlar.filter(x => {
+      if (x.holat === "tollangan") return false;
+      const debtDate = new Date(x.sana.split('-').reverse().join('-'));
+      return differenceInDays(today, debtDate) > 30;
+    });
+    
+    const overdueDebt = safeSum(overdueItems.map(x => x.qoldiqSumma));
     
     const overdueCount = qarzdorlar.filter(x => {
       if (x.holat === "tollangan") return false;

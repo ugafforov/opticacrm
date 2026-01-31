@@ -31,6 +31,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { safeSum } from "@/lib/safeCalculations";
 import {
   Pagination,
   PaginationContent,
@@ -420,7 +421,7 @@ const Tekshiruv = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentTekshiruvlar = filteredTekshiruvlar.slice(startIndex, endIndex);
 
-  const totalSum = filteredTekshiruvlar.reduce((sum, t) => sum + t.jamiSumma, 0);
+  const totalSum = safeSum(filteredTekshiruvlar.map(t => t.jamiSumma));
 
   const handleExportToExcel = async () => {
     const dateTime = formatUzbekistanDateTime();

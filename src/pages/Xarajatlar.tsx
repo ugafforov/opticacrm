@@ -25,6 +25,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { DateFilterSelect } from "@/components/DateFilterSelect";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { safeSum } from "@/lib/safeCalculations";
 import {
   Pagination,
   PaginationContent,
@@ -183,7 +184,7 @@ const Xarajatlar = () => {
   const endIndex = startIndex + itemsPerPage;
   const currentXarajatlar = filteredXarajatlar.slice(startIndex, endIndex);
 
-  const totalSum = filteredXarajatlar.reduce((sum, x) => sum + x.summa, 0);
+  const totalSum = safeSum(filteredXarajatlar.map(x => x.summa));
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('uz-UZ');
