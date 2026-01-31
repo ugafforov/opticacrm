@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { safeSum, safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
 import { withRetry } from "@/lib/retryUtils";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ReportData {
   name: string;
@@ -88,7 +89,11 @@ const Hisobotlar = () => {
   const [debtorStatusData, setDebtorStatusData] = useState<DebtorStatusData[]>([]);
   const [paymentTrendData, setPaymentTrendData] = useState<PaymentTrendData[]>([]);
 
-  // Real-time subscription - ma'lumotlar o'zgarganda avtomatik yangilanadi
+  // Debounced data loading ref
+  const loadDataRef = useRef<() => void>();
+  const { debounce } = useDebounce();
+
+  // Real-time subscription - faqat user o'zgarganda yangilanadi
   useEffect(() => {
     if (!user) return;
 
@@ -97,7 +102,7 @@ const Hisobotlar = () => {
     
     const channels = tables.map(tableName => 
       supabase
-        .channel(`hisobot-${tableName}-changes`)
+        .channel(`hisobot-${tableName}-${user.id}`)
         .on(
           'postgres_changes',
           {
@@ -107,8 +112,10 @@ const Hisobotlar = () => {
             filter: `user_id=eq.${user.id}`
           },
           () => {
-            // Istalgan o'zgarish bo'lganda hisobotlarni qayta yuklash
-            loadReportData();
+            // Debounced update to prevent rapid re-renders
+            if (loadDataRef.current) {
+              loadDataRef.current();
+            }
           }
         )
         .subscribe()
@@ -117,7 +124,7 @@ const Hisobotlar = () => {
     return () => {
       channels.forEach(channel => supabase.removeChannel(channel));
     };
-  }, [user, period, startDate, endDate, showComparison, selectedType]);
+  }, [user]); // Faqat user dependency - channel bir marta yaratiladi
 
   const CustomTooltip = ({ active, payload, label, total, showComparison }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
@@ -157,6 +164,17 @@ const Hisobotlar = () => {
     setStartDate(today);
     setEndDate(today);
   }, []);
+
+  // Debounced load function
+  const debouncedLoad = useMemo(
+    () => debounce(() => loadReportData(), 300),
+    [debounce]
+  );
+
+  // Update ref for realtime subscription
+  useEffect(() => {
+    loadDataRef.current = debouncedLoad;
+  }, [debouncedLoad]);
 
   useEffect(() => {
     if (user) {
