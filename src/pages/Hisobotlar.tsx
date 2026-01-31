@@ -21,6 +21,7 @@ import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
 import { safeSum, safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
 import { withRetry } from "@/lib/retryUtils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { logger } from "@/lib/logger";
 
 interface ReportData {
   name: string;
@@ -986,7 +987,7 @@ const Hisobotlar = () => {
       doc.save(`Hisobotlar_${currentDate}.pdf`);
       toast.success(t("toast.pdfSuccess"));
     } catch (error: any) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

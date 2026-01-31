@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { logger } from './logger';
 
 // Base schemas for common fields
 const phoneSchema = z.string()
@@ -138,7 +139,7 @@ export function isDataCorrupted(record: Record<string, any>): boolean {
   for (const [key, value] of Object.entries(record)) {
     if (typeof value === 'number') {
       if (!isFinite(value) || Math.abs(value) > 1e15) {
-        console.warn(`Potentially corrupted data detected in field ${key}:`, value);
+        logger.warn(`Potentially corrupted data detected in field ${key}:`, value);
         return true;
       }
     }

@@ -27,6 +27,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { logger } from "@/lib/logger";
 import {
   Select,
   SelectContent,
@@ -423,7 +424,7 @@ const Qarzdorlar = () => {
       doc.save(`Qarzdorlar_${formatUzbekistanDate()}.pdf`);
       toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

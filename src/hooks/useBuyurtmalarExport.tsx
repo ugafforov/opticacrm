@@ -8,6 +8,7 @@ import { formatUzbekistanDate, formatUzbekistanDateTime, formatDisplayDate } fro
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { Buyurtma } from "./useBuyurtmalar";
 import { safeSum } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 
 export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
   const { t, script } = useLanguage();
@@ -127,7 +128,7 @@ export const useBuyurtmalarExport = (buyurtmalar: Buyurtma[]) => {
       doc.save(`Buyurtmalar_${formatUzbekistanDate()}.pdf`);
       toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

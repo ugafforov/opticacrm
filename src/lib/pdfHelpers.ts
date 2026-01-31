@@ -1,6 +1,7 @@
 import jsPDF from "jspdf";
 import { formatUzbekistanDateTime } from "./utils";
 import { loadRobotoFont } from "./fonts/roboto-regular";
+import { logger } from "./logger";
 
 /**
  * Creates a new jsPDF document configured for Cyrillic or Latin text
@@ -27,7 +28,7 @@ export const setupPdfDoc = async (
       doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
       doc.setFont('Roboto', 'normal');
     } catch (error) {
-      console.error('Failed to load Roboto font, falling back to helvetica:', error);
+      logger.error('Failed to load Roboto font, falling back to helvetica:', error);
       doc.setFont("helvetica", "normal");
     }
   } else {

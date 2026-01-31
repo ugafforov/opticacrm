@@ -9,6 +9,7 @@ import { safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
 import { withRetry } from "@/lib/retryUtils";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
+import { logger } from "@/lib/logger";
 
 export interface Buyurtma {
   id: string;
@@ -84,7 +85,7 @@ export const useBuyurtmalar = () => {
       hasLoadedRef.current = true;
       retryCountRef.current = 0;
     } catch (error: any) {
-      console.error("Error loading buyurtmalar:", error);
+      logger.error("Error loading buyurtmalar:", error);
       if (retryCountRef.current < 2) {
         retryCountRef.current++;
         toast.error(t("toast.loadError") + ` (${retryCountRef.current}/3)`);
@@ -258,7 +259,7 @@ export const useBuyurtmalar = () => {
           );
           return true;
         } catch (error: any) {
-          console.error("Error creating buyurtma:", error);
+          logger.error("Error creating buyurtma:", error);
           // Rollback optimistic update
           setBuyurtmalar(prev => prev.filter(b => b.id !== tempId));
           toast.error(t("toast.saveError"));
@@ -310,7 +311,7 @@ export const useBuyurtmalar = () => {
 
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
-          console.error("Error updating buyurtma:", error);
+          logger.error("Error updating buyurtma:", error);
           // Rollback
           if (previousItem) {
             setBuyurtmalar(prev => 
@@ -364,7 +365,7 @@ export const useBuyurtmalar = () => {
 
           toast.success(t("orders.deleteSuccess"));
         } catch (error: any) {
-          console.error("Error deleting buyurtma:", error);
+          logger.error("Error deleting buyurtma:", error);
           // Rollback
           setBuyurtmalar(prev => [itemToDelete, ...prev]);
           toast.error(t("toast.deleteError"));

@@ -1,6 +1,8 @@
 // Roboto Regular font loader for jsPDF
 // This font supports Cyrillic characters for PDF generation
 
+import { logger } from '../logger';
+
 let cachedFont: string | null = null;
 
 /**
@@ -35,7 +37,7 @@ export const loadRobotoFont = async (): Promise<string> => {
       reader.readAsDataURL(blob);
     });
   } catch (error) {
-    console.error('Failed to load Roboto font:', error);
+    logger.error('Failed to load Roboto font:', error);
     throw error;
   }
 };

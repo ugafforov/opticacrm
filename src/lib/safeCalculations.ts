@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js';
+import { logger } from './logger';
 
 // Configure Decimal.js for financial calculations
 Decimal.set({ 
@@ -17,7 +18,7 @@ export function safeAdd(a: number | string, b: number | string): number {
     const result = new Decimal(a || 0).plus(new Decimal(b || 0));
     return result.toNumber();
   } catch (error) {
-    console.error('Safe add error:', error);
+    logger.error('Safe add error:', error);
     return (Number(a) || 0) + (Number(b) || 0);
   }
 }
@@ -30,7 +31,7 @@ export function safeSubtract(a: number | string, b: number | string): number {
     const result = new Decimal(a || 0).minus(new Decimal(b || 0));
     return result.toNumber();
   } catch (error) {
-    console.error('Safe subtract error:', error);
+    logger.error('Safe subtract error:', error);
     return (Number(a) || 0) - (Number(b) || 0);
   }
 }
@@ -43,7 +44,7 @@ export function safeMultiply(a: number | string, b: number | string): number {
     const result = new Decimal(a || 0).times(new Decimal(b || 0));
     return result.toNumber();
   } catch (error) {
-    console.error('Safe multiply error:', error);
+    logger.error('Safe multiply error:', error);
     return (Number(a) || 0) * (Number(b) || 0);
   }
 }
@@ -59,7 +60,7 @@ export function safeDivide(a: number | string, b: number | string): number {
     const result = new Decimal(a || 0).dividedBy(divisor);
     return result.toNumber();
   } catch (error) {
-    console.error('Safe divide error:', error);
+    logger.error('Safe divide error:', error);
     const numB = Number(b) || 0;
     if (numB === 0) return 0;
     return (Number(a) || 0) / numB;
@@ -78,7 +79,7 @@ export function safeSum(values: (number | string | undefined | null)[]): number 
     }, new Decimal(0));
     return result.toNumber();
   } catch (error) {
-    console.error('Safe sum error:', error);
+    logger.error('Safe sum error:', error);
     let sum = 0;
     for (const val of values) {
       sum += Number(val) || 0;
@@ -106,7 +107,7 @@ export function safeParsePriceToNumber(value: string | number | undefined | null
     const result = new Decimal(cleaned);
     return result.toNumber();
   } catch (error) {
-    console.error('Parse price error:', error, value);
+    logger.error('Parse price error:', error, value);
     return 0;
   }
 }

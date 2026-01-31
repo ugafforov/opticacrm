@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 import {
   Pagination,
   PaginationContent,
@@ -185,7 +186,7 @@ const TayyorKozoynaklar = () => {
       setKozoynaklar(data?.map(mapToLocal) || []);
       hasLoadedRef.current = true;
     } catch (error: any) {
-      console.error("Error loading tayyor kozoynaklar:", error);
+      logger.error("Error loading tayyor kozoynaklar:", error);
       toast.error(t("common.error"));
     } finally {
       setLoading(false);
@@ -268,7 +269,7 @@ const TayyorKozoynaklar = () => {
           toast.success(t("ready.addSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error adding tayyor kozoynak:", error);
+          logger.error("Error adding tayyor kozoynak:", error);
           setKozoynaklar(prev => prev.filter(k => !k.id.startsWith('temp-')));
           toast.error(t("common.error"));
           return false;
@@ -316,7 +317,7 @@ const TayyorKozoynaklar = () => {
           setDeleteId(null);
           toast.success(t("ready.deleteSuccess"));
         } catch (error: any) {
-          console.error("Error deleting tayyor kozoynak:", error);
+          logger.error("Error deleting tayyor kozoynak:", error);
           toast.error(t("common.error"));
         } finally {
           setIsDeleting(false);
@@ -358,7 +359,7 @@ const TayyorKozoynaklar = () => {
           setEditingItem(null);
           toast.success(t("common.updateSuccess"));
         } catch (error: any) {
-          console.error("Error updating tayyor kozoynak:", error);
+          logger.error("Error updating tayyor kozoynak:", error);
           toast.error(t("common.error"));
         } finally {
           setIsUpdating(false);
@@ -499,7 +500,7 @@ const TayyorKozoynaklar = () => {
     doc.save(`Tayyor_Kozoynaklar_${formatUzbekistanDate()}.pdf`);
     toast.success(t("toast.pdfSuccess"));
     } catch (error) {
-      console.error("PDF eksport xatosi:", error);
+      logger.error("PDF eksport xatosi:", error);
       toast.error(t("toast.exportError"));
     }
   };

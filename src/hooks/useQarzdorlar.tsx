@@ -7,6 +7,7 @@ import { formatUzbekistanDate, getUzbekistanISOString } from "@/lib/utils";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum, safeSubtract } from "@/lib/safeCalculations";
+import { logger } from "@/lib/logger";
 
 export interface QarzTolovi {
   id: string;
@@ -72,7 +73,7 @@ export const useQarzdorlar = () => {
 
       setQarzdorlar(data?.map(mapToLocal) || []);
     } catch (error: any) {
-      console.error("Error loading qarzdorlar:", error);
+      logger.error("Error loading qarzdorlar:", error);
       toast.error(t("toast.loadError"));
     } finally {
       setLoading(false);
@@ -191,7 +192,7 @@ export const useQarzdorlar = () => {
           toast.success(t("debtors.addSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error adding qarzdor:", error);
+          logger.error("Error adding qarzdor:", error);
           toast.error(t("toast.saveError"));
           return false;
         } finally {
@@ -255,7 +256,7 @@ export const useQarzdorlar = () => {
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error updating qarzdor:", error);
+          logger.error("Error updating qarzdor:", error);
           toast.error(t("toast.updateError"));
           return false;
         }
@@ -298,7 +299,7 @@ export const useQarzdorlar = () => {
           toast.success(t("debtors.deleteSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error deleting qarzdor:", error);
+          logger.error("Error deleting qarzdor:", error);
           toast.error(t("toast.deleteError"));
           return false;
         }
@@ -369,7 +370,7 @@ export const useQarzdorlar = () => {
           toast.success(t("debtors.paymentSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error adding payment:", error);
+          logger.error("Error adding payment:", error);
           toast.error(t("toast.saveError"));
           return false;
         }
@@ -398,7 +399,7 @@ export const useQarzdorlar = () => {
         createdAt: item.created_at,
       })) || [];
     } catch (error) {
-      console.error("Error loading payments:", error);
+      logger.error("Error loading payments:", error);
       return [];
     }
   };
@@ -451,7 +452,7 @@ export const useQarzdorlar = () => {
           toast.success(t("common.deleteSuccess"));
           return true;
         } catch (error: any) {
-          console.error("Error deleting payment:", error);
+          logger.error("Error deleting payment:", error);
           toast.error(t("toast.deleteError"));
           return false;
         }
@@ -485,7 +486,7 @@ export const useQarzdorlar = () => {
       toast.success(newValue ? t("debtors.contactMarked") : t("debtors.contactUnmarked"));
       return true;
     } catch (error: any) {
-      console.error("Error toggling contact:", error);
+      logger.error("Error toggling contact:", error);
       // Rollback on error
       setQarzdorlar(prev => prev.map(q => 
         q.id === id ? { ...q, oxirgiAloqa: currentStatus } : q
