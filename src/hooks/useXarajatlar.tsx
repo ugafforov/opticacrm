@@ -178,7 +178,7 @@ export const useXarajatlar = () => {
           if (error) throw error;
 
           // Darhol ma'lumotlarni yangilash (real-time latency oldini olish)
-          await loadXarajatlar();
+          await loadXarajatlar(true);
           toast.success(t("expenses.addSuccess"));
           return true;
         } catch (error: any) {
@@ -222,7 +222,7 @@ export const useXarajatlar = () => {
           if (error) throw error;
 
           // Darhol ma'lumotlarni yangilash
-          await loadXarajatlar();
+          await loadXarajatlar(true);
           toast.success(t("common.updateSuccess"));
           return true;
         } catch (error: any) {
@@ -266,7 +266,7 @@ export const useXarajatlar = () => {
           if (error) throw error;
 
           // Darhol ma'lumotlarni yangilash
-          await loadXarajatlar();
+          await loadXarajatlar(true);
           toast.success(t("expenses.deleteSuccess"));
           return true;
         } catch (error: any) {
