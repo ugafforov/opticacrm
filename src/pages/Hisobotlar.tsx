@@ -69,8 +69,9 @@ const Hisobotlar = () => {
   const [expenseCategoryData, setExpenseCategoryData] = useState<SectionData[]>([]);
   const [totalXarajat, setTotalXarajat] = useState(0);
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  // Darhol bugungi sanani o'rnatish - flickering oldini olish
+  const [startDate, setStartDate] = useState<Date | undefined>(() => new Date());
+  const [endDate, setEndDate] = useState<Date | undefined>(() => new Date());
   const [showComparison, setShowComparison] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("all");
@@ -159,12 +160,7 @@ const Hisobotlar = () => {
     return null;
   };
 
-  // Boshlang'ich sanalarni o'rnatish
-  useEffect(() => {
-    const today = new Date();
-    setStartDate(today);
-    setEndDate(today);
-  }, []);
+  // Boshlang'ich sanalar useState da o'rnatilgan - bu useEffect endi kerak emas
 
   // Debounced load function
   const debouncedLoad = useMemo(
