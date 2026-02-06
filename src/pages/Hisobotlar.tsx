@@ -15,6 +15,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { setupPdfDoc, addPdfHeader } from "@/lib/pdfHelpers";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
@@ -280,32 +281,16 @@ const Hisobotlar = () => {
     try {
       setLoading(true);
 
-      // Load all data from Supabase including expenses and debtors
-      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes, xarajatlarRes, qarzdorlarRes, tolovlarRes] = await Promise.all([
-        supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
-        supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
-        supabase.from("tayyor_kozoynaklar").select("*").eq("user_id", user.id),
-        supabase.from("linza_sotuvlari").select("*").eq("user_id", user.id),
-        supabase.from("xarajatlar").select("*").eq("user_id", user.id),
-        supabase.from("qarzdorlar").select("*").eq("user_id", user.id),
-        supabase.from("qarz_tolovlari").select("*").eq("user_id", user.id),
+      // Load all data with pagination to overcome 1000-row limit
+      const [buyurtmalar, tekshiruvlar, tayyorKozoynaklar, linzaSotuvlari, xarajatlar, qarzdorlar, tolovlar] = await Promise.all([
+        fetchAllRows("buyurtmalar", user.id),
+        fetchAllRows("tekshiruvlar", user.id),
+        fetchAllRows("tayyor_kozoynaklar", user.id),
+        fetchAllRows("linza_sotuvlari", user.id),
+        fetchAllRows("xarajatlar", user.id),
+        fetchAllRows("qarzdorlar", user.id),
+        fetchAllRows("qarz_tolovlari", user.id),
       ]);
-
-      if (buyurtmalarRes.error) throw buyurtmalarRes.error;
-      if (tekshiruvlarRes.error) throw tekshiruvlarRes.error;
-      if (tayyorKozoynakRes.error) throw tayyorKozoynakRes.error;
-      if (linzaSotuvRes.error) throw linzaSotuvRes.error;
-      if (xarajatlarRes.error) throw xarajatlarRes.error;
-      if (qarzdorlarRes.error) throw qarzdorlarRes.error;
-      if (tolovlarRes.error) throw tolovlarRes.error;
-
-      const buyurtmalar = buyurtmalarRes.data || [];
-      const tekshiruvlar = tekshiruvlarRes.data || [];
-      const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
-      const linzaSotuvlari = linzaSotuvRes.data || [];
-      const xarajatlar = xarajatlarRes.data || [];
-      const qarzdorlar = qarzdorlarRes.data || [];
-      const tolovlar = tolovlarRes.data || [];
 
       // Calculate current period totals
       const currentBuyurtmalar = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
