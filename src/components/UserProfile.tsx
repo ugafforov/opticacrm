@@ -38,7 +38,7 @@ const UserProfile = ({ user, onSignOut }: UserProfileProps) => {
       .from("profiles")
       .select("full_name, avatar_url")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (data) {
       if (data.full_name) setFullName(data.full_name);
