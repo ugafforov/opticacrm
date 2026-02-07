@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Wallet, Loader2 } from "lucide-react";
+import { Trash2, Search, Pencil, FileSpreadsheet, FileText, CalendarIcon, Printer, Wallet, Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths } from "date-fns";
 import { exportDataToExcel } from '@/lib/excelExport';
@@ -462,13 +462,13 @@ const Xarajatlar = () => {
               )}
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:ml-auto">
               <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
-                <Download className="w-4 h-4" />
+                <FileSpreadsheet className="w-4 h-4" />
                 Excel
               </Button>
               <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
-                <Download className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 PDF
               </Button>
               <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">

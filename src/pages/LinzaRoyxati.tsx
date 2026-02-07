@@ -12,7 +12,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle, Phone, PhoneCall } from "lucide-react";
+import { Trash2, Search, Pencil, FileSpreadsheet, FileText, CalendarIcon, Printer, History, Loader2, Users, AlertTriangle, AlertCircle, Phone, PhoneCall } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, subWeeks, subMonths, differenceInMonths, differenceInDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -927,31 +927,16 @@ const LinzaRoyxati = () => {
                 </Button>
               )}
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportToExcel}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
+            <div className="flex gap-2 sm:ml-auto">
+              <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
+                <FileSpreadsheet className="w-4 h-4" />
                 Excel
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={exportToPDF}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
+              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
+                <FileText className="w-4 h-4" />
                 PDF
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handlePrint}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
                 <Printer className="w-4 h-4" />
                 Print
               </Button>

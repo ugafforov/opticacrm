@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, FileDown, Printer } from "lucide-react";
+import { CalendarIcon, FileDown, FileSpreadsheet, FileText, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { exportDataToExcel } from "@/lib/excelExport";
 import jsPDF from "jspdf";
