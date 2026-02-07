@@ -738,17 +738,17 @@ const Hisobotlar = () => {
         metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalTushum.toLocaleString()} so'm` });
       } else if (type === "section") {
         const sections = [
-          { name: t("nav.orders"), data: buyurtmalar, key: "jami_summa" },
-          { name: t("nav.examination"), data: tekshiruvlar, key: "jami_summa" },
-          { name: t("nav.readyGlasses"), data: tayyorKozoynaklar, key: "summa" },
-          { name: t("nav.lensSales"), data: linzaSotuvlari, key: "summa" }
+          { name: t("nav.orders"), data: buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana)), key: "jami_summa" },
+          { name: t("nav.examination"), data: tekshiruvlar.filter((t: any) => !startDate && !endDate ? true : isDateInRange(t.sana)), key: "jami_summa" },
+          { name: t("nav.readyGlasses"), data: tayyorKozoynaklar.filter((k: any) => !startDate && !endDate ? true : isDateInRange(k.sana)), key: "summa" },
+          { name: t("nav.lensSales"), data: linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana)), key: "summa" }
         ];
         data = sections.map(section => ({
           [t("reports.bySection")]: section.name,
           [t("reports.income")]: safeSum(section.data.map((item: any) => item[section.key] || 0))
         }));
         sheetName = `${t("reports.title")} - ${t("reports.bySection")}`;
-        const totalIncome = safeSum(sectionData.map(s => s.total));
+        const totalIncome = safeSum(data.map((d: any) => d[t("reports.income")] || 0));
         metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       } else {
         const allData = [
@@ -869,11 +869,15 @@ const Hisobotlar = () => {
           t("common.dateAndTime")
         );
         
+        const filteredBuyurtmalar = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
+        const filteredTekshiruvlar = tekshiruvlar.filter((tek: any) => !startDate && !endDate ? true : isDateInRange(tek.sana));
+        const filteredTayyorKozoynaklar = tayyorKozoynaklar.filter((k: any) => !startDate && !endDate ? true : isDateInRange(k.sana));
+        const filteredLinzaSotuvlari = linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana));
         const sections = [
-          [t("nav.orders"), safeSum(buyurtmalar.map((b: any) => b.jami_summa || 0))],
-          [t("nav.examination"), safeSum(tekshiruvlar.map((tek: any) => tek.jami_summa || 0))],
-          [t("nav.readyGlasses"), safeSum(tayyorKozoynaklar.map((k: any) => k.summa || 0))],
-          [t("nav.lensSales"), safeSum(linzaSotuvlari.map((l: any) => l.summa || 0))]
+          [t("nav.orders"), safeSum(filteredBuyurtmalar.map((b: any) => b.jami_summa || 0))],
+          [t("nav.examination"), safeSum(filteredTekshiruvlar.map((tek: any) => tek.jami_summa || 0))],
+          [t("nav.readyGlasses"), safeSum(filteredTayyorKozoynaklar.map((k: any) => k.summa || 0))],
+          [t("nav.lensSales"), safeSum(filteredLinzaSotuvlari.map((l: any) => l.summa || 0))]
         ];
         const tableData = sections.map(s => [s[0], `${s[1].toLocaleString()} ${t("common.currency")}`]);
         const total = safeSum(sections.map(s => s[1] as number));
@@ -918,11 +922,15 @@ const Hisobotlar = () => {
           t("common.dateAndTime")
         );
         
+        const filteredB = buyurtmalar.filter((b: any) => !startDate && !endDate ? true : isDateInRange(b.sana));
+        const filteredT = tekshiruvlar.filter((tek: any) => !startDate && !endDate ? true : isDateInRange(tek.sana));
+        const filteredK = tayyorKozoynaklar.filter((k: any) => !startDate && !endDate ? true : isDateInRange(k.sana));
+        const filteredL = linzaSotuvlari.filter((l: any) => !startDate && !endDate ? true : isDateInRange(l.sana));
         const allData = [
-          ...buyurtmalar.map((b: any) => ["Buyurtmalar", formatDisplayDate(b.sana), b.mijoz, `${b.jami_summa.toLocaleString()} ${t("common.currency")}`]),
-          ...tekshiruvlar.map((tek: any) => ["Tekshiruvlar", formatDisplayDate(tek.sana), tek.mijoz, `${tek.jami_summa.toLocaleString()} ${t("common.currency")}`]),
-          ...tayyorKozoynaklar.map((k: any) => ["Tayyor ko'zoynaklar", formatDisplayDate(k.sana), k.kliyent, `${k.summa.toLocaleString()} ${t("common.currency")}`]),
-          ...linzaSotuvlari.map((l: any) => ["Linza sotuvi", formatDisplayDate(l.sana), l.kliyent, `${l.summa.toLocaleString()} ${t("common.currency")}`])
+          ...filteredB.map((b: any) => ["Buyurtmalar", formatDisplayDate(b.sana), b.mijoz, `${b.jami_summa.toLocaleString()} ${t("common.currency")}`]),
+          ...filteredT.map((tek: any) => ["Tekshiruvlar", formatDisplayDate(tek.sana), tek.mijoz, `${tek.jami_summa.toLocaleString()} ${t("common.currency")}`]),
+          ...filteredK.map((k: any) => ["Tayyor ko'zoynaklar", formatDisplayDate(k.sana), k.kliyent, `${k.summa.toLocaleString()} ${t("common.currency")}`]),
+          ...filteredL.map((l: any) => ["Linza sotuvi", formatDisplayDate(l.sana), l.kliyent, `${l.summa.toLocaleString()} ${t("common.currency")}`])
         ];
         autoTable(doc, {
           startY,
