@@ -626,24 +626,9 @@ const Qarzdorlar = () => {
 
       {/* Main Table Section */}
       <div className="bg-card rounded-lg p-4 border border-border">
-        {/* Header with title and export buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h3 className="text-lg font-semibold">{t("debtors.list")}</h3>
-          
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-2">
-              <Download className="w-4 h-4" />
-              Excel
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-2">
-              <Download className="w-4 h-4" />
-              PDF
-            </Button>
-            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
-              <Printer className="w-4 h-4" />
-              Print
-            </Button>
-          </div>
         </div>
 
         {/* Status tabs */}
@@ -656,7 +641,7 @@ const Qarzdorlar = () => {
           </TabsList>
         </Tabs>
 
-        {/* Search, Quick Filters, and Sort - PDF Spec */}
+        {/* Search, Quick Filters, Sort, and Export - all in one row */}
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center mb-4">
           {/* Search */}
           <div className="relative w-full sm:w-64">
@@ -702,6 +687,22 @@ const Qarzdorlar = () => {
               <SelectItem value="name">{t("debtors.sortByName")}</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Export buttons */}
+          <div className="flex gap-2 sm:ml-auto">
+            <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-1.5">
+              <Download className="w-4 h-4" />
+              <span className="hidden xs:inline">Excel</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-1.5">
+              <Download className="w-4 h-4" />
+              <span className="hidden xs:inline">PDF</span>
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
+              <Printer className="w-4 h-4" />
+              <span className="hidden xs:inline">Print</span>
+            </Button>
+          </div>
         </div>
 
         {/* Results count */}

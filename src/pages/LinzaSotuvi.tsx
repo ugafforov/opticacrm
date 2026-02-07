@@ -670,56 +670,52 @@ const LinzaSotuvi = () => {
           </div>
           
           {/* Filters and actions row */}
-          <div className="flex flex-col gap-2">
-            {/* Date filter and search */}
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue placeholder="Sana filtri" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
-                  <SelectItem value="today">{t("dateFilter.today")}</SelectItem>
-                  <SelectItem value="yesterday">{t("dateFilter.yesterday")}</SelectItem>
-                  <SelectItem value="thisWeek">{t("dateFilter.thisWeek")}</SelectItem>
-                  <SelectItem value="lastWeek">{t("dateFilter.lastWeek")}</SelectItem>
-                  <SelectItem value="thisMonth">{t("dateFilter.thisMonth")}</SelectItem>
-                  <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <div className="relative flex-1 sm:max-w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
-                <Input
-                  placeholder={t("lensSale.search")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10"
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
-                  >
-                    <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                  </Button>
-                )}
-              </div>
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Sana filtri" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("dateFilter.all")}</SelectItem>
+                <SelectItem value="today">{t("dateFilter.today")}</SelectItem>
+                <SelectItem value="yesterday">{t("dateFilter.yesterday")}</SelectItem>
+                <SelectItem value="thisWeek">{t("dateFilter.thisWeek")}</SelectItem>
+                <SelectItem value="lastWeek">{t("dateFilter.lastWeek")}</SelectItem>
+                <SelectItem value="thisMonth">{t("dateFilter.thisMonth")}</SelectItem>
+                <SelectItem value="lastMonth">{t("dateFilter.lastMonth")}</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <div className="relative flex-1 sm:max-w-64">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4 pointer-events-none z-10" />
+              <Input
+                placeholder={t("lensSale.search")}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
+                >
+                  <Trash2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                </Button>
+              )}
             </div>
             
-            {/* Export buttons - compact on mobile */}
-            <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-1.5 flex-1 sm:flex-none">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-1.5">
                 <Download className="w-4 h-4" />
                 <span className="hidden xs:inline">Excel</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-1.5 flex-1 sm:flex-none">
+              <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-1.5">
                 <Download className="w-4 h-4" />
                 <span className="hidden xs:inline">PDF</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5 flex-1 sm:flex-none">
+              <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
                 <Printer className="w-4 h-4" />
                 <span className="hidden xs:inline">Print</span>
               </Button>
