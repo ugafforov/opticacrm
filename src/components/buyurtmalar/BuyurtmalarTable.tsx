@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Search, Trash2, Pencil, Download, Printer } from "lucide-react";
+import { Search, Trash2, Pencil, FileSpreadsheet, FileText, Printer } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { formatPrice, formatDisplayDate, formatUzbekistanDateTime } from "@/lib/utils";
 import { Buyurtma } from "@/hooks/useBuyurtmalar";
@@ -94,13 +94,13 @@ export const BuyurtmalarTable = ({
             )}
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:ml-auto">
             <Button variant="outline" size="sm" onClick={onExportExcel} className="gap-1.5">
-              <Download className="w-4 h-4" />
+              <FileSpreadsheet className="w-4 h-4" />
               <span className="hidden xs:inline">Excel</span>
             </Button>
             <Button variant="outline" size="sm" onClick={onExportPDF} className="gap-1.5">
-              <Download className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
               <span className="hidden xs:inline">PDF</span>
             </Button>
             <Button variant="outline" size="sm" onClick={onPrint} className="gap-1.5">

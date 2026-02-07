@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Trash2, Search, Pencil, Download, CalendarIcon, Printer, Users, PhoneCall, CreditCard, History, Check, Clock, AlertTriangle, AlertCircle, TrendingUp, ArrowUpDown, Banknote } from "lucide-react";
+import { Trash2, Search, Pencil, FileSpreadsheet, FileText, CalendarIcon, Printer, Users, PhoneCall, CreditCard, History, Check, Clock, AlertTriangle, AlertCircle, TrendingUp, ArrowUpDown, Banknote } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { format, differenceInDays } from "date-fns";
 import { exportDataToExcel } from '@/lib/excelExport';
@@ -691,11 +691,11 @@ const Qarzdorlar = () => {
           {/* Export buttons */}
           <div className="flex gap-2 sm:ml-auto">
             <Button variant="outline" size="sm" onClick={handleExportToExcel} className="gap-1.5">
-              <Download className="w-4 h-4" />
+              <FileSpreadsheet className="w-4 h-4" />
               <span className="hidden xs:inline">Excel</span>
             </Button>
             <Button variant="outline" size="sm" onClick={exportToPDF} className="gap-1.5">
-              <Download className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
               <span className="hidden xs:inline">PDF</span>
             </Button>
             <Button variant="outline" size="sm" onClick={handlePrint} className="gap-1.5">
