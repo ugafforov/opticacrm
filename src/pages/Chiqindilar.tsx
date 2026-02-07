@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatUzbekistanTimestamp } from "@/lib/utils";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 
 interface TrashItem {
   id: string;
@@ -91,14 +92,12 @@ const Chiqindilar = () => {
   const loadTrashItems = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("chiqindilar")
-        .select("*")
-        .order("deleted_at", { ascending: false });
+      const data = await fetchAllRows("chiqindilar", user!.id, {
+        orderBy: "deleted_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setTrashItems(data?.map(mapToLocal) || []);
+      setTrashItems(data.map(mapToLocal));
     } catch (error: any) {
       logger.error("Error loading trash:", error);
       toast.error(t("common.error"));

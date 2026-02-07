@@ -33,6 +33,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 import {
   Pagination,
   PaginationContent,
@@ -175,14 +176,12 @@ const Tekshiruv = () => {
     isLoadingRef.current = true;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("tekshiruvlar")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAllRows("tekshiruvlar", user!.id, {
+        orderBy: "created_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setTekshiruvlar(data?.map(mapToLocal) || []);
+      setTekshiruvlar(data.map(mapToLocal));
       hasLoadedRef.current = true;
     } catch (error: any) {
       toast.error(t("toast.loadError"));
