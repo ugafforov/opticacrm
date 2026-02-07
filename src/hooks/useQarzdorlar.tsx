@@ -8,7 +8,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum, safeSubtract } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
-import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { fetchAllRows, fetchAllRowsByFilter } from "@/lib/supabaseHelpers";
 
 export interface QarzTolovi {
   id: string;
@@ -218,13 +218,14 @@ export const useQarzdorlar = () => {
     const result = await guardOperation(async () => {
       return await withDuplicatePrevention(`qarzdor-update-${id}`, async () => {
         try {
-          // Get current payments total
-          const { data: payments } = await supabase
-            .from("qarz_tolovlari")
-            .select("summa")
-            .eq("qarzdor_id", id);
+          // Get current payments total (pagination-safe)
+          const payments = await fetchAllRowsByFilter(
+            "qarz_tolovlari",
+            { qarzdor_id: id },
+            { selectColumns: "summa" }
+          );
           
-          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const totalPaid = safeSum(payments.map(p => Number(p.summa)));
           const qoldiq = safeSubtract(data.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
@@ -337,13 +338,14 @@ export const useQarzdorlar = () => {
 
           if (paymentError) throw paymentError;
 
-          // Calculate new remaining amount
-          const { data: payments } = await supabase
-            .from("qarz_tolovlari")
-            .select("summa")
-            .eq("qarzdor_id", qarzdorId);
+          // Calculate new remaining amount (pagination-safe)
+          const payments = await fetchAllRowsByFilter(
+            "qarz_tolovlari",
+            { qarzdor_id: qarzdorId },
+            { selectColumns: "summa" }
+          );
           
-          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const totalPaid = safeSum(payments.map(p => Number(p.summa)));
           const qoldiq = safeSubtract(qarzdor.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
@@ -380,22 +382,21 @@ export const useQarzdorlar = () => {
 
   const getPaymentHistory = async (qarzdorId: string): Promise<QarzTolovi[]> => {
     try {
-      const { data, error } = await supabase
-        .from("qarz_tolovlari")
-        .select("*")
-        .eq("qarzdor_id", qarzdorId)
-        .order("created_at", { ascending: false });
+      // Pagination-safe payment history fetch
+      const data = await fetchAllRowsByFilter(
+        "qarz_tolovlari",
+        { qarzdor_id: qarzdorId },
+        { orderBy: "created_at", ascending: false }
+      );
 
-      if (error) throw error;
-
-      return data?.map(item => ({
+      return data.map(item => ({
         id: item.id,
         qarzdorId: item.qarzdor_id,
         summa: item.summa,
         sana: item.sana,
         izoh: item.izoh || "",
         createdAt: item.created_at,
-      })) || [];
+      }));
     } catch (error) {
       logger.error("Error loading payments:", error);
       return [];
@@ -423,12 +424,14 @@ export const useQarzdorlar = () => {
           const qarzdor = qarzdorlar.find(q => q.id === qarzdorId);
           if (!qarzdor) return false;
 
-          const { data: payments } = await supabase
-            .from("qarz_tolovlari")
-            .select("summa")
-            .eq("qarzdor_id", qarzdorId);
+          // Recalculate remaining amount (pagination-safe)
+          const payments = await fetchAllRowsByFilter(
+            "qarz_tolovlari",
+            { qarzdor_id: qarzdorId },
+            { selectColumns: "summa" }
+          );
           
-          const totalPaid = safeSum(payments?.map(p => Number(p.summa)) || []);
+          const totalPaid = safeSum(payments.map(p => Number(p.summa)));
           const qoldiq = safeSubtract(qarzdor.qarzSummasi, totalPaid);
           
           let holat: Qarzdor["holat"] = "tollanmagan";
