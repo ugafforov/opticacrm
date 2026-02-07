@@ -19,7 +19,7 @@ import { fetchAllRows } from "@/lib/supabaseHelpers";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { cn, formatUzbekistanDateTime, formatDisplayDate } from "@/lib/utils";
-import { safeSum, safeAdd, safeParsePriceToNumber } from "@/lib/safeCalculations";
+import { safeSum, safeAdd, safeSubtract, safeParsePriceToNumber } from "@/lib/safeCalculations";
 import { withRetry } from "@/lib/retryUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { logger } from "@/lib/logger";
@@ -377,10 +377,10 @@ const Hisobotlar = () => {
         },
       ];
 
-      // Calculate change percentages
+      // Calculate change percentages with safe arithmetic
       sections.forEach(section => {
         if (section.previousTotal !== undefined && section.previousTotal > 0) {
-          section.change = ((section.total - section.previousTotal) / section.previousTotal) * 100;
+          section.change = safeSubtract(section.total, section.previousTotal) / section.previousTotal * 100;
         }
       });
 
@@ -549,7 +549,7 @@ const Hisobotlar = () => {
             key = `${dateParts[1]}-${dateParts[2]}`;
           }
         }
-        groupedDebtByDate[key] = (groupedDebtByDate[key] || 0) + (q.qarz_summasi || 0);
+        groupedDebtByDate[key] = safeAdd(groupedDebtByDate[key] || 0, q.qarz_summasi || 0);
       });
 
       currentTolovlar.forEach((t: any) => {
@@ -568,7 +568,7 @@ const Hisobotlar = () => {
             key = `${dateParts[1]}-${dateParts[2]}`;
           }
         }
-        groupedPaymentsByDate[key] = (groupedPaymentsByDate[key] || 0) + (t.summa || 0);
+        groupedPaymentsByDate[key] = safeAdd(groupedPaymentsByDate[key] || 0, t.summa || 0);
       });
 
       const allDebtKeys = new Set([...Object.keys(groupedDebtByDate), ...Object.keys(groupedPaymentsByDate)]);
@@ -634,7 +634,7 @@ const Hisobotlar = () => {
           key = `${dateParts[1]}-${dateParts[2]}`;
         }
       }
-      groupedIncome[key] = (groupedIncome[key] || 0) + item.summa;
+      groupedIncome[key] = safeAdd(groupedIncome[key] || 0, item.summa || 0);
     });
 
     // Group expense data
@@ -654,7 +654,7 @@ const Hisobotlar = () => {
           key = `${dateParts[1]}-${dateParts[2]}`;
         }
       }
-      groupedExpense[key] = (groupedExpense[key] || 0) + item.summa;
+      groupedExpense[key] = safeAdd(groupedExpense[key] || 0, item.summa || 0);
     });
 
     // Merge all keys
@@ -667,7 +667,7 @@ const Hisobotlar = () => {
         name,
         tushum,
         xarajat,
-        foyda: tushum - xarajat,
+        foyda: safeSubtract(tushum, xarajat),
         oldatgiTushum: undefined
       };
     }).sort((a, b) => {
@@ -717,17 +717,13 @@ const Hisobotlar = () => {
     try {
       const dateTime = formatUzbekistanDateTime();
       
-      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes] = await Promise.all([
-        supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
-        supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
-        supabase.from("tayyor_kozoynaklar").select("*").eq("user_id", user.id),
-        supabase.from("linza_sotuvlari").select("*").eq("user_id", user.id),
+      // Pagination-safe: fetchAllRows orqali barcha yozuvlarni olish
+      const [buyurtmalar, tekshiruvlar, tayyorKozoynaklar, linzaSotuvlari] = await Promise.all([
+        fetchAllRows("buyurtmalar", user.id),
+        fetchAllRows("tekshiruvlar", user.id),
+        fetchAllRows("tayyor_kozoynaklar", user.id),
+        fetchAllRows("linza_sotuvlari", user.id),
       ]);
-
-      const buyurtmalar = buyurtmalarRes.data || [];
-      const tekshiruvlar = tekshiruvlarRes.data || [];
-      const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
-      const linzaSotuvlari = linzaSotuvRes.data || [];
 
       // Metadata
       const metadata = [
@@ -791,7 +787,7 @@ const Hisobotlar = () => {
           return isDateInRange(item[t("common.date")]);
         });
         sheetName = `${t("reports.title")} - ${t("common.total")}`;
-        const totalIncome = data.reduce((sum, item) => sum + item[t("reports.income")], 0);
+        const totalIncome = safeSum(data.map(item => item[t("reports.income")] || 0));
         metadata.push({ "Ma'lumot": "Jami tushum", "Qiymat": `${totalIncome.toLocaleString()} so'm` });
       }
 
@@ -815,17 +811,13 @@ const Hisobotlar = () => {
     }
 
     try {
-      const [buyurtmalarRes, tekshiruvlarRes, tayyorKozoynakRes, linzaSotuvRes] = await Promise.all([
-        supabase.from("buyurtmalar").select("*").eq("user_id", user.id),
-        supabase.from("tekshiruvlar").select("*").eq("user_id", user.id),
-        supabase.from("tayyor_kozoynaklar").select("*").eq("user_id", user.id),
-        supabase.from("linza_sotuvlari").select("*").eq("user_id", user.id),
+      // Pagination-safe: fetchAllRows orqali barcha yozuvlarni olish
+      const [buyurtmalar, tekshiruvlar, tayyorKozoynaklar, linzaSotuvlari] = await Promise.all([
+        fetchAllRows("buyurtmalar", user.id),
+        fetchAllRows("tekshiruvlar", user.id),
+        fetchAllRows("tayyor_kozoynaklar", user.id),
+        fetchAllRows("linza_sotuvlari", user.id),
       ]);
-
-      const buyurtmalar = buyurtmalarRes.data || [];
-      const tekshiruvlar = tekshiruvlarRes.data || [];
-      const tayyorKozoynaklar = tayyorKozoynakRes.data || [];
-      const linzaSotuvlari = linzaSotuvRes.data || [];
 
       const doc = await setupPdfDoc('portrait', script);
 
@@ -883,13 +875,13 @@ const Hisobotlar = () => {
         );
         
         const sections = [
-          [t("nav.orders"), buyurtmalar.reduce((sum: number, b: any) => sum + b.jami_summa, 0)],
-          [t("nav.examination"), tekshiruvlar.reduce((sum: number, tek: any) => sum + tek.jami_summa, 0)],
-          [t("nav.readyGlasses"), tayyorKozoynaklar.reduce((sum: number, k: any) => sum + k.summa, 0)],
-          [t("nav.lensSales"), linzaSotuvlari.reduce((sum: number, l: any) => sum + l.summa, 0)]
+          [t("nav.orders"), safeSum(buyurtmalar.map((b: any) => b.jami_summa || 0))],
+          [t("nav.examination"), safeSum(tekshiruvlar.map((tek: any) => tek.jami_summa || 0))],
+          [t("nav.readyGlasses"), safeSum(tayyorKozoynaklar.map((k: any) => k.summa || 0))],
+          [t("nav.lensSales"), safeSum(linzaSotuvlari.map((l: any) => l.summa || 0))]
         ];
         const tableData = sections.map(s => [s[0], `${s[1].toLocaleString()} ${t("common.currency")}`]);
-        const total = sections.reduce((sum, s) => sum + (s[1] as number), 0);
+        const total = safeSum(sections.map(s => s[1] as number));
         autoTable(doc, {
           startY,
           head: [["Bo'lim", "Tushum"]],
