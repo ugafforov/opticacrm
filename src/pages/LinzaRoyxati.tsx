@@ -33,6 +33,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 import {
   Pagination,
   PaginationContent,
@@ -171,14 +172,12 @@ const LinzaRoyxati = () => {
   const loadRoyxatlar = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("linza_royxatlari")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAllRows("linza_royxatlari", user!.id, {
+        orderBy: "created_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setRoyxatlar(data?.map(mapToLocal) || []);
+      setRoyxatlar(data.map(mapToLocal));
     } catch (error: any) {
       logger.error("Error loading linza royxatlari:", error);
       toast.error(t("common.error"));

@@ -27,6 +27,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 import {
   Pagination,
   PaginationContent,
@@ -179,14 +180,12 @@ const LinzaSotuvi = () => {
     isLoadingRef.current = true;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("linza_sotuvlari")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAllRows("linza_sotuvlari", user!.id, {
+        orderBy: "created_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setSotuvlar(data?.map(mapToLocal) || []);
+      setSotuvlar(data.map(mapToLocal));
       hasLoadedRef.current = true;
     } catch (error: any) {
       logger.error("Error loading linza sotuvlari:", error);

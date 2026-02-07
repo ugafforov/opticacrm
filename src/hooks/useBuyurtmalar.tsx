@@ -10,6 +10,7 @@ import { withRetry } from "@/lib/retryUtils";
 import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 
 export interface Buyurtma {
   id: string;
@@ -71,14 +72,10 @@ export const useBuyurtmalar = () => {
       setLoading(true);
       
       const data = await withRetry(async () => {
-        const { data, error } = await supabase
-          .from("buyurtmalar")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-        return data;
+        return await fetchAllRows("buyurtmalar", user.id, {
+          orderBy: "created_at",
+          ascending: false,
+        });
       }, { maxRetries: 3 });
 
       setBuyurtmalar(data?.map(mapToLocal) || []);

@@ -27,6 +27,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 import {
   Pagination,
   PaginationContent,
@@ -176,14 +177,12 @@ const TayyorKozoynaklar = () => {
     isLoadingRef.current = true;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("tayyor_kozoynaklar")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const data = await fetchAllRows("tayyor_kozoynaklar", user!.id, {
+        orderBy: "created_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setKozoynaklar(data?.map(mapToLocal) || []);
+      setKozoynaklar(data.map(mapToLocal));
       hasLoadedRef.current = true;
     } catch (error: any) {
       logger.error("Error loading tayyor kozoynaklar:", error);

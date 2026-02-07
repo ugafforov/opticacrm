@@ -8,6 +8,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum, safeSubtract } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
+import { fetchAllRows } from "@/lib/supabaseHelpers";
 
 export interface QarzTolovi {
   id: string;
@@ -63,15 +64,12 @@ export const useQarzdorlar = () => {
     
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("qarzdorlar")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+      const data = await fetchAllRows("qarzdorlar", user.id, {
+        orderBy: "created_at",
+        ascending: false,
+      });
 
-      if (error) throw error;
-
-      setQarzdorlar(data?.map(mapToLocal) || []);
+      setQarzdorlar(data.map(mapToLocal));
     } catch (error: any) {
       logger.error("Error loading qarzdorlar:", error);
       toast.error(t("toast.loadError"));
