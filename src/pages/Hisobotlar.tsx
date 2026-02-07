@@ -229,17 +229,14 @@ const Hisobotlar = () => {
     // ISO-like format: yyyy-MM-dd (from input type="date")
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
       const [year, month, day] = dateString.split("-").map(p => parseInt(p, 10));
-      const date = new Date(Date.UTC(year, month - 1, day));
-      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
-      return date;
+      // Faqat kalendar sanasini yaratish - timezone siljishi kerak emas
+      return new Date(year, month - 1, day);
     }
 
     // DD-MM-YYYY format with dashes (25-11-2025)
     if (/^\d{2}-\d{2}-\d{4}$/.test(dateString)) {
       const [day, month, year] = dateString.split("-").map(p => parseInt(p, 10));
-      const date = new Date(Date.UTC(year, month - 1, day));
-      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
-      return date;
+      return new Date(year, month - 1, day);
     }
 
     // dd.MM.yyyy format (stored format)
@@ -248,9 +245,7 @@ const Hisobotlar = () => {
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10) - 1;
       const year = parseInt(parts[2], 10);
-      const date = new Date(Date.UTC(year, month, day));
-      date.setUTCHours(date.getUTCHours() - 5); // Adjust for UTC+5
-      return date;
+      return new Date(year, month, day);
     }
     return new Date(dateString);
   };
