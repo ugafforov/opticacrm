@@ -58,3 +58,48 @@ export async function fetchAllRows(
 
   return allRows;
 }
+
+/**
+ * Fetch all rows from a table using custom filters (not necessarily user_id).
+ * Useful for payment queries filtered by qarzdor_id, etc.
+ */
+export async function fetchAllRowsByFilter(
+  table: string,
+  filters: Record<string, string>,
+  options?: { orderBy?: string; ascending?: boolean; selectColumns?: string }
+): Promise<any[]> {
+  const allRows: any[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = (supabase as any)
+      .from(table)
+      .select(options?.selectColumns || "*");
+
+    // Apply all filters
+    for (const [column, value] of Object.entries(filters)) {
+      query = query.eq(column, value);
+    }
+
+    if (options?.orderBy) {
+      query = query.order(options.orderBy, { ascending: options.ascending ?? false });
+    }
+
+    query = query.range(from, from + PAGE_SIZE - 1);
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      allRows.push(...data);
+      from += data.length;
+      hasMore = data.length === PAGE_SIZE;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allRows;
+}

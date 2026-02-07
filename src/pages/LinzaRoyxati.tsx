@@ -206,13 +206,10 @@ const LinzaRoyxati = () => {
         
         try {
           // Telefon raqami bo'yicha mavjud bemorni qidirish
+          // fetchAllRows orqali 1000+ bemorlar ham to'liq yuklanadi
           const phoneDigits = form.telefon.replace(/\D/g, "");
-          const { data: existingPatients, error: searchError } = await supabase
-            .from("linza_royxatlari")
-            .select("*")
-            .eq("user_id", user.id);
+          const existingPatients = await fetchAllRows("linza_royxatlari", user.id);
 
-          if (searchError) throw searchError;
 
           // Telefon raqami bo'yicha aniq bemor topish
           const existingPatient = existingPatients?.find(p => {
