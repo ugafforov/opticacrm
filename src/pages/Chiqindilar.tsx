@@ -303,7 +303,7 @@ const Chiqindilar = () => {
   const getItemSumma = (item: TrashItem): number => {
     const data = getItemData(item);
     if (item.type === "buyurtmalar" || item.type === "tekshiruvlar") {
-      return Number(data.jami_summa) || 0;
+      return Number(data.jamiSumma) || Number(data.jami_summa) || 0;
     }
     return Number(data.summa) || 0;
   };
