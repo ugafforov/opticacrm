@@ -32,7 +32,7 @@ export function ConnectionIndicator() {
     lastChecked: new Date(),
   });
   const [isHovered, setIsHovered] = useState(false);
-  const pingRef = useRef<NodeJS.Timeout | null>(null);
+  const pingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const measureLatency = useCallback(async (): Promise<number | null> => {
     if (!navigator.onLine) return null;

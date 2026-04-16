@@ -367,7 +367,9 @@ const translations = {
     "trash.confirmRestoreDesc": "Бу маълумотни тикламоқчимисиз?",
     "trash.confirmClearAll": "Барча чиқиндиларни тозалашми?",
     "trash.confirmClearAllDesc": "Барча ўчирилган маълумотлар бутунлай йўқ қилинади.",
-    
+    "trash.totalItems": "Жами элементлар",
+    "trash.totalSum": "Жами сумма",
+
     // Delete confirmation
     "delete.confirm": "Ўчиришни тасдиқлаш",
     "delete.confirmDesc": "Бу маълумотни чиқиндиларга ўтказмоқчимисиз?",
@@ -880,7 +882,9 @@ const translations = {
     "trash.confirmRestoreDesc": "Bu ma'lumotni tiklmoqchimisiz?",
     "trash.confirmClearAll": "Barcha chiqindilarni tozalashmi?",
     "trash.confirmClearAllDesc": "Barcha o'chirilgan ma'lumotlar butunlay yo'q qilinadi.",
-    
+    "trash.totalItems": "Jami elementlar",
+    "trash.totalSum": "Jami summa",
+
     // Delete confirmation
     "delete.confirm": "O'chirishni tasdiqlash",
     "delete.confirmDesc": "Bu ma'lumotni chiqindilarga o'tkazmoqchimisiz?",

@@ -5,7 +5,7 @@ import { useCallback, useRef } from 'react';
  * Prevents rapid successive calls by delaying execution
  */
 export function useDebounce() {
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const debounce = useCallback(<T extends (...args: any[]) => void>(
     fn: T,
@@ -37,7 +37,7 @@ export function useDebounce() {
  */
 export function useThrottle() {
   const lastCallRef = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const throttle = useCallback(<T extends (...args: any[]) => void>(
     fn: T,

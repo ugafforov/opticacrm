@@ -300,6 +300,16 @@ const Chiqindilar = () => {
     return labels[type] || type;
   };
 
+  const getItemSumma = (item: TrashItem): number => {
+    const data = getItemData(item);
+    if (item.type === "buyurtmalar" || item.type === "tekshiruvlar") {
+      return Number(data.jami_summa) || 0;
+    }
+    return Number(data.summa) || 0;
+  };
+
+  const totalSumma = trashItems.reduce((acc, item) => acc + getItemSumma(item), 0);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -322,6 +332,15 @@ const Chiqindilar = () => {
         )}
       </div>
 
+      {trashItems.length > 0 && (
+        <Card className="p-4 bg-muted/50 border-dashed">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{t("trash.totalItems")}: <span className="font-semibold text-foreground">{trashItems.length}</span></p>
+            <p className="text-sm text-muted-foreground">{t("trash.totalSum")}: <span className="font-semibold text-foreground">{totalSumma.toLocaleString("uz-UZ")} so'm</span></p>
+          </div>
+        </Card>
+      )}
+
       {trashItems.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-muted-foreground text-lg">{t("trash.empty")}</p>
@@ -341,6 +360,11 @@ const Chiqindilar = () => {
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {(data && (data.mijoz || data.kliyent)) || t("trash.noName")}
+                      {getItemSumma(item) > 0 && (
+                        <span className="ml-2 font-medium text-foreground">
+                          — {getItemSumma(item).toLocaleString("uz-UZ")} so'm
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div className="flex gap-2">
