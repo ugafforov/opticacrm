@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/AdminRoute";
 import { PageTransition } from "./components/PageTransition";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -88,8 +89,8 @@ const AppRoutes = () => {
       <Route path="/xarajatlar" element={<ProtectedRoute><Layout><SuspensePage><Xarajatlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/qarzdorlar" element={<ProtectedRoute><Layout><SuspensePage><Qarzdorlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></ProtectedRoute>} />
-      <Route path="/admin/import" element={<ProtectedRoute><Layout><SuspensePage><AdminImport /></SuspensePage></Layout></ProtectedRoute>} />
+      <Route path="/admin/users" element={<AdminRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></AdminRoute>} />
+      <Route path="/admin/import" element={<AdminRoute><Layout><SuspensePage><AdminImport /></SuspensePage></Layout></AdminRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="*" element={<Suspense fallback={null}><PageTransition><NotFound /></PageTransition></Suspense>} />
     </Routes>
