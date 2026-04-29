@@ -417,6 +417,63 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_bot_state: {
+        Row: {
+          id: number
+          update_offset: number
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          update_offset?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      telegram_pending_auth: {
+        Row: {
+          chat_id: number
+          created_at: string
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      telegram_subscribers: {
+        Row: {
+          chat_id: number
+          created_at: string
+          email: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          chat_id: number
+          created_at?: string
+          email: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          chat_id?: number
+          created_at?: string
+          email?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

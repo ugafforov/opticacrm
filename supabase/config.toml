@@ -1,1 +1,7 @@
 project_id = "kfzdexxtdrzevmtpyand"
+
+[functions.daily-telegram-report]
+verify_jwt = false
+
+[functions.telegram-poll]
+verify_jwt = false
