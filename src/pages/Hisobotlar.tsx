@@ -1080,9 +1080,22 @@ const Hisobotlar = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
-        <p className="text-muted-foreground">{t("reports.subtitle")}</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
+          <p className="text-muted-foreground">{t("reports.subtitle")}</p>
+        </div>
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleSendTelegram} disabled={sendingTelegram} variant="default">
+              <Send className="h-4 w-4 mr-2" />
+              {sendingTelegram ? "Yuborilmoqda..." : "Telegramga yuborish"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/admin/telegram">Telegram boshqaruvi</Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card className="p-6">
