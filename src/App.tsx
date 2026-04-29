@@ -92,6 +92,7 @@ const AppRoutes = () => {
       <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/admin/users" element={<AdminRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></AdminRoute>} />
       <Route path="/admin/import" element={<AdminRoute><Layout><SuspensePage><AdminImport /></SuspensePage></Layout></AdminRoute>} />
+      <Route path="/admin/telegram" element={<AdminRoute><Layout><SuspensePage><AdminTelegram /></SuspensePage></Layout></AdminRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="*" element={<Suspense fallback={null}><PageTransition><NotFound /></PageTransition></Suspense>} />
     </Routes>
