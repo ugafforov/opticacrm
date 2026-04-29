@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, FileDown, FileSpreadsheet, FileText, Printer } from "lucide-react";
+import { CalendarIcon, FileDown, FileSpreadsheet, FileText, Printer, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { exportDataToExcel } from "@/lib/excelExport";
 import jsPDF from "jspdf";
@@ -64,7 +65,30 @@ interface PaymentTrendData {
 
 const Hisobotlar = () => {
   const { t, script } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [sendingTelegram, setSendingTelegram] = useState(false);
+
+  const handleSendTelegram = async () => {
+    if (!user) return;
+    setSendingTelegram(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("daily-telegram-report", {
+        body: { period: "today" },
+      });
+      if (error) throw error;
+      if (data?.sent === 0 || data?.message === "No targets") {
+        toast.warning("Hech kim botga ulanmagan. Avval admin panelda ruxsat bering va botga /start bering.");
+      } else {
+        toast.success(`Hisobot ${data?.sent || 0} ta foydalanuvchiga yuborildi`);
+      }
+    } catch (e: any) {
+      logger.error("Telegram send error:", e);
+      toast.error("Telegramga yuborishda xatolik: " + (e?.message || ""));
+    } finally {
+      setSendingTelegram(false);
+    }
+  };
+
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [sectionData, setSectionData] = useState<SectionData[]>([]);
   const [expenseCategoryData, setExpenseCategoryData] = useState<SectionData[]>([]);
@@ -1056,9 +1080,22 @@ const Hisobotlar = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
-        <p className="text-muted-foreground">{t("reports.subtitle")}</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
+          <p className="text-muted-foreground">{t("reports.subtitle")}</p>
+        </div>
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleSendTelegram} disabled={sendingTelegram} variant="default">
+              <Send className="h-4 w-4 mr-2" />
+              {sendingTelegram ? "Yuborilmoqda..." : "Telegramga yuborish"}
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/admin/telegram">Telegram boshqaruvi</Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       <Card className="p-6">
