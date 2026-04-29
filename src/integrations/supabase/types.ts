@@ -417,6 +417,30 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_allowed_users: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          phone: string | null
+          telegram_chat_id: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone?: string | null
+          telegram_chat_id?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          phone?: string | null
+          telegram_chat_id?: number | null
+        }
+        Relationships: []
+      }
       telegram_bot_state: {
         Row: {
           id: number
@@ -450,27 +474,54 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_settings: {
+        Row: {
+          id: number
+          source_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          id: number
+          source_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          source_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       telegram_subscribers: {
         Row: {
           chat_id: number
           created_at: string
-          email: string
+          email: string | null
+          first_name: string | null
           id: string
-          user_id: string
+          phone: string | null
+          user_id: string | null
+          username: string | null
         }
         Insert: {
           chat_id: number
           created_at?: string
-          email: string
+          email?: string | null
+          first_name?: string | null
           id?: string
-          user_id: string
+          phone?: string | null
+          user_id?: string | null
+          username?: string | null
         }
         Update: {
           chat_id?: number
           created_at?: string
-          email?: string
+          email?: string | null
+          first_name?: string | null
           id?: string
-          user_id?: string
+          phone?: string | null
+          user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
