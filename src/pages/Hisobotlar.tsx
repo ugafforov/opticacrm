@@ -65,7 +65,30 @@ interface PaymentTrendData {
 
 const Hisobotlar = () => {
   const { t, script } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const [sendingTelegram, setSendingTelegram] = useState(false);
+
+  const handleSendTelegram = async () => {
+    if (!user) return;
+    setSendingTelegram(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("daily-telegram-report", {
+        body: { period: "today" },
+      });
+      if (error) throw error;
+      if (data?.sent === 0 || data?.message === "No targets") {
+        toast.warning("Hech kim botga ulanmagan. Avval admin panelda ruxsat bering va botga /start bering.");
+      } else {
+        toast.success(`Hisobot ${data?.sent || 0} ta foydalanuvchiga yuborildi`);
+      }
+    } catch (e: any) {
+      logger.error("Telegram send error:", e);
+      toast.error("Telegramga yuborishda xatolik: " + (e?.message || ""));
+    } finally {
+      setSendingTelegram(false);
+    }
+  };
+
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [sectionData, setSectionData] = useState<SectionData[]>([]);
   const [expenseCategoryData, setExpenseCategoryData] = useState<SectionData[]>([]);
