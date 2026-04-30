@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Trash2, UserPlus, Save } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, Save, Pencil } from "lucide-react";
+import { EditDialog } from "@/components/EditDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
@@ -45,6 +46,42 @@ const AdminTelegram = () => {
   const [newChatId, setNewChatId] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [adding, setAdding] = useState(false);
+
+  // Edit subscriber
+  const [editSub, setEditSub] = useState<Subscriber | null>(null);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (s: Subscriber) => {
+    setEditSub(s);
+    setEditFirstName(s.first_name || "");
+    setEditUsername(s.username || "");
+    setEditPhone(s.phone || "");
+  };
+
+  const handleSaveSubscriber = async () => {
+    if (!editSub) return;
+    setSavingEdit(true);
+    try {
+      const payload: any = {
+        first_name: editFirstName || null,
+        username: editUsername || null,
+        phone: editPhone ? normPhone(editPhone) : null,
+      };
+      const { error } = await supabase.from("telegram_subscribers")
+        .update(payload).eq("chat_id", editSub.chat_id);
+      if (error) throw error;
+      toast.success("Saqlandi");
+      setEditSub(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const load = async () => {
     const [a, s, p, settings] = await Promise.all([
@@ -229,7 +266,7 @@ const AdminTelegram = () => {
                 <TableHead>Profil ID</TableHead>
                 <TableHead>Telefon</TableHead>
                 <TableHead>Sana</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-24">Amal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -244,9 +281,14 @@ const AdminTelegram = () => {
                   <TableCell>{s.phone || "-"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("uz-UZ")}</TableCell>
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(s)}>
+                        <Pencil className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -254,6 +296,32 @@ const AdminTelegram = () => {
           </Table>
         </div>
       </Card>
+
+      <EditDialog open={!!editSub} onOpenChange={(o) => !o && setEditSub(null)} title="Obunachini tahrirlash">
+        <div className="space-y-3">
+          <div>
+            <Label>Ism</Label>
+            <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Username</Label>
+            <Input value={editUsername} onChange={(e) => setEditUsername(e.target.value)} placeholder="username (without @)" />
+          </div>
+          <div>
+            <Label>Telefon</Label>
+            <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="+998901234567" />
+          </div>
+          {editSub && (
+            <div className="text-xs text-muted-foreground">Profil ID: <code>{editSub.chat_id}</code></div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setEditSub(null)}>Bekor qilish</Button>
+            <Button onClick={handleSaveSubscriber} disabled={savingEdit}>
+              <Save className="h-4 w-4 mr-2" />Saqlash
+            </Button>
+          </div>
+        </div>
+      </EditDialog>
     </main>
   );
 };
