@@ -266,7 +266,7 @@ const AdminTelegram = () => {
                 <TableHead>Profil ID</TableHead>
                 <TableHead>Telefon</TableHead>
                 <TableHead>Sana</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="w-24">Amal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -281,9 +281,14 @@ const AdminTelegram = () => {
                   <TableCell>{s.phone || "-"}</TableCell>
                   <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("uz-UZ")}</TableCell>
                   <TableCell>
-                    <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button size="icon" variant="ghost" onClick={() => openEdit(s)}>
+                        <Pencil className="h-4 w-4 text-primary" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -291,6 +296,32 @@ const AdminTelegram = () => {
           </Table>
         </div>
       </Card>
+
+      <EditDialog open={!!editSub} onOpenChange={(o) => !o && setEditSub(null)} title="Obunachini tahrirlash">
+        <div className="space-y-3">
+          <div>
+            <Label>Ism</Label>
+            <Input value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Username</Label>
+            <Input value={editUsername} onChange={(e) => setEditUsername(e.target.value)} placeholder="username (without @)" />
+          </div>
+          <div>
+            <Label>Telefon</Label>
+            <Input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="+998901234567" />
+          </div>
+          {editSub && (
+            <div className="text-xs text-muted-foreground">Profil ID: <code>{editSub.chat_id}</code></div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setEditSub(null)}>Bekor qilish</Button>
+            <Button onClick={handleSaveSubscriber} disabled={savingEdit}>
+              <Save className="h-4 w-4 mr-2" />Saqlash
+            </Button>
+          </div>
+        </div>
+      </EditDialog>
     </main>
   );
 };
