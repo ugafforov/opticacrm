@@ -14,12 +14,15 @@ const REPORT_FN_URL = `${SB_URL}/functions/v1/daily-telegram-report`;
 
 const MAX_RUNTIME_MS = 50_000;
 
-const MAIN_MENU = {
-  inline_keyboard: [
-    [{ text: "📊 Bugun", callback_data: "p:today" }, { text: "📅 Kecha", callback_data: "p:yesterday" }],
-    [{ text: "📈 Hafta", callback_data: "p:week" }, { text: "🗓 Oy", callback_data: "p:month" }],
-    [{ text: "🔎 Boshqa sana", callback_data: "p:custom" }],
+// Doimiy pastki klaviatura — har doim ko'rinib turadi
+const PERSISTENT_KEYBOARD = {
+  keyboard: [
+    [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
+    [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
+    [{ text: "🔎 Boshqa sana" }],
   ],
+  resize_keyboard: true,
+  is_persistent: true,
 };
 
 async function tgSend(chatId: number, text: string, extra: any = {}) {
