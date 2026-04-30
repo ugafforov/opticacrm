@@ -1,0 +1,2 @@
+CREATE POLICY "Admins can update subscribers" ON public.telegram_subscribers FOR UPDATE TO authenticated USING (is_admin(auth.uid())) WITH CHECK (is_admin(auth.uid()));
+CREATE POLICY "Admins can delete subscribers" ON public.telegram_subscribers FOR DELETE TO authenticated USING (is_admin(auth.uid()));
