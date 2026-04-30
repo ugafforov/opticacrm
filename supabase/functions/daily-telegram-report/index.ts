@@ -81,9 +81,23 @@ function autoWidth(sheet: any) {
 }
 
 async function fetchAllForUser(supabase: any, table: string, userId: string) {
-  const { data, error } = await supabase.from(table).select("*").eq("user_id", userId);
-  if (error) throw error;
-  return data || [];
+  // Supabase 1000 qator limitini chetlab o'tish uchun sahifalab olamiz
+  const PAGE = 1000;
+  let from = 0;
+  let all: any[] = [];
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select("*")
+      .eq("user_id", userId)
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    const rows = data || [];
+    all = all.concat(rows);
+    if (rows.length < PAGE) break;
+    from += PAGE;
+  }
+  return all;
 }
 
 function rangeLabel(from: string, to: string): string {
