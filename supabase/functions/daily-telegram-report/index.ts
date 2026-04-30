@@ -159,65 +159,152 @@ async function buildReport(supabase: any, sourceUserId: string, fromDate: string
     `📎 Batafsil ma'lumot Excel faylda.`;
 
   const wb = new ExcelJS.Workbook();
+
+  // ===== XULOSA =====
   const summary = wb.addWorksheet("Xulosa");
-  summary.addRow([`Optica — ${periodTitle}`, periodLabel]);
-  summary.getRow(1).font = { bold: true, size: 14 };
+  summary.mergeCells("A1:C1");
+  const titleCell = summary.getCell("A1");
+  titleCell.value = `Optica — ${periodTitle}`;
+  titleCell.font = { bold: true, size: 16, color: { argb: "FF1F4E78" } };
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  summary.getRow(1).height = 28;
+
+  summary.mergeCells("A2:C2");
+  const periodCell = summary.getCell("A2");
+  periodCell.value = `📅 ${periodLabel}`;
+  periodCell.font = { italic: true, size: 12, color: { argb: "FF555555" } };
+  periodCell.alignment = { horizontal: "center" };
+  summary.getRow(2).height = 22;
+
   summary.addRow([]);
   summary.addRow(["Kategoriya", "Soni", "Summa (so'm)"]);
-  styleHeader(summary.getRow(3));
-  summary.addRow(["Buyurtmalar", buyurtmalar.length, buyurtmaSum]);
-  summary.addRow(["Tekshiruvlar", tekshiruvlar.length, tekshSum]);
-  summary.addRow(["Tayyor ko'zoynaklar", tayyor.length, tayyorSum]);
-  summary.addRow(["Linza sotuvi", linza.length, linzaSum]);
-  const jr = summary.addRow(["Jami savdo", "", jamiSavdo]);
-  jr.font = { bold: true }; jr.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC6EFCE" } };
-  summary.addRow(["Xarajatlar", xarajatlar.length, -xarajatSum]);
-  summary.addRow(["Qarz to'lovlari", qarzTolovlari.length, tolovSum]);
-  summary.addRow(["Yangi qarzdorlar", qarzdorlar.length, qarzSum]);
-  const sr = summary.addRow(["Sof daromad", "", sofDaromad]);
-  sr.font = { bold: true }; sr.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF9BC2E6" } };
-  autoWidth(summary);
+  styleHeader(summary.getRow(4));
+  summary.getRow(4).height = 22;
 
-  const addSheet = (name: string, headers: string[], rows: any[][], totalIdx?: number) => {
+  const addSummaryRow = (label: string, count: number | string, sum: number, fillColor?: string) => {
+    const r = summary.addRow([label, count, sum]);
+    r.getCell(3).numFmt = '#,##0';
+    r.height = 20;
+    if (fillColor) {
+      r.font = { bold: true };
+      r.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fillColor } };
+    }
+    r.alignment = { vertical: "middle" };
+  };
+
+  addSummaryRow("👁 Buyurtmalar", buyurtmalar.length, buyurtmaSum);
+  addSummaryRow("🔍 Tekshiruvlar", tekshiruvlar.length, tekshSum);
+  addSummaryRow("🕶 Tayyor ko'zoynaklar", tayyor.length, tayyorSum);
+  addSummaryRow("🔬 Linza sotuvi", linza.length, linzaSum);
+  addSummaryRow("💰 JAMI SAVDO", "", jamiSavdo, "FFC6EFCE");
+  addSummaryRow("💸 Xarajatlar", xarajatlar.length, -xarajatSum);
+  addSummaryRow("📥 Qarz to'lovlari", qarzTolovlari.length, tolovSum);
+  addSummaryRow("📤 Yangi qarzdorlar", qarzdorlar.length, qarzSum);
+  addSummaryRow("✅ SOF DAROMAD", "", sofDaromad, "FF9BC2E6");
+
+  // Aniq ustun kengliklari (auto-fit emoji bilan yaxshi ishlamaydi)
+  summary.getColumn(1).width = 32;
+  summary.getColumn(2).width = 12;
+  summary.getColumn(3).width = 22;
+  summary.getColumn(2).alignment = { horizontal: "center" };
+  summary.getColumn(3).alignment = { horizontal: "right" };
+
+  // Vaqtni HH:MM formatda olish
+  const fmtTime = (createdAt: string | null | undefined): string => {
+    if (!createdAt) return "-";
+    try {
+      const d = new Date(createdAt);
+      const localStr = d.toLocaleString("en-GB", { timeZone: "Asia/Tashkent", hour: "2-digit", minute: "2-digit", hour12: false });
+      return localStr;
+    } catch { return "-"; }
+  };
+
+  const addDetailSheet = (name: string, headers: string[], rows: any[][], totalIdx?: number, widths?: number[]) => {
     const sh = wb.addWorksheet(name);
-    sh.addRow(headers); styleHeader(sh.getRow(1));
+    sh.addRow(headers);
+    styleHeader(sh.getRow(1));
+    sh.getRow(1).height = 22;
     rows.forEach((r) => sh.addRow(r));
     if (totalIdx !== undefined && rows.length > 0) {
       const total = rows.reduce((s, r) => s + (Number(r[totalIdx]) || 0), 0);
       const tr = sh.addRow(headers.map((_, i) => i === totalIdx ? total : (i === totalIdx - 1 ? "JAMI:" : "")));
-      tr.font = { bold: true }; tr.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFE699" } };
+      tr.font = { bold: true };
+      tr.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFE699" } };
+      tr.getCell(totalIdx + 1).numFmt = '#,##0';
     }
-    autoWidth(sh);
+    // Summa ustunini formatlash
+    if (totalIdx !== undefined) {
+      sh.getColumn(totalIdx + 1).numFmt = '#,##0';
+      sh.getColumn(totalIdx + 1).alignment = { horizontal: "right" };
+    }
+    // Ustun kengliklari
+    if (widths) {
+      widths.forEach((w, i) => { sh.getColumn(i + 1).width = w; });
+    } else {
+      autoWidth(sh);
+    }
+    // Sarlavha ostida freeze
+    sh.views = [{ state: "frozen", ySplit: 1 }];
   };
 
-  addSheet("Buyurtmalar",
-    ["№", "Sana", "Mijoz", "Telefon", "OD", "OS", "Oyna turi", "Oyna narxi", "Oprava turi", "Oprava narxi", "Jami summa"],
-    buyurtmalar.map((b: any) => [b.tartib_raqam, b.sana, b.mijoz, b.telefon || "-", b.od, b.os, b["oyna_tури"], Number(b.oyna_narxi) || 0, b.oprava_turi, Number(b.oprava_narxi) || 0, Number(b.jami_summa) || 0]),
-    10);
-  addSheet("Tekshiruvlar",
-    ["№", "Sana", "Mijoz", "Tanometriya", "Refraksiyametriya", "Jami summa"],
-    tekshiruvlar.map((t: any) => [t.tartib_raqam, t.sana, t.mijoz, t.tanometriya ? "Ha" : "Yo'q", t.refraksiyametriya ? "Ha" : "Yo'q", Number(t.jami_summa) || 0]),
-    5);
-  addSheet("Tayyor kozoynaklar",
-    ["№", "Sana", "Mijoz", "Ko'zoynak turi", "Summa"],
-    tayyor.map((t: any) => [t.tartib_raqam, t.sana, t.kliyent, t.kozoynak_turi, Number(t.summa) || 0]),
-    4);
-  addSheet("Linza sotuvi",
-    ["№", "Sana", "Mijoz", "Linza turi", "Summa"],
-    linza.map((l: any) => [l.tartib_raqam, l.sana, l.kliyent, l.linza_turi, Number(l.summa) || 0]),
-    4);
-  addSheet("Xarajatlar",
-    ["№", "Sana", "Kategoriya", "Izoh", "Summa"],
-    xarajatlar.map((x: any) => [x.tartib_raqam, x.sana, x.kategoriya, x.tavsif || "-", Number(x.summa) || 0]),
-    4);
-  addSheet("Qarzdorlar (yangi)",
-    ["№", "Sana", "Mijoz", "Telefon", "Qarz summasi", "Qoldiq", "Holat", "Izoh"],
-    qarzdorlar.map((q: any) => [q.tartib_raqam, q.sana, q.mijoz, q.telefon || "-", Number(q.qarz_summasi) || 0, Number(q.qoldiq_summa) || 0, q.holat, q.izoh || "-"]),
-    4);
-  addSheet("Qarz tolovlari",
-    ["Sana", "Qarzdor ID", "Summa", "Izoh"],
-    qarzTolovlari.map((q: any) => [q.sana, q.qarzdor_id, Number(q.summa) || 0, q.izoh || "-"]),
-    2);
+  addDetailSheet("Buyurtmalar",
+    ["№", "Sana", "Vaqt", "Mijoz", "Telefon", "OD", "OS", "Oyna turi", "Oyna narxi", "Oprava turi", "Oprava narxi", "Jami summa"],
+    buyurtmalar.map((b: any) => [
+      b.tartib_raqam, b.sana, fmtTime(b.created_at), b.mijoz, b.telefon || "-",
+      b.od, b.os, b["oyna_tури"], Number(b.oyna_narxi) || 0,
+      b.oprava_turi, Number(b.oprava_narxi) || 0, Number(b.jami_summa) || 0,
+    ]),
+    11,
+    [6, 12, 8, 22, 16, 10, 10, 16, 14, 16, 14, 16],
+  );
+
+  addDetailSheet("Tekshiruvlar",
+    ["№", "Sana", "Vaqt", "Mijoz", "Tanometriya", "Refraksiyametriya", "Jami summa"],
+    tekshiruvlar.map((t: any) => [
+      t.tartib_raqam, t.sana, fmtTime(t.created_at), t.mijoz,
+      t.tanometriya ? "Ha" : "Yo'q", t.refraksiyametriya ? "Ha" : "Yo'q", Number(t.jami_summa) || 0,
+    ]),
+    6,
+    [6, 12, 8, 22, 14, 18, 16],
+  );
+
+  addDetailSheet("Tayyor kozoynaklar",
+    ["№", "Sana", "Vaqt", "Mijoz", "Ko'zoynak turi", "Summa"],
+    tayyor.map((t: any) => [t.tartib_raqam, t.sana, fmtTime(t.created_at), t.kliyent, t.kozoynak_turi, Number(t.summa) || 0]),
+    5,
+    [6, 12, 8, 22, 22, 16],
+  );
+
+  addDetailSheet("Linza sotuvi",
+    ["№", "Sana", "Vaqt", "Mijoz", "Linza turi", "Summa"],
+    linza.map((l: any) => [l.tartib_raqam, l.sana, fmtTime(l.created_at), l.kliyent, l.linza_turi, Number(l.summa) || 0]),
+    5,
+    [6, 12, 8, 22, 22, 16],
+  );
+
+  addDetailSheet("Xarajatlar",
+    ["№", "Sana", "Vaqt", "Kategoriya", "Izoh", "Summa"],
+    xarajatlar.map((x: any) => [x.tartib_raqam, x.sana, fmtTime(x.created_at), x.kategoriya, x.tavsif || "-", Number(x.summa) || 0]),
+    5,
+    [6, 12, 8, 18, 30, 16],
+  );
+
+  addDetailSheet("Qarzdorlar (yangi)",
+    ["№", "Sana", "Vaqt", "Mijoz", "Telefon", "Qarz summasi", "Qoldiq", "Holat", "Izoh"],
+    qarzdorlar.map((q: any) => [
+      q.tartib_raqam, q.sana, fmtTime(q.created_at), q.mijoz, q.telefon || "-",
+      Number(q.qarz_summasi) || 0, Number(q.qoldiq_summa) || 0, q.holat, q.izoh || "-",
+    ]),
+    5,
+    [6, 12, 8, 22, 16, 16, 16, 14, 26],
+  );
+
+  addDetailSheet("Qarz tolovlari",
+    ["Sana", "Vaqt", "Qarzdor ID", "Summa", "Izoh"],
+    qarzTolovlari.map((q: any) => [q.sana, fmtTime(q.created_at), q.qarzdor_id, Number(q.summa) || 0, q.izoh || "-"]),
+    3,
+    [12, 8, 38, 16, 30],
+  );
 
   const buf = await wb.xlsx.writeBuffer();
   return { text, excel: new Uint8Array(buf as ArrayBuffer), periodLabel };
