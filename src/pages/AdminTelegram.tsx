@@ -148,6 +148,46 @@ const AdminTelegram = () => {
     await load();
   };
 
+  const isSubscriberAllowed = (s: Subscriber): boolean => {
+    return allowed.some(a =>
+      (a.telegram_chat_id && Number(a.telegram_chat_id) === Number(s.chat_id)) ||
+      (a.phone && s.phone && a.phone === s.phone)
+    );
+  };
+
+  const handleApproveSubscriber = async (s: Subscriber) => {
+    try {
+      const payload: any = {
+        label: s.first_name || (s.username ? "@" + s.username : null),
+        telegram_chat_id: s.chat_id,
+        phone: s.phone || null,
+      };
+      const { error } = await supabase.from("telegram_allowed_users").insert(payload);
+      if (error) throw error;
+      toast.success("Ruxsat berildi ✅");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    }
+  };
+
+  const handleRevokeSubscriber = async (s: Subscriber) => {
+    if (!confirm("Ushbu foydalanuvchidan ruxsatni olib tashlaymizmi?")) return;
+    try {
+      const matches = allowed.filter(a =>
+        (a.telegram_chat_id && Number(a.telegram_chat_id) === Number(s.chat_id)) ||
+        (a.phone && s.phone && a.phone === s.phone)
+      );
+      for (const m of matches) {
+        await supabase.from("telegram_allowed_users").delete().eq("id", m.id);
+      }
+      toast.success("Ruxsat olib tashlandi");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    }
+  };
+
   const handleSaveSource = async () => {
     setSavingSource(true);
     try {
