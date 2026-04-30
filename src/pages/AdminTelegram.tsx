@@ -218,7 +218,9 @@ const AdminTelegram = () => {
               <SelectTrigger><SelectValue placeholder="Profilni tanlang" /></SelectTrigger>
               <SelectContent>
                 {profiles.map(p => (
-                  <SelectItem key={p.id} value={p.id}>{p.full_name || p.id}</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.full_name ? `${p.full_name} (${p.email || ""})` : (p.email || p.id)}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -233,23 +235,21 @@ const AdminTelegram = () => {
       <Card className="p-4">
         <h2 className="text-lg font-semibold mb-3">Ruxsat berilgan foydalanuvchilar</h2>
         <p className="text-sm text-muted-foreground mb-3">
-          Telegram <b>Profil ID</b> (foydalanuvchi botga /start berganda chat ID si ko'rinadi) yoki <b>telefon raqam</b> orqali ruxsat bering. Foydalanuvchi botga telefonini yuborganda yoki Profil ID i bo'yicha avtomatik tasdiqlanadi.
+          <b>Telefon raqam</b> kiriting. Foydalanuvchi botda <b>📱 Telefon raqamni yuborish</b> tugmasini bossa, avtomatik tanib olinadi va botga ulanadi.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
-          <div>
-            <Label>Izoh (ixtiyoriy)</Label>
-            <Input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Ism" />
-          </div>
-          <div>
-            <Label>Profil ID</Label>
-            <Input value={newChatId} onChange={e => setNewChatId(e.target.value)} placeholder="123456789" />
-          </div>
-          <div>
-            <Label>Telefon</Label>
-            <Input value={newPhone} onChange={e => setNewPhone(e.target.value)} placeholder="+998901234567" />
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <div className="flex-1">
+            <Label>Telefon raqam</Label>
+            <Input
+              value={newPhone}
+              onChange={e => setNewPhone(e.target.value)}
+              placeholder="+998901234567"
+              type="tel"
+              onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            />
           </div>
           <div className="flex items-end">
-            <Button onClick={handleAdd} disabled={adding} className="w-full">
+            <Button onClick={handleAdd} disabled={adding} className="w-full sm:w-auto">
               <UserPlus className="h-4 w-4 mr-2" />Qo'shish
             </Button>
           </div>
