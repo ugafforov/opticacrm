@@ -89,14 +89,15 @@ async function handleMessage(supabase: any, msg: any) {
   // Kontakt yuborilgan
   if (contact && contact.phone_number) {
     const phone = normPhone(contact.phone_number);
+    // Har doim obunachi sifatida saqlaymiz (admin keyin ruxsat bera oladi)
+    await ensureSubscriber(supabase, chatId, msg.from || {}, phone);
     const ok = await isAllowed(supabase, chatId, phone);
     if (ok) {
-      await ensureSubscriber(supabase, chatId, msg.from || {}, phone);
       await tgSend(chatId, `✅ Tasdiqlandi! Endi quyidagi tugmalar orqali hisobot oling.`, {
         reply_markup: MAIN_MENU,
       });
     } else {
-      await tgSend(chatId, `🚫 Sizning telefon raqamingiz (<code>${phone}</code>) ruxsat ro'yxatida yo'q.\n\nAdmin bilan bog'laning va Profil ID (<code>${chatId}</code>) yoki telefon raqamingizni qo'shdiring.`, {
+      await tgSend(chatId, `⏳ Sizning ma'lumotlaringiz adminga yuborildi.\n\n📱 Telefon: <code>${phone}</code>\n🆔 Profil ID: <code>${chatId}</code>\n\nAdmin ruxsat bergach, /start yuboring.`, {
         reply_markup: { remove_keyboard: true },
       });
     }
@@ -104,9 +105,10 @@ async function handleMessage(supabase: any, msg: any) {
   }
 
   if (text === "/start" || text === "/menu") {
+    // Har doim obunachi sifatida saqlaymiz
+    await ensureSubscriber(supabase, chatId, msg.from || {}, null);
     const allowed = await isAllowed(supabase, chatId, null);
     if (allowed) {
-      await ensureSubscriber(supabase, chatId, msg.from || {}, null);
       await tgSend(chatId, `👋 Xush kelibsiz!\n\nHisobot olish uchun davrni tanlang:`, { reply_markup: MAIN_MENU });
       return;
     }

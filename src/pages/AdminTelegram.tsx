@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, Trash2, UserPlus, Save, Pencil } from "lucide-react";
+import { ArrowLeft, Trash2, UserPlus, Save, Pencil, ShieldCheck, ShieldX } from "lucide-react";
 import { EditDialog } from "@/components/EditDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,6 +148,46 @@ const AdminTelegram = () => {
     await load();
   };
 
+  const isSubscriberAllowed = (s: Subscriber): boolean => {
+    return allowed.some(a =>
+      (a.telegram_chat_id && Number(a.telegram_chat_id) === Number(s.chat_id)) ||
+      (a.phone && s.phone && a.phone === s.phone)
+    );
+  };
+
+  const handleApproveSubscriber = async (s: Subscriber) => {
+    try {
+      const payload: any = {
+        label: s.first_name || (s.username ? "@" + s.username : null),
+        telegram_chat_id: s.chat_id,
+        phone: s.phone || null,
+      };
+      const { error } = await supabase.from("telegram_allowed_users").insert(payload);
+      if (error) throw error;
+      toast.success("Ruxsat berildi ✅");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    }
+  };
+
+  const handleRevokeSubscriber = async (s: Subscriber) => {
+    if (!confirm("Ushbu foydalanuvchidan ruxsatni olib tashlaymizmi?")) return;
+    try {
+      const matches = allowed.filter(a =>
+        (a.telegram_chat_id && Number(a.telegram_chat_id) === Number(s.chat_id)) ||
+        (a.phone && s.phone && a.phone === s.phone)
+      );
+      for (const m of matches) {
+        await supabase.from("telegram_allowed_users").delete().eq("id", m.id);
+      }
+      toast.success("Ruxsat olib tashlandi");
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    }
+  };
+
   const handleSaveSource = async () => {
     setSavingSource(true);
     try {
@@ -265,33 +305,57 @@ const AdminTelegram = () => {
                 <TableHead>Username</TableHead>
                 <TableHead>Profil ID</TableHead>
                 <TableHead>Telefon</TableHead>
+                <TableHead>Holat</TableHead>
                 <TableHead>Sana</TableHead>
-                <TableHead className="w-24">Amal</TableHead>
+                <TableHead className="w-40">Amal</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {subscribers.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Hozircha obunachi yo'q</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Hozircha obunachi yo'q</TableCell></TableRow>
               )}
-              {subscribers.map(s => (
-                <TableRow key={s.chat_id}>
-                  <TableCell>{s.first_name || "-"}</TableCell>
-                  <TableCell>{s.username ? "@" + s.username : "-"}</TableCell>
-                  <TableCell><code>{s.chat_id}</code></TableCell>
-                  <TableCell>{s.phone || "-"}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("uz-UZ")}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => openEdit(s)}>
-                        <Pencil className="h-4 w-4 text-primary" />
-                      </Button>
-                      <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {subscribers.map(s => {
+                const isOk = isSubscriberAllowed(s);
+                return (
+                  <TableRow key={s.chat_id}>
+                    <TableCell>{s.first_name || "-"}</TableCell>
+                    <TableCell>{s.username ? "@" + s.username : "-"}</TableCell>
+                    <TableCell><code>{s.chat_id}</code></TableCell>
+                    <TableCell>{s.phone || "-"}</TableCell>
+                    <TableCell>
+                      {isOk ? (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <ShieldCheck className="h-3 w-3" />Ruxsat bor
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          <ShieldX className="h-3 w-3" />Ruxsat yo'q
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{new Date(s.created_at).toLocaleString("uz-UZ")}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap">
+                        {!isOk ? (
+                          <Button size="sm" variant="default" onClick={() => handleApproveSubscriber(s)}>
+                            <ShieldCheck className="h-4 w-4 mr-1" />Ruxsat
+                          </Button>
+                        ) : (
+                          <Button size="icon" variant="ghost" onClick={() => handleRevokeSubscriber(s)} title="Ruxsatni olib tashlash">
+                            <ShieldX className="h-4 w-4 text-yellow-600" />
+                          </Button>
+                        )}
+                        <Button size="icon" variant="ghost" onClick={() => openEdit(s)}>
+                          <Pencil className="h-4 w-4 text-primary" />
+                        </Button>
+                        <Button size="icon" variant="ghost" onClick={() => handleRemoveSubscriber(s.chat_id)}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
