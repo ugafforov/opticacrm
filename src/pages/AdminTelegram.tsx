@@ -31,7 +31,7 @@ interface Subscriber {
 interface Profile {
   id: string;
   full_name: string | null;
-  email?: string;
+  email?: string | null;
 }
 
 const AdminTelegram = () => {
@@ -41,9 +41,7 @@ const AdminTelegram = () => {
   const [sourceUserId, setSourceUserId] = useState<string>("");
   const [savingSource, setSavingSource] = useState(false);
 
-  // Form
-  const [newLabel, setNewLabel] = useState("");
-  const [newChatId, setNewChatId] = useState("");
+  // Form (faqat telefon)
   const [newPhone, setNewPhone] = useState("");
   const [adding, setAdding] = useState(false);
 
@@ -84,15 +82,16 @@ const AdminTelegram = () => {
   };
 
   const load = async () => {
-    const [a, s, p, settings] = await Promise.all([
+    const [a, s, settings, usersRes] = await Promise.all([
       supabase.from("telegram_allowed_users").select("*").order("created_at", { ascending: false }),
       supabase.from("telegram_subscribers").select("chat_id, phone, first_name, username, created_at").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("id, full_name"),
       supabase.from("telegram_settings").select("source_user_id").eq("id", 1).maybeSingle(),
+      supabase.functions.invoke("admin-list-users"),
     ]);
     setAllowed((a.data as any) || []);
     setSubscribers((s.data as any) || []);
-    setProfiles((p.data as any) || []);
+    const usersList = (usersRes.data as any)?.users || [];
+    setProfiles(usersList.map((u: any) => ({ id: u.id, full_name: u.full_name, email: u.email })));
     setSourceUserId(settings.data?.source_user_id || "");
   };
 
@@ -106,23 +105,17 @@ const AdminTelegram = () => {
   };
 
   const handleAdd = async () => {
-    if (!newChatId && !newPhone) {
-      toast.error("Profil ID yoki telefon raqamni kiriting");
+    if (!newPhone || newPhone.replace(/\D/g, "").length < 9) {
+      toast.error("Telefon raqamni to'liq kiriting");
       return;
     }
     setAdding(true);
     try {
-      const payload: any = { label: newLabel || null };
-      if (newChatId) {
-        const cid = Number(newChatId.replace(/\D/g, ""));
-        if (!cid) throw new Error("Profil ID noto'g'ri");
-        payload.telegram_chat_id = cid;
-      }
-      if (newPhone) payload.phone = normPhone(newPhone);
-      const { error } = await supabase.from("telegram_allowed_users").insert(payload);
+      const phone = normPhone(newPhone);
+      const { error } = await supabase.from("telegram_allowed_users").insert({ phone, label: null });
       if (error) throw error;
-      toast.success("Foydalanuvchi qo'shildi");
-      setNewLabel(""); setNewChatId(""); setNewPhone("");
+      toast.success("Telefon raqam qo'shildi ✅");
+      setNewPhone("");
       await load();
     } catch (e: any) {
       logger.error("add allowed err:", e);
