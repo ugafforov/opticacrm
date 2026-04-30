@@ -47,6 +47,42 @@ const AdminTelegram = () => {
   const [newPhone, setNewPhone] = useState("");
   const [adding, setAdding] = useState(false);
 
+  // Edit subscriber
+  const [editSub, setEditSub] = useState<Subscriber | null>(null);
+  const [editFirstName, setEditFirstName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (s: Subscriber) => {
+    setEditSub(s);
+    setEditFirstName(s.first_name || "");
+    setEditUsername(s.username || "");
+    setEditPhone(s.phone || "");
+  };
+
+  const handleSaveSubscriber = async () => {
+    if (!editSub) return;
+    setSavingEdit(true);
+    try {
+      const payload: any = {
+        first_name: editFirstName || null,
+        username: editUsername || null,
+        phone: editPhone ? normPhone(editPhone) : null,
+      };
+      const { error } = await supabase.from("telegram_subscribers")
+        .update(payload).eq("chat_id", editSub.chat_id);
+      if (error) throw error;
+      toast.success("Saqlandi");
+      setEditSub(null);
+      await load();
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const load = async () => {
     const [a, s, p, settings] = await Promise.all([
       supabase.from("telegram_allowed_users").select("*").order("created_at", { ascending: false }),
