@@ -19,11 +19,65 @@ const MAIN_MENU = {
   keyboard: [
     [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
     [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
-    [{ text: "🔎 Boshqa sana" }],
+    [{ text: "📆 Oraliq" }, { text: "🔎 Boshqa sana" }],
   ],
   resize_keyboard: true,
   is_persistent: true,
 };
+
+// Moslashuvchan sana parseri: 1-1-2026, 01.01.2026, 1/1/26, 2026-1-1, 1 1 2026 va h.k.
+// Qaytaradi: "DD-MM-YYYY" yoki null
+function parseFlexibleDate(input: string): string | null {
+  if (!input) return null;
+  const s = input.trim().replace(/\s+/g, " ");
+  // Ajratuvchilar: . - / \ space
+  const parts = s.split(/[.\-\/\\ ]+/).filter(Boolean);
+  if (parts.length !== 3) return null;
+  let d: number, m: number, y: number;
+  // ISO: YYYY-M-D
+  if (parts[0].length === 4 && /^\d{4}$/.test(parts[0])) {
+    y = Number(parts[0]); m = Number(parts[1]); d = Number(parts[2]);
+  } else {
+    d = Number(parts[0]); m = Number(parts[1]); y = Number(parts[2]);
+  }
+  if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) return null;
+  if (y < 100) y += 2000; // 26 -> 2026
+  if (y < 1900 || y > 2100) return null;
+  if (m < 1 || m > 12) return null;
+  if (d < 1 || d > 31) return null;
+  // Sana haqiqiy ekanligini tekshirish
+  const dt = new Date(y, m - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+  const dd = String(d).padStart(2, "0");
+  const mm = String(m).padStart(2, "0");
+  return `${dd}-${mm}-${y}`;
+}
+
+// Oraliq parseri: "1.1.2026 - 5.1.2026", "1/1/26 5/1/26", "1.1.2026 dan 5.1.2026 gacha"
+// Qaytaradi: { from, to } yoki null
+function parseFlexibleRange(input: string): { from: string; to: string } | null {
+  if (!input) return null;
+  // " - ", " — ", " to ", " dan ... gacha", " ... "
+  const cleaned = input.trim()
+    .replace(/\s*(dan|gacha|to|—|–|-|=>|->|,|;)\s*/gi, " | ")
+    .replace(/\s+/g, " ");
+  // | bilan ajratamiz, agar yo'q bo'lsa — ikkita sanani avtomatik topishga harakat
+  let halves: string[];
+  if (cleaned.includes("|")) {
+    halves = cleaned.split("|").map(s => s.trim()).filter(Boolean);
+  } else {
+    // ikki bo'lakka bo'lib ko'ramiz: o'rtadan
+    const tokens = cleaned.split(" ");
+    if (tokens.length < 2) return null;
+    const mid = Math.floor(tokens.length / 2);
+    halves = [tokens.slice(0, mid).join(" "), tokens.slice(mid).join(" ")];
+  }
+  if (halves.length < 2) return null;
+  const from = parseFlexibleDate(halves[0]);
+  const to = parseFlexibleDate(halves[1]);
+  if (!from || !to) return null;
+  return { from, to };
+}
 
 async function tgSend(chatId: number, text: string, extra: any = {}) {
   await fetch(`${TG_API}/sendMessage`, {
@@ -131,14 +185,7 @@ async function handleMessage(supabase: any, msg: any) {
     return;
   }
 
-  // Sana kiritish (DD-MM-YYYY)
-  if (/^\d{2}-\d{2}-\d{4}$/.test(text)) {
-    await tgSend(chatId, `⏳ <b>${text}</b> sanasi uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
-    await triggerReport(chatId, { period: "date", date: text });
-    return;
-  }
-
-  // Pastki klaviatura tugmalari
+  // Pastki klaviatura tugmalari (avval tekshiramiz)
   const textMap: Record<string, string> = {
     "📊 Bugun": "today",
     "📅 Kecha": "yesterday",
@@ -151,16 +198,36 @@ async function handleMessage(supabase: any, msg: any) {
     return;
   }
   if (text === "🔎 Boshqa sana") {
-    await tgSend(chatId, `📅 Iltimos, sanani <b>DD-MM-YYYY</b> formatida yuboring (masalan: <code>15-04-2026</code>)`, { reply_markup: MAIN_MENU });
+    await tgSend(chatId, `📅 Sanani yuboring. Istalgan formatda yozsangiz bo'ladi:\n\n• <code>1-1-2026</code>\n• <code>01.01.2026</code>\n• <code>1/1/26</code>\n• <code>2026-01-01</code>`, { reply_markup: MAIN_MENU });
+    return;
+  }
+  if (text === "📆 Oraliq") {
+    await tgSend(chatId, `📆 Ikki sanani yuboring (boshlanish va tugash). Misollar:\n\n• <code>1.1.2026 - 5.1.2026</code>\n• <code>1/1/26 31/1/26</code>\n• <code>01-01-2026 dan 31-01-2026 gacha</code>`, { reply_markup: MAIN_MENU });
+    return;
+  }
+
+  // Oraliq parsing (avval, chunki ikki sana borligi aniqroq)
+  const range = parseFlexibleRange(text);
+  if (range) {
+    await tgSend(chatId, `⏳ <b>${range.from}</b> — <b>${range.to}</b> oralig'i uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
+    await triggerReport(chatId, { period: "range", from: range.from, to: range.to });
+    return;
+  }
+
+  // Bitta sana (moslashuvchan format)
+  const date = parseFlexibleDate(text);
+  if (date) {
+    await tgSend(chatId, `⏳ <b>${date}</b> sanasi uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
+    await triggerReport(chatId, { period: "date", date });
     return;
   }
 
   if (text === "/help") {
-    await tgSend(chatId, `<b>Buyruqlar:</b>\n/start — menyu\n/menu — menyu\n\nYoki istalgan sanani <code>DD-MM-YYYY</code> formatida yuboring.`, { reply_markup: MAIN_MENU });
+    await tgSend(chatId, `<b>Buyruqlar:</b>\n/start — menyu\n/menu — menyu\n\nSana misollari: <code>1.1.2026</code>, <code>01-01-2026</code>, <code>1/1/26</code>.\nOraliq: <code>1.1.2026 - 5.1.2026</code>`, { reply_markup: MAIN_MENU });
     return;
   }
 
-  await tgSend(chatId, `Quyidagi tugmalardan birini tanlang yoki sanani <code>DD-MM-YYYY</code> formatida yuboring:`, { reply_markup: MAIN_MENU });
+  await tgSend(chatId, `Tushunmadim. Tugmalardan birini tanlang yoki sanani yuboring (masalan: <code>1.1.2026</code>).`, { reply_markup: MAIN_MENU });
 }
 
 async function handleCallback(supabase: any, cb: any) {
