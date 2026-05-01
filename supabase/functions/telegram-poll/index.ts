@@ -185,14 +185,7 @@ async function handleMessage(supabase: any, msg: any) {
     return;
   }
 
-  // Sana kiritish (DD-MM-YYYY)
-  if (/^\d{2}-\d{2}-\d{4}$/.test(text)) {
-    await tgSend(chatId, `⏳ <b>${text}</b> sanasi uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
-    await triggerReport(chatId, { period: "date", date: text });
-    return;
-  }
-
-  // Pastki klaviatura tugmalari
+  // Pastki klaviatura tugmalari (avval tekshiramiz)
   const textMap: Record<string, string> = {
     "📊 Bugun": "today",
     "📅 Kecha": "yesterday",
@@ -205,16 +198,36 @@ async function handleMessage(supabase: any, msg: any) {
     return;
   }
   if (text === "🔎 Boshqa sana") {
-    await tgSend(chatId, `📅 Iltimos, sanani <b>DD-MM-YYYY</b> formatida yuboring (masalan: <code>15-04-2026</code>)`, { reply_markup: MAIN_MENU });
+    await tgSend(chatId, `📅 Sanani yuboring. Istalgan formatda yozsangiz bo'ladi:\n\n• <code>1-1-2026</code>\n• <code>01.01.2026</code>\n• <code>1/1/26</code>\n• <code>2026-01-01</code>`, { reply_markup: MAIN_MENU });
+    return;
+  }
+  if (text === "📆 Oraliq") {
+    await tgSend(chatId, `📆 Ikki sanani yuboring (boshlanish va tugash). Misollar:\n\n• <code>1.1.2026 - 5.1.2026</code>\n• <code>1/1/26 31/1/26</code>\n• <code>01-01-2026 dan 31-01-2026 gacha</code>`, { reply_markup: MAIN_MENU });
+    return;
+  }
+
+  // Oraliq parsing (avval, chunki ikki sana borligi aniqroq)
+  const range = parseFlexibleRange(text);
+  if (range) {
+    await tgSend(chatId, `⏳ <b>${range.from}</b> — <b>${range.to}</b> oralig'i uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
+    await triggerReport(chatId, { period: "range", from: range.from, to: range.to });
+    return;
+  }
+
+  // Bitta sana (moslashuvchan format)
+  const date = parseFlexibleDate(text);
+  if (date) {
+    await tgSend(chatId, `⏳ <b>${date}</b> sanasi uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
+    await triggerReport(chatId, { period: "date", date });
     return;
   }
 
   if (text === "/help") {
-    await tgSend(chatId, `<b>Buyruqlar:</b>\n/start — menyu\n/menu — menyu\n\nYoki istalgan sanani <code>DD-MM-YYYY</code> formatida yuboring.`, { reply_markup: MAIN_MENU });
+    await tgSend(chatId, `<b>Buyruqlar:</b>\n/start — menyu\n/menu — menyu\n\nSana misollari: <code>1.1.2026</code>, <code>01-01-2026</code>, <code>1/1/26</code>.\nOraliq: <code>1.1.2026 - 5.1.2026</code>`, { reply_markup: MAIN_MENU });
     return;
   }
 
-  await tgSend(chatId, `Quyidagi tugmalardan birini tanlang yoki sanani <code>DD-MM-YYYY</code> formatida yuboring:`, { reply_markup: MAIN_MENU });
+  await tgSend(chatId, `Tushunmadim. Tugmalardan birini tanlang yoki sanani yuboring (masalan: <code>1.1.2026</code>).`, { reply_markup: MAIN_MENU });
 }
 
 async function handleCallback(supabase: any, cb: any) {
