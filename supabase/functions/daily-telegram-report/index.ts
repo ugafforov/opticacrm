@@ -43,11 +43,13 @@ function fmtMoney(n: number): string {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
 }
 
-async function tgSend(chatId: number, text: string) {
+async function tgSend(chatId: number, text: string, withMenu = false) {
+  const body: any = { chat_id: chatId, text, parse_mode: "HTML" };
+  if (withMenu) body.reply_markup = MAIN_MENU;
   const res = await fetch(`${TG_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) console.error("sendMessage failed:", await res.text());
 }
