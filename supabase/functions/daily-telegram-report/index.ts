@@ -58,7 +58,7 @@ const MAIN_MENU = {
   keyboard: [
     [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
     [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
-    [{ text: "🔎 Boshqa sana" }],
+    [{ text: "📆 Oraliq" }, { text: "🔎 Boshqa sana" }],
   ],
   resize_keyboard: true,
   is_persistent: true,
