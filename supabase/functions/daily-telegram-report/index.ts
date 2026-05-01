@@ -43,20 +43,33 @@ function fmtMoney(n: number): string {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " so'm";
 }
 
-async function tgSend(chatId: number, text: string) {
+async function tgSend(chatId: number, text: string, withMenu = false) {
+  const body: any = { chat_id: chatId, text, parse_mode: "HTML" };
+  if (withMenu) body.reply_markup = MAIN_MENU;
   const res = await fetch(`${TG_API}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) console.error("sendMessage failed:", await res.text());
 }
+
+const MAIN_MENU = {
+  keyboard: [
+    [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
+    [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
+    [{ text: "🔎 Boshqa sana" }],
+  ],
+  resize_keyboard: true,
+  is_persistent: true,
+};
 
 async function tgSendDocument(chatId: number, filename: string, bytes: Uint8Array, caption: string) {
   const fd = new FormData();
   fd.append("chat_id", String(chatId));
   fd.append("caption", caption);
   fd.append("parse_mode", "HTML");
+  fd.append("reply_markup", JSON.stringify(MAIN_MENU));
   fd.append("document", new Blob([bytes], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   }), filename);

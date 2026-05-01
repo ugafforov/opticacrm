@@ -15,7 +15,7 @@ const REPORT_FN_URL = `${SB_URL}/functions/v1/daily-telegram-report`;
 const MAX_RUNTIME_MS = 50_000;
 
 // Doimiy pastki klaviatura — har doim ko'rinib turadi
-const PERSISTENT_KEYBOARD = {
+const MAIN_MENU = {
   keyboard: [
     [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
     [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
@@ -133,8 +133,25 @@ async function handleMessage(supabase: any, msg: any) {
 
   // Sana kiritish (DD-MM-YYYY)
   if (/^\d{2}-\d{2}-\d{4}$/.test(text)) {
-    await tgSend(chatId, `⏳ <b>${text}</b> sanasi uchun hisobot tayyorlanmoqda...`);
+    await tgSend(chatId, `⏳ <b>${text}</b> sanasi uchun hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
     await triggerReport(chatId, { period: "date", date: text });
+    return;
+  }
+
+  // Pastki klaviatura tugmalari
+  const textMap: Record<string, string> = {
+    "📊 Bugun": "today",
+    "📅 Kecha": "yesterday",
+    "📈 Hafta": "week",
+    "🗓 Oy": "month",
+  };
+  if (textMap[text]) {
+    await tgSend(chatId, `⏳ Hisobot tayyorlanmoqda...`, { reply_markup: MAIN_MENU });
+    await triggerReport(chatId, { period: textMap[text] });
+    return;
+  }
+  if (text === "🔎 Boshqa sana") {
+    await tgSend(chatId, `📅 Iltimos, sanani <b>DD-MM-YYYY</b> formatida yuboring (masalan: <code>15-04-2026</code>)`, { reply_markup: MAIN_MENU });
     return;
   }
 
