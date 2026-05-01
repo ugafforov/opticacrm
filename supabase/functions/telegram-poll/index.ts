@@ -15,7 +15,7 @@ const REPORT_FN_URL = `${SB_URL}/functions/v1/daily-telegram-report`;
 const MAX_RUNTIME_MS = 50_000;
 
 // Doimiy pastki klaviatura — har doim ko'rinib turadi
-const PERSISTENT_KEYBOARD = {
+const MAIN_MENU = {
   keyboard: [
     [{ text: "📊 Bugun" }, { text: "📅 Kecha" }],
     [{ text: "📈 Hafta" }, { text: "🗓 Oy" }],
