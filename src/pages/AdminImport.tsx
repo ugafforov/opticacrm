@@ -250,6 +250,39 @@ const AdminImport = () => {
     }
   };
 
+  // ---------- Google Sheets Backup ----------
+  const [backingUp, setBackingUp] = useState(false);
+  const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
+
+  const loadLastBackup = useCallback(async () => {
+    const { data } = await supabase
+      .from("backup_logs" as any)
+      .select("created_at,status")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length) {
+      const row: any = data[0];
+      setLastBackup({ at: row.created_at, status: row.status });
+    }
+  }, []);
+
+  useEffect(() => { loadLastBackup(); }, [loadLastBackup]);
+
+  const handleBackup = async () => {
+    setBackingUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("backup-to-sheets", { body: {} });
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data?.error || "Backup xatoligi");
+      toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${data?.totalRows ?? 0} qator)`);
+      await loadLastBackup();
+    } catch (e: any) {
+      toast.error(`Backup xatoligi: ${e.message || e}`);
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
   const getFieldMatch = (header: string): boolean => {
     if (!selectedTable) return false;
     const schema = TABLE_SCHEMAS[selectedTable];
