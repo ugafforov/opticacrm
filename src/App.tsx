@@ -22,7 +22,7 @@ const Hisobotlar = lazy(() => import("./pages/Hisobotlar"));
 const Xarajatlar = lazy(() => import("./pages/Xarajatlar"));
 const Qarzdorlar = lazy(() => import("./pages/Qarzdorlar"));
 const Chiqindilar = lazy(() => import("./pages/Chiqindilar"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+
 const AdminImport = lazy(() => import("./pages/AdminImport"));
 const AdminTelegram = lazy(() => import("./pages/AdminTelegram"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -40,7 +40,6 @@ const preloadPages = () => {
   import("./pages/Xarajatlar");
   import("./pages/Qarzdorlar");
   import("./pages/Chiqindilar");
-  import("./pages/AdminUsers");
   import("./pages/AdminImport");
   import("./pages/Profile");
   import("./pages/NotFound");
@@ -90,7 +89,7 @@ const AppRoutes = () => {
       <Route path="/xarajatlar" element={<ProtectedRoute><Layout><SuspensePage><Xarajatlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/qarzdorlar" element={<ProtectedRoute><Layout><SuspensePage><Qarzdorlar /></SuspensePage></Layout></ProtectedRoute>} />
       <Route path="/chiqindilar" element={<ProtectedRoute><Layout><SuspensePage><Chiqindilar /></SuspensePage></Layout></ProtectedRoute>} />
-      <Route path="/admin/users" element={<AdminRoute><Layout><SuspensePage><AdminUsers /></SuspensePage></Layout></AdminRoute>} />
+      
       <Route path="/admin/import" element={<AdminRoute><Layout><SuspensePage><AdminImport /></SuspensePage></Layout></AdminRoute>} />
       <Route path="/admin/telegram" element={<AdminRoute><Layout><SuspensePage><AdminTelegram /></SuspensePage></Layout></AdminRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><SuspensePage><Profile /></SuspensePage></Layout></ProtectedRoute>} />
