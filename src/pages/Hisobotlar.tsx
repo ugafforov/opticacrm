@@ -24,6 +24,7 @@ import { safeSum, safeAdd, safeSubtract, safeParsePriceToNumber } from "@/lib/sa
 import { withRetry } from "@/lib/retryUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { logger } from "@/lib/logger";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface ReportData {
   name: string;
