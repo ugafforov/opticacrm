@@ -40,7 +40,6 @@ const preloadPages = () => {
   import("./pages/Xarajatlar");
   import("./pages/Qarzdorlar");
   import("./pages/Chiqindilar");
-  import("./pages/AdminUsers");
   import("./pages/AdminImport");
   import("./pages/Profile");
   import("./pages/NotFound");
