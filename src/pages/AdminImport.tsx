@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { Cloud, CloudUpload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -249,6 +250,39 @@ const AdminImport = () => {
     }
   };
 
+  // ---------- Google Sheets Backup ----------
+  const [backingUp, setBackingUp] = useState(false);
+  const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
+
+  const loadLastBackup = useCallback(async () => {
+    const { data } = await supabase
+      .from("backup_logs" as any)
+      .select("created_at,status")
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (data && data.length) {
+      const row: any = data[0];
+      setLastBackup({ at: row.created_at, status: row.status });
+    }
+  }, []);
+
+  useEffect(() => { loadLastBackup(); }, [loadLastBackup]);
+
+  const handleBackup = async () => {
+    setBackingUp(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("backup-to-sheets", { body: {} });
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data?.error || "Backup xatoligi");
+      toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${data?.totalRows ?? 0} qator)`);
+      await loadLastBackup();
+    } catch (e: any) {
+      toast.error(`Backup xatoligi: ${e.message || e}`);
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
   const getFieldMatch = (header: string): boolean => {
     if (!selectedTable) return false;
     const schema = TABLE_SCHEMAS[selectedTable];
@@ -286,7 +320,34 @@ const AdminImport = () => {
         </div>
       </div>
 
-      {/* Step 1: Select Table */}
+      {/* Google Sheets Backup */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cloud className="h-5 w-5 text-primary" />
+            Google Sheets ga saqlash
+          </CardTitle>
+          <CardDescription>
+            Barcha jadvallardagi ma'lumotlarni Google Sheets ga zaxira nusxa qilib saqlash. Har kuni soat 00:00 (Toshkent) da avtomatik bajariladi.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Button onClick={handleBackup} disabled={backingUp} size="lg">
+            {backingUp ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
+            ) : (
+              <><CloudUpload className="h-4 w-4 mr-2" /> Google Sheets ga saqlash</>
+            )}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {lastBackup
+              ? `Oxirgi backup: ${new Date(lastBackup.at).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })} (${lastBackup.status})`
+              : "Hali backup qilinmagan"}
+          </span>
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.telegram-poll]
 verify_jwt = false
+
+[functions.backup-to-sheets]
+verify_jwt = false
