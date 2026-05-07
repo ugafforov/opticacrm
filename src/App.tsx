@@ -22,7 +22,7 @@ const Hisobotlar = lazy(() => import("./pages/Hisobotlar"));
 const Xarajatlar = lazy(() => import("./pages/Xarajatlar"));
 const Qarzdorlar = lazy(() => import("./pages/Qarzdorlar"));
 const Chiqindilar = lazy(() => import("./pages/Chiqindilar"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+
 const AdminImport = lazy(() => import("./pages/AdminImport"));
 const AdminTelegram = lazy(() => import("./pages/AdminTelegram"));
 const Profile = lazy(() => import("./pages/Profile"));
