@@ -1089,7 +1089,7 @@ const Hisobotlar = () => {
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
-            <Button onClick={handleSendTelegram} disabled={sendingTelegram} variant="default">
+            <Button onClick={() => setConfirmTelegram(true)} disabled={sendingTelegram} variant="default">
               <Send className="h-4 w-4 mr-2" />
               {sendingTelegram ? "Yuborilmoqda..." : "Telegramga yuborish"}
             </Button>
@@ -1099,6 +1099,16 @@ const Hisobotlar = () => {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmTelegram}
+        onOpenChange={setConfirmTelegram}
+        onConfirm={handleSendTelegram}
+        title="Telegramga yuborilsinmi?"
+        description="Bugungi hisobot botga ulangan barcha ruxsat berilgan foydalanuvchilarga yuboriladi. Davom etamizmi?"
+        confirmText="Ha, yuborilsin"
+        cancelText="Bekor qilish"
+      />
+
 
       <Card className="p-6">
         <div className="mb-6 space-y-4">
