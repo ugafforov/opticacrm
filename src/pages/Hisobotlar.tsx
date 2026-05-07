@@ -24,6 +24,7 @@ import { safeSum, safeAdd, safeSubtract, safeParsePriceToNumber } from "@/lib/sa
 import { withRetry } from "@/lib/retryUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { logger } from "@/lib/logger";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface ReportData {
   name: string;
@@ -67,9 +68,11 @@ const Hisobotlar = () => {
   const { t, script } = useLanguage();
   const { user, isAdmin } = useAuth();
   const [sendingTelegram, setSendingTelegram] = useState(false);
+  const [confirmTelegram, setConfirmTelegram] = useState(false);
 
   const handleSendTelegram = async () => {
     if (!user) return;
+    setConfirmTelegram(false);
     setSendingTelegram(true);
     try {
       const { data, error } = await supabase.functions.invoke("daily-telegram-report", {
@@ -1087,7 +1090,7 @@ const Hisobotlar = () => {
         </div>
         {isAdmin && (
           <div className="flex flex-wrap gap-2">
-            <Button onClick={handleSendTelegram} disabled={sendingTelegram} variant="default">
+            <Button onClick={() => setConfirmTelegram(true)} disabled={sendingTelegram} variant="default">
               <Send className="h-4 w-4 mr-2" />
               {sendingTelegram ? "Yuborilmoqda..." : "Telegramga yuborish"}
             </Button>
@@ -1097,6 +1100,16 @@ const Hisobotlar = () => {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmTelegram}
+        onOpenChange={setConfirmTelegram}
+        onConfirm={handleSendTelegram}
+        title="Telegramga yuborilsinmi?"
+        description="Bugungi hisobot botga ulangan barcha ruxsat berilgan foydalanuvchilarga yuboriladi. Davom etamizmi?"
+        confirmText="Ha, yuborilsin"
+        cancelText="Bekor qilish"
+      />
+
 
       <Card className="p-6">
         <div className="mb-6 space-y-4">
