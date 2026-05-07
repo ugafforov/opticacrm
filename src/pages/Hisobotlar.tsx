@@ -67,9 +67,11 @@ const Hisobotlar = () => {
   const { t, script } = useLanguage();
   const { user, isAdmin } = useAuth();
   const [sendingTelegram, setSendingTelegram] = useState(false);
+  const [confirmTelegram, setConfirmTelegram] = useState(false);
 
   const handleSendTelegram = async () => {
     if (!user) return;
+    setConfirmTelegram(false);
     setSendingTelegram(true);
     try {
       const { data, error } = await supabase.functions.invoke("daily-telegram-report", {
