@@ -320,7 +320,34 @@ const AdminImport = () => {
         </div>
       </div>
 
-      {/* Step 1: Select Table */}
+      {/* Google Sheets Backup */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Cloud className="h-5 w-5 text-primary" />
+            Google Sheets ga saqlash
+          </CardTitle>
+          <CardDescription>
+            Barcha jadvallardagi ma'lumotlarni Google Sheets ga zaxira nusxa qilib saqlash. Har kuni soat 00:00 (Toshkent) da avtomatik bajariladi.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Button onClick={handleBackup} disabled={backingUp} size="lg">
+            {backingUp ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
+            ) : (
+              <><CloudUpload className="h-4 w-4 mr-2" /> Google Sheets ga saqlash</>
+            )}
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {lastBackup
+              ? `Oxirgi backup: ${new Date(lastBackup.at).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })} (${lastBackup.status})`
+              : "Hali backup qilinmagan"}
+          </span>
+        </CardContent>
+      </Card>
+
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
