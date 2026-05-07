@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      backup_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          rows_count: number | null
+          status: string
+          tables_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          rows_count?: number | null
+          status: string
+          tables_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          rows_count?: number | null
+          status?: string
+          tables_count?: number | null
+        }
+        Relationships: []
+      }
       bemor_tarixi: {
         Row: {
           bemor_id: string
