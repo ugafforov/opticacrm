@@ -252,9 +252,13 @@ const AdminImport = () => {
   };
 
   // ---------- Google Sheets Backup ----------
+  type BackupTableState = { table: string; status: "pending" | "running" | "done" | "error"; rows?: number; error?: string };
   const [backingUp, setBackingUp] = useState(false);
   const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
   const [confirmBackupOpen, setConfirmBackupOpen] = useState(false);
+  const [backupPhase, setBackupPhase] = useState<string>("");
+  const [backupTables, setBackupTables] = useState<BackupTableState[]>([]);
+  const [backupSummary, setBackupSummary] = useState<{ totalRows: number; status: string; errors: string[] } | null>(null);
 
   const loadLastBackup = useCallback(async () => {
     const { data } = await supabase
@@ -270,16 +274,75 @@ const AdminImport = () => {
 
   useEffect(() => { loadLastBackup(); }, [loadLastBackup]);
 
+  const backupDoneCount = backupTables.filter((t) => t.status === "done" || t.status === "error").length;
+  const backupProgress = backupTables.length ? Math.round((backupDoneCount / backupTables.length) * 100) : 0;
+
   const handleBackup = async () => {
     setBackingUp(true);
+    setBackupPhase("Boshlanmoqda...");
+    setBackupTables([]);
+    setBackupSummary(null);
     try {
-      const { data, error } = await supabase.functions.invoke("backup-to-sheets", { body: {} });
-      if (error) throw error;
-      if (data?.ok === false) throw new Error(data?.error || "Backup xatoligi");
-      toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${data?.totalRows ?? 0} qator)`);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error("Sessiya topilmadi");
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/backup-to-sheets?stream=1`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
+      });
+      if (!res.ok || !res.body) {
+        const txt = await res.text();
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() || "";
+        for (const line of lines) {
+          const s = line.trim();
+          if (!s) continue;
+          let evt: any;
+          try { evt = JSON.parse(s); } catch { continue; }
+          if (evt.type === "start") {
+            setBackupTables(evt.tables.map((t: string) => ({ table: t, status: "pending" as const })));
+          } else if (evt.type === "phase") {
+            setBackupPhase(evt.message || evt.phase);
+          } else if (evt.type === "table_start") {
+            setBackupPhase(`Saqlanmoqda: ${evt.table}`);
+            setBackupTables((prev) => prev.map((t) => t.table === evt.table ? { ...t, status: "running" } : t));
+          } else if (evt.type === "table_done") {
+            setBackupTables((prev) => prev.map((t) => t.table === evt.table ? {
+              ...t, status: evt.ok ? "done" : "error", rows: evt.rows, error: evt.error,
+            } : t));
+          } else if (evt.type === "done") {
+            setBackupPhase("Tugadi");
+            setBackupSummary({ totalRows: evt.totalRows, status: evt.status, errors: evt.errors || [] });
+            if (evt.status === "success") {
+              toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${evt.totalRows} qator)`);
+            } else {
+              toast.warning(`Qisman saqlandi: ${evt.totalRows} qator, ${evt.errors?.length || 0} xatolik`);
+            }
+          } else if (evt.type === "error") {
+            throw new Error(evt.error);
+          }
+        }
+      }
       await loadLastBackup();
     } catch (e: any) {
       toast.error(`Backup xatoligi: ${e.message || e}`);
+      setBackupPhase(`Xatolik: ${e.message || e}`);
     } finally {
       setBackingUp(false);
     }
@@ -333,19 +396,73 @@ const AdminImport = () => {
             Barcha jadvallardagi ma'lumotlarni Google Sheets ga zaxira nusxa qilib saqlash. Har kuni soat 00:00 (Toshkent) da avtomatik bajariladi.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button onClick={() => setConfirmBackupOpen(true)} disabled={backingUp} size="lg">
-            {backingUp ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
-            ) : (
-              <><CloudUpload className="h-4 w-4 mr-2" /> Google Sheets ga saqlash</>
-            )}
-          </Button>
-          <span className="text-sm text-muted-foreground">
-            {lastBackup
-              ? `Oxirgi backup: ${new Date(lastBackup.at).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })} (${lastBackup.status})`
-              : "Hali backup qilinmagan"}
-          </span>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <Button onClick={() => setConfirmBackupOpen(true)} disabled={backingUp} size="lg">
+              {backingUp ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
+              ) : (
+                <><CloudUpload className="h-4 w-4 mr-2" /> Google Sheets ga saqlash</>
+              )}
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {lastBackup
+                ? `Oxirgi backup: ${new Date(lastBackup.at).toLocaleString("uz-UZ", { timeZone: "Asia/Tashkent" })} (${lastBackup.status})`
+                : "Hali backup qilinmagan"}
+            </span>
+          </div>
+
+          {(backingUp || backupTables.length > 0) && (
+            <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">{backupPhase || "Kutilmoqda..."}</span>
+                <span className="text-muted-foreground">{backupDoneCount}/{backupTables.length}</span>
+              </div>
+              <Progress value={backupProgress} />
+
+              <ScrollArea className="h-56 rounded-md border border-border bg-background">
+                <ul className="divide-y divide-border">
+                  {backupTables.map((t) => (
+                    <li key={t.table} className="flex items-center justify-between px-3 py-2 text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {t.status === "pending" && <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />}
+                        {t.status === "running" && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary shrink-0" />}
+                        {t.status === "done" && <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />}
+                        {t.status === "error" && <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />}
+                        <span className="font-mono truncate">{t.table}</span>
+                      </div>
+                      <div className="text-xs text-muted-foreground shrink-0 ml-2">
+                        {t.status === "done" && `${t.rows ?? 0} qator`}
+                        {t.status === "error" && <span className="text-destructive">{t.error || "xatolik"}</span>}
+                        {t.status === "running" && "saqlanmoqda..."}
+                        {t.status === "pending" && "kutmoqda"}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+
+              {backupSummary && (
+                <div className="text-sm">
+                  <div className="flex items-center gap-2">
+                    {backupSummary.status === "success" ? (
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-destructive" />
+                    )}
+                    <span className="font-medium">
+                      Yakuniy: {backupSummary.totalRows} qator, {backupTables.filter((t) => t.status === "done").length}/{backupTables.length} jadval saqlandi
+                    </span>
+                  </div>
+                  {backupSummary.errors.length > 0 && (
+                    <ul className="mt-2 list-disc list-inside text-xs text-destructive space-y-0.5">
+                      {backupSummary.errors.map((err, i) => <li key={i}>{err}</li>)}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
