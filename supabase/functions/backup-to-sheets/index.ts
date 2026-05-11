@@ -191,24 +191,38 @@ Deno.serve(async (req) => {
     });
   }
 
-  try {
+  const url = new URL(req.url);
+  const wantStream = url.searchParams.get("stream") === "1";
+
+  const runBackup = async (emit?: (obj: any) => Promise<void> | void) => {
     const saRaw = Deno.env.get("GOOGLE_SERVICE_ACCOUNT");
     const sheetId = Deno.env.get("GOOGLE_SHEET_ID");
     if (!saRaw || !sheetId) throw new Error("GOOGLE_SERVICE_ACCOUNT yoki GOOGLE_SHEET_ID sozlanmagan");
     const sa = JSON.parse(saRaw);
 
-    const token = await getAccessToken(sa);
-    await ensureSheets(token, sheetId, TABLES);
+    await emit?.({ type: "start", total: TABLES.length, tables: TABLES });
+    await emit?.({ type: "phase", phase: "auth", message: "Google bilan autentifikatsiya..." });
+    const gtoken = await getAccessToken(sa);
+    await emit?.({ type: "phase", phase: "ensure", message: "Sheetlar tayyorlanmoqda..." });
+    await ensureSheets(gtoken, sheetId, TABLES);
 
     let totalRows = 0;
     const errors: string[] = [];
-    for (const table of TABLES) {
+    const results: Array<{ table: string; rows: number; ok: boolean; error?: string }> = [];
+    for (let i = 0; i < TABLES.length; i++) {
+      const table = TABLES[i];
+      await emit?.({ type: "table_start", index: i, table });
       try {
         const rows = await fetchAll(supabase, table);
-        await writeSheet(token, sheetId, table, rows);
+        await writeSheet(gtoken, sheetId, table, rows);
         totalRows += rows.length;
+        results.push({ table, rows: rows.length, ok: true });
+        await emit?.({ type: "table_done", index: i, table, rows: rows.length, ok: true });
       } catch (e) {
-        errors.push(`${table}: ${(e as Error).message}`);
+        const msg = (e as Error).message;
+        errors.push(`${table}: ${msg}`);
+        results.push({ table, rows: 0, ok: false, error: msg });
+        await emit?.({ type: "table_done", index: i, table, rows: 0, ok: false, error: msg });
       }
     }
 
@@ -216,7 +230,37 @@ Deno.serve(async (req) => {
     const message = errors.length ? errors.join("; ") : `OK: ${TABLES.length} jadval, ${totalRows} qator`;
     await supabase.from("backup_logs").insert({ status, message, rows_count: totalRows, tables_count: TABLES.length });
 
-    return new Response(JSON.stringify({ ok: true, status, totalRows, tables: TABLES.length, errors }), {
+    const summary = { ok: true, status, totalRows, tables: TABLES.length, errors, results };
+    await emit?.({ type: "done", ...summary });
+    return summary;
+  };
+
+  if (wantStream) {
+    const stream = new ReadableStream({
+      async start(controller) {
+        const enc = new TextEncoder();
+        const emit = async (obj: any) => {
+          controller.enqueue(enc.encode(JSON.stringify(obj) + "\n"));
+        };
+        try {
+          await runBackup(emit);
+        } catch (e) {
+          const msg = (e as Error).message;
+          try { await supabase.from("backup_logs").insert({ status: "error", message: msg }); } catch {}
+          await emit({ type: "error", error: msg });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+    return new Response(stream, {
+      headers: { ...corsHeaders, "Content-Type": "application/x-ndjson", "Cache-Control": "no-cache" },
+    });
+  }
+
+  try {
+    const summary = await runBackup();
+    return new Response(JSON.stringify(summary), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
