@@ -164,7 +164,32 @@ Deno.serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Auth: allow service-role bearer (cron) OR authenticated admin user.
+  const auth = req.headers.get("Authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  let authorized = false;
+  if (token && token === serviceKey) {
+    authorized = true;
+  } else if (token) {
+    try {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: auth } },
+      });
+      const { data: userData } = await userClient.auth.getUser();
+      if (userData?.user) {
+        const { data: isAdmin } = await supabase.rpc("is_admin", { _user_id: userData.user.id });
+        if (isAdmin) authorized = true;
+      }
+    } catch (_) { /* ignore */ }
+  }
+  if (!authorized) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const saRaw = Deno.env.get("GOOGLE_SERVICE_ACCOUNT");
