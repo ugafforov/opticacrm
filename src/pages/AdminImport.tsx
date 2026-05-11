@@ -334,7 +334,7 @@ const AdminImport = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button onClick={handleBackup} disabled={backingUp} size="lg">
+          <Button onClick={() => setConfirmBackupOpen(true)} disabled={backingUp} size="lg">
             {backingUp ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
             ) : (
@@ -348,6 +348,16 @@ const AdminImport = () => {
           </span>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmBackupOpen}
+        onOpenChange={setConfirmBackupOpen}
+        onConfirm={() => { setConfirmBackupOpen(false); handleBackup(); }}
+        title="Google Sheets ga saqlash"
+        description="Barcha jadvallardagi ma'lumotlar Google Sheets ga zaxira nusxa qilinadi. Davom etamizmi?"
+        confirmText="Ha, saqlash"
+        cancelText="Bekor qilish"
+      />
 
 
       <Card>
