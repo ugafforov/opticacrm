@@ -254,6 +254,7 @@ const AdminImport = () => {
   // ---------- Google Sheets Backup ----------
   const [backingUp, setBackingUp] = useState(false);
   const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
+  const [confirmBackupOpen, setConfirmBackupOpen] = useState(false);
 
   const loadLastBackup = useCallback(async () => {
     const { data } = await supabase
