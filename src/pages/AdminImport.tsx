@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Table schemas for mapping
 const TABLE_SCHEMAS = {
@@ -253,6 +254,7 @@ const AdminImport = () => {
   // ---------- Google Sheets Backup ----------
   const [backingUp, setBackingUp] = useState(false);
   const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
+  const [confirmBackupOpen, setConfirmBackupOpen] = useState(false);
 
   const loadLastBackup = useCallback(async () => {
     const { data } = await supabase
@@ -332,7 +334,7 @@ const AdminImport = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button onClick={handleBackup} disabled={backingUp} size="lg">
+          <Button onClick={() => setConfirmBackupOpen(true)} disabled={backingUp} size="lg">
             {backingUp ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saqlanmoqda...</>
             ) : (
@@ -346,6 +348,16 @@ const AdminImport = () => {
           </span>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={confirmBackupOpen}
+        onOpenChange={setConfirmBackupOpen}
+        onConfirm={() => { setConfirmBackupOpen(false); handleBackup(); }}
+        title="Google Sheets ga saqlash"
+        description="Barcha jadvallardagi ma'lumotlar Google Sheets ga zaxira nusxa qilinadi. Davom etamizmi?"
+        confirmText="Ha, saqlash"
+        cancelText="Bekor qilish"
+      />
 
 
       <Card>
