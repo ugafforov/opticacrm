@@ -252,9 +252,13 @@ const AdminImport = () => {
   };
 
   // ---------- Google Sheets Backup ----------
+  type BackupTableState = { table: string; status: "pending" | "running" | "done" | "error"; rows?: number; error?: string };
   const [backingUp, setBackingUp] = useState(false);
   const [lastBackup, setLastBackup] = useState<{ at: string; status: string } | null>(null);
   const [confirmBackupOpen, setConfirmBackupOpen] = useState(false);
+  const [backupPhase, setBackupPhase] = useState<string>("");
+  const [backupTables, setBackupTables] = useState<BackupTableState[]>([]);
+  const [backupSummary, setBackupSummary] = useState<{ totalRows: number; status: string; errors: string[] } | null>(null);
 
   const loadLastBackup = useCallback(async () => {
     const { data } = await supabase
@@ -270,16 +274,75 @@ const AdminImport = () => {
 
   useEffect(() => { loadLastBackup(); }, [loadLastBackup]);
 
+  const backupDoneCount = backupTables.filter((t) => t.status === "done" || t.status === "error").length;
+  const backupProgress = backupTables.length ? Math.round((backupDoneCount / backupTables.length) * 100) : 0;
+
   const handleBackup = async () => {
     setBackingUp(true);
+    setBackupPhase("Boshlanmoqda...");
+    setBackupTables([]);
+    setBackupSummary(null);
     try {
-      const { data, error } = await supabase.functions.invoke("backup-to-sheets", { body: {} });
-      if (error) throw error;
-      if (data?.ok === false) throw new Error(data?.error || "Backup xatoligi");
-      toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${data?.totalRows ?? 0} qator)`);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) throw new Error("Sessiya topilmadi");
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/backup-to-sheets?stream=1`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: "{}",
+      });
+      if (!res.ok || !res.body) {
+        const txt = await res.text();
+        throw new Error(txt || `HTTP ${res.status}`);
+      }
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() || "";
+        for (const line of lines) {
+          const s = line.trim();
+          if (!s) continue;
+          let evt: any;
+          try { evt = JSON.parse(s); } catch { continue; }
+          if (evt.type === "start") {
+            setBackupTables(evt.tables.map((t: string) => ({ table: t, status: "pending" as const })));
+          } else if (evt.type === "phase") {
+            setBackupPhase(evt.message || evt.phase);
+          } else if (evt.type === "table_start") {
+            setBackupPhase(`Saqlanmoqda: ${evt.table}`);
+            setBackupTables((prev) => prev.map((t) => t.table === evt.table ? { ...t, status: "running" } : t));
+          } else if (evt.type === "table_done") {
+            setBackupTables((prev) => prev.map((t) => t.table === evt.table ? {
+              ...t, status: evt.ok ? "done" : "error", rows: evt.rows, error: evt.error,
+            } : t));
+          } else if (evt.type === "done") {
+            setBackupPhase("Tugadi");
+            setBackupSummary({ totalRows: evt.totalRows, status: evt.status, errors: evt.errors || [] });
+            if (evt.status === "success") {
+              toast.success(`Google Sheets ga muvaffaqiyatli saqlandi (${evt.totalRows} qator)`);
+            } else {
+              toast.warning(`Qisman saqlandi: ${evt.totalRows} qator, ${evt.errors?.length || 0} xatolik`);
+            }
+          } else if (evt.type === "error") {
+            throw new Error(evt.error);
+          }
+        }
+      }
       await loadLastBackup();
     } catch (e: any) {
       toast.error(`Backup xatoligi: ${e.message || e}`);
+      setBackupPhase(`Xatolik: ${e.message || e}`);
     } finally {
       setBackingUp(false);
     }
