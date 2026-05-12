@@ -348,15 +348,6 @@ let commandsSet = false;
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Auth: only allow callers that present the service-role key (pg_cron / internal).
-  const auth = req.headers.get("Authorization") || "";
-  const expected = `Bearer ${SB_KEY}`;
-  if (auth !== expected) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   const start = Date.now();
   const supabase = createClient(SB_URL, SB_KEY);
 
