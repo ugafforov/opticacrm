@@ -181,15 +181,22 @@ async function ensureSubscriber(supabase: any, chatId: number, info: any, phone:
 }
 
 async function triggerReport(chatId: number, payload: any) {
-  // Fire-and-forget — tezroq javob berish uchun await qilmaymiz
-  fetch(REPORT_FN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${SB_KEY}`,
-    },
-    body: JSON.stringify({ chat_id: chatId, ...payload }),
-  }).catch(err => console.error("triggerReport failed:", err));
+  // Background task — shutdown'dan keyin ham bajariladi
+  waitUntil(
+    fetch(REPORT_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SB_KEY}`,
+      },
+      body: JSON.stringify({ chat_id: chatId, ...payload }),
+    }).then(async (r) => {
+      if (!r.ok) {
+        const t = await r.text().catch(() => "");
+        console.error("triggerReport non-ok:", r.status, t);
+      }
+    })
+  );
 }
 
 async function handleMessage(supabase: any, msg: any) {
