@@ -12,7 +12,19 @@ const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SB_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const REPORT_FN_URL = `${SB_URL}/functions/v1/daily-telegram-report`;
 
-const MAX_RUNTIME_MS = 50_000;
+const MAX_RUNTIME_MS = 45_000;
+// Background tasklarni shutdown'dan saqlash uchun
+// @ts-ignore - Deno edge runtime
+const waitUntil = (p: Promise<any>) => {
+  try {
+    // @ts-ignore
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(p);
+    }
+  } catch (_) {}
+  p.catch(err => console.error("bg task error:", err));
+};
 
 const MAIN_MENU = {
   keyboard: [
