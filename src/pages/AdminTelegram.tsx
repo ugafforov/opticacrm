@@ -268,6 +268,49 @@ const AdminTelegram = () => {
         </div>
       </Card>
 
+      {/* Kunlik avtomatik hisobot */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold">Avtomatik kunlik hisobot</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {dailyEnabled ? "Yoqilgan" : "O'chirilgan"}
+            </span>
+            <Switch checked={dailyEnabled} onCheckedChange={setDailyEnabled} />
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Har kuni belgilangan vaqtda barcha obunachilarga avtomatik hisobot yuboriladi (Toshkent vaqti).
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 items-end">
+          <div className="w-full sm:w-32">
+            <Label>Soat</Label>
+            <Input
+              type="number"
+              min={0}
+              max={23}
+              value={dailyHour}
+              onChange={(e) => setDailyHour(Number(e.target.value))}
+              disabled={!dailyEnabled}
+            />
+          </div>
+          <div className="w-full sm:w-32">
+            <Label>Daqiqa</Label>
+            <Input
+              type="number"
+              min={0}
+              max={59}
+              value={dailyMinute}
+              onChange={(e) => setDailyMinute(Number(e.target.value))}
+              disabled={!dailyEnabled}
+            />
+          </div>
+          <Button onClick={handleSaveSchedule} disabled={savingSchedule}>
+            <Save className="h-4 w-4 mr-2" />Saqlash
+          </Button>
+        </div>
+      </Card>
+
       {/* Ruxsat berilganlar */}
       <Card className="p-4">
         <h2 className="text-lg font-semibold mb-3">Ruxsat berilgan foydalanuvchilar</h2>
