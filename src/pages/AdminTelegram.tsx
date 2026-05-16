@@ -92,7 +92,7 @@ const AdminTelegram = () => {
     const [a, s, settings, usersRes] = await Promise.all([
       supabase.from("telegram_allowed_users").select("*").order("created_at", { ascending: false }),
       supabase.from("telegram_subscribers").select("chat_id, phone, first_name, username, created_at").order("created_at", { ascending: false }),
-      supabase.from("telegram_settings").select("source_user_id").eq("id", 1).maybeSingle(),
+      supabase.from("telegram_settings").select("source_user_id, daily_report_enabled, daily_report_hour, daily_report_minute").eq("id", 1).maybeSingle(),
       supabase.functions.invoke("admin-list-users"),
     ]);
     setAllowed((a.data as any) || []);
@@ -100,6 +100,11 @@ const AdminTelegram = () => {
     const usersList = (usersRes.data as any)?.users || [];
     setProfiles(usersList.map((u: any) => ({ id: u.id, full_name: u.full_name, email: u.email })));
     setSourceUserId(settings.data?.source_user_id || "");
+    if (settings.data) {
+      setDailyEnabled((settings.data as any).daily_report_enabled ?? true);
+      setDailyHour((settings.data as any).daily_report_hour ?? 8);
+      setDailyMinute((settings.data as any).daily_report_minute ?? 0);
+    }
   };
 
   useEffect(() => { load(); }, []);
