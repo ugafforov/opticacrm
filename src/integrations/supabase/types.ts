@@ -503,16 +503,25 @@ export type Database = {
       }
       telegram_settings: {
         Row: {
+          daily_report_enabled: boolean
+          daily_report_hour: number
+          daily_report_minute: number
           id: number
           source_user_id: string | null
           updated_at: string
         }
         Insert: {
+          daily_report_enabled?: boolean
+          daily_report_hour?: number
+          daily_report_minute?: number
           id: number
           source_user_id?: string | null
           updated_at?: string
         }
         Update: {
+          daily_report_enabled?: boolean
+          daily_report_hour?: number
+          daily_report_minute?: number
           id?: number
           source_user_id?: string | null
           updated_at?: string
@@ -622,6 +631,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      set_daily_report_schedule: {
+        Args: { _enabled: boolean; _hour: number; _minute: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

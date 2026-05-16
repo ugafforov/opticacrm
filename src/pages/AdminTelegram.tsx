@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, Trash2, UserPlus, Save, Pencil, ShieldCheck, ShieldX } from "lucide-react";
 import { EditDialog } from "@/components/EditDialog";
@@ -40,6 +41,12 @@ const AdminTelegram = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [sourceUserId, setSourceUserId] = useState<string>("");
   const [savingSource, setSavingSource] = useState(false);
+
+  // Kunlik hisobot jadvali
+  const [dailyEnabled, setDailyEnabled] = useState(true);
+  const [dailyHour, setDailyHour] = useState(8);
+  const [dailyMinute, setDailyMinute] = useState(0);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   // Form (faqat telefon)
   const [newPhone, setNewPhone] = useState("");
@@ -85,7 +92,7 @@ const AdminTelegram = () => {
     const [a, s, settings, usersRes] = await Promise.all([
       supabase.from("telegram_allowed_users").select("*").order("created_at", { ascending: false }),
       supabase.from("telegram_subscribers").select("chat_id, phone, first_name, username, created_at").order("created_at", { ascending: false }),
-      supabase.from("telegram_settings").select("source_user_id").eq("id", 1).maybeSingle(),
+      supabase.from("telegram_settings").select("source_user_id, daily_report_enabled, daily_report_hour, daily_report_minute").eq("id", 1).maybeSingle(),
       supabase.functions.invoke("admin-list-users"),
     ]);
     setAllowed((a.data as any) || []);
@@ -93,6 +100,11 @@ const AdminTelegram = () => {
     const usersList = (usersRes.data as any)?.users || [];
     setProfiles(usersList.map((u: any) => ({ id: u.id, full_name: u.full_name, email: u.email })));
     setSourceUserId(settings.data?.source_user_id || "");
+    if (settings.data) {
+      setDailyEnabled((settings.data as any).daily_report_enabled ?? true);
+      setDailyHour((settings.data as any).daily_report_hour ?? 8);
+      setDailyMinute((settings.data as any).daily_report_minute ?? 0);
+    }
   };
 
   useEffect(() => { load(); }, []);
@@ -196,6 +208,31 @@ const AdminTelegram = () => {
     }
   };
 
+  const handleSaveSchedule = async () => {
+    if (dailyHour < 0 || dailyHour > 23 || dailyMinute < 0 || dailyMinute > 59) {
+      toast.error("Vaqt noto'g'ri");
+      return;
+    }
+    setSavingSchedule(true);
+    try {
+      const { error } = await supabase.rpc("set_daily_report_schedule", {
+        _hour: dailyHour,
+        _minute: dailyMinute,
+        _enabled: dailyEnabled,
+      });
+      if (error) throw error;
+      toast.success(
+        dailyEnabled
+          ? `Kunlik hisobot soat ${String(dailyHour).padStart(2, "0")}:${String(dailyMinute).padStart(2, "0")} da yuboriladi ✅`
+          : "Kunlik hisobot o'chirildi"
+      );
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
   return (
     <main className="container mx-auto p-4 max-w-6xl space-y-6">
       <div className="flex items-center gap-2">
@@ -226,6 +263,49 @@ const AdminTelegram = () => {
             </Select>
           </div>
           <Button onClick={handleSaveSource} disabled={savingSource || !sourceUserId}>
+            <Save className="h-4 w-4 mr-2" />Saqlash
+          </Button>
+        </div>
+      </Card>
+
+      {/* Kunlik avtomatik hisobot */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <h2 className="text-lg font-semibold">Avtomatik kunlik hisobot</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {dailyEnabled ? "Yoqilgan" : "O'chirilgan"}
+            </span>
+            <Switch checked={dailyEnabled} onCheckedChange={setDailyEnabled} />
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">
+          Har kuni belgilangan vaqtda barcha obunachilarga avtomatik hisobot yuboriladi (Toshkent vaqti).
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 items-end">
+          <div className="w-full sm:w-32">
+            <Label>Soat</Label>
+            <Input
+              type="number"
+              min={0}
+              max={23}
+              value={dailyHour}
+              onChange={(e) => setDailyHour(Number(e.target.value))}
+              disabled={!dailyEnabled}
+            />
+          </div>
+          <div className="w-full sm:w-32">
+            <Label>Daqiqa</Label>
+            <Input
+              type="number"
+              min={0}
+              max={59}
+              value={dailyMinute}
+              onChange={(e) => setDailyMinute(Number(e.target.value))}
+              disabled={!dailyEnabled}
+            />
+          </div>
+          <Button onClick={handleSaveSchedule} disabled={savingSchedule}>
             <Save className="h-4 w-4 mr-2" />Saqlash
           </Button>
         </div>
