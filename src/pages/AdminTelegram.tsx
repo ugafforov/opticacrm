@@ -42,6 +42,12 @@ const AdminTelegram = () => {
   const [sourceUserId, setSourceUserId] = useState<string>("");
   const [savingSource, setSavingSource] = useState(false);
 
+  // Kunlik hisobot jadvali
+  const [dailyEnabled, setDailyEnabled] = useState(true);
+  const [dailyHour, setDailyHour] = useState(8);
+  const [dailyMinute, setDailyMinute] = useState(0);
+  const [savingSchedule, setSavingSchedule] = useState(false);
+
   // Form (faqat telefon)
   const [newPhone, setNewPhone] = useState("");
   const [adding, setAdding] = useState(false);
