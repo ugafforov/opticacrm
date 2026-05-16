@@ -208,6 +208,31 @@ const AdminTelegram = () => {
     }
   };
 
+  const handleSaveSchedule = async () => {
+    if (dailyHour < 0 || dailyHour > 23 || dailyMinute < 0 || dailyMinute > 59) {
+      toast.error("Vaqt noto'g'ri");
+      return;
+    }
+    setSavingSchedule(true);
+    try {
+      const { error } = await supabase.rpc("set_daily_report_schedule", {
+        _hour: dailyHour,
+        _minute: dailyMinute,
+        _enabled: dailyEnabled,
+      });
+      if (error) throw error;
+      toast.success(
+        dailyEnabled
+          ? `Kunlik hisobot soat ${String(dailyHour).padStart(2, "0")}:${String(dailyMinute).padStart(2, "0")} da yuboriladi ✅`
+          : "Kunlik hisobot o'chirildi"
+      );
+    } catch (e: any) {
+      toast.error(e?.message || "Xatolik");
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
   return (
     <main className="container mx-auto p-4 max-w-6xl space-y-6">
       <div className="flex items-center gap-2">
