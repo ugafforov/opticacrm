@@ -347,7 +347,7 @@ const Xarajatlar = () => {
         <p className="text-muted-foreground">{t("expenses.subtitle")}</p>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-3 sm:p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Popover>

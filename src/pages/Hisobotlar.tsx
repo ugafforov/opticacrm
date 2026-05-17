@@ -1111,7 +1111,7 @@ const Hisobotlar = () => {
       />
 
 
-      <Card className="p-6">
+      <Card className="p-3 sm:p-6">
         <div className="mb-6 space-y-4">
           <h3 className="text-lg font-semibold">{t("reports.dateRange")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1369,7 +1369,7 @@ const Hisobotlar = () => {
 
       {/* Debtor Statistics Section */}
       {debtorStats.totalDebtors > 0 && (
-        <Card className="p-6">
+        <Card className="p-3 sm:p-6">
           <h3 className="text-lg font-semibold mb-4">{t("reports.debtorsSection")}</h3>
           
           {/* Summary Cards */}
@@ -1426,7 +1426,7 @@ const Hisobotlar = () => {
         </Card>
       )}
 
-      <Card className="p-6">
+      <Card className="p-3 sm:p-6">
         <h3 className="text-lg font-semibold mb-4">{t("reports.bySection")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {sectionData.map((section) => (
@@ -1475,7 +1475,7 @@ const Hisobotlar = () => {
 
       {/* Expense Categories Section */}
       {expenseCategoryData.length > 0 && (
-        <Card className="p-6">
+        <Card className="p-3 sm:p-6">
           <h3 className="text-lg font-semibold mb-4">{t("reports.byExpenseCategory")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {expenseCategoryData.map((category) => (
