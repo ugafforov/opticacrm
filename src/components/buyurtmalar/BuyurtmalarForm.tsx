@@ -86,7 +86,7 @@ export const BuyurtmalarForm = ({ onSubmit, isSubmitting = false, isOnline = tru
   const totalAmount = (parseFloat(form.oynaNarxi) || 0) + (parseFloat(form.opravaNarxi) || 0);
 
   return (
-    <Card className="p-4 sm:p-6">
+    <Card className="p-3 sm:p-6">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <Popover>
