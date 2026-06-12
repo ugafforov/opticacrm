@@ -1,0 +1,9 @@
+# Optika CRM
+
+> Optika va ko'z tekshiruv klinikalari uchun CRM tizimi — buyurtmalar, tekshiruvlar, linzalar, xarajatlar va hisobotlarni boshqarish.
+
+Optika CRM is a management system for optical shops and eye examination clinics. It tracks orders, examinations, ready-made glasses, lens sales and inventory, expenses, debtors, and financial reports. The interface is in Uzbek (Latin and Cyrillic).
+
+## Pages
+
+- [Bosh sahifa / Kirish](/auth): Tizimga kirish sahifasi (Login page for Optika CRM).
