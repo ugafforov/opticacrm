@@ -12,6 +12,7 @@ import { EditDialog } from "@/components/EditDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface AllowedUser {
   id: string;
