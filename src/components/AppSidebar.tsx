@@ -117,6 +117,7 @@ const AppSidebar = ({ isOpen, isMobile = false, onClose }: AppSidebarProps) => {
               size="icon"
               onClick={onClose}
               className="h-8 w-8"
+              aria-label="Menyuni yopish"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -140,6 +141,7 @@ const AppSidebar = ({ isOpen, isMobile = false, onClose }: AppSidebarProps) => {
                 <Button
                   variant="ghost"
                   onClick={signOut}
+                  aria-label={signOutLabel}
                   className="w-full h-10 justify-center text-destructive hover:text-destructive hover:bg-destructive/10"
                 >
                   <LogOut className="h-5 w-5" />
