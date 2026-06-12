@@ -28,6 +28,7 @@ import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
 import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Pagination,
   PaginationContent,
@@ -49,6 +50,7 @@ interface LinzaSotish {
 
 const LinzaSotuvi = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Linza sotuvi — Optika CRM', description: "Linza sotuv operatsiyalari ro'yxati, sotilgan linzalar va daromad hisoboti.", canonicalPath: '/linza-sotuvi' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
@@ -571,7 +573,7 @@ const LinzaSotuvi = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("lensSale.title")}</h2>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("lensSale.title")}</h1>
         <p className="text-muted-foreground">{t("lensSale.subtitle")}</p>
       </div>
 

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { User, Mail, Save, Upload, Loader2 } from "lucide-react";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
@@ -19,6 +20,7 @@ const profileSchema = z.object({
 const Profile = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  usePageMeta({ title: 'Profil — Optika CRM', description: 'Foydalanuvchi profili: ism, email va avatar rasm sozlamalari.', canonicalPath: '/profile' });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [fullName, setFullName] = useState("");

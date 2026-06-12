@@ -12,6 +12,7 @@ import { EditDialog } from "@/components/EditDialog";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface AllowedUser {
   id: string;
@@ -36,6 +37,7 @@ interface Profile {
 }
 
 const AdminTelegram = () => {
+  usePageMeta({ title: 'Telegram boshqaruvi — Optika CRM', description: 'Telegram bot foydalanuvchilari, obunachilar va avtomatik kunlik hisobot sozlamalari.', canonicalPath: '/admin/telegram' });
   const [allowed, setAllowed] = useState<AllowedUser[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);

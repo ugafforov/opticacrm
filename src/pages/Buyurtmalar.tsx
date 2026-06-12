@@ -21,9 +21,15 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn, formatPhoneNumber, formatOdOs } from "@/lib/utils";
 import { safeSum } from "@/lib/safeCalculations";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 const Buyurtmalar = () => {
   const { t } = useLanguage();
+  usePageMeta({
+    title: "Buyurtmalar — Optika CRM",
+    description: "Optika ko'zoynak buyurtmalarini ro'yxatga olish, tahrirlash va boshqarish — mijoz, telefon, oyna va oprava narxlari.",
+    canonicalPath: "/",
+  });
   const { buyurtmalar, loading, isSubmitting, isOnline, createBuyurtma, updateBuyurtma, deleteBuyurtma } = useBuyurtmalar();
   const [editingItem, setEditingItem] = useState<Buyurtma | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -65,7 +71,7 @@ const Buyurtmalar = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h2>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h1>
           <p className="text-muted-foreground">{t("orders.subtitle")}</p>
         </div>
         <FormSkeleton />
@@ -77,7 +83,7 @@ const Buyurtmalar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h2>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("orders.title")}</h1>
         <p className="text-muted-foreground">{t("orders.subtitle")}</p>
       </div>
 

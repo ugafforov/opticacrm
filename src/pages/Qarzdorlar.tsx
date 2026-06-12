@@ -28,6 +28,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { logger } from "@/lib/logger";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Select,
   SelectContent,
@@ -62,6 +63,7 @@ type SortOption = "date" | "amount" | "name";
 
 const Qarzdorlar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Qarzdorlar — Optika CRM', description: "Qarzdor mijozlar ro'yxati, to'lov tarixi va qarz holatlarini kuzatish.", canonicalPath: '/qarzdorlar' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
@@ -493,10 +495,10 @@ const Qarzdorlar = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Users className="w-6 h-6" />
           {t("debtors.title")}
-        </h2>
+        </h1>
         <p className="text-muted-foreground">{t("debtors.subtitle")}</p>
       </div>
 

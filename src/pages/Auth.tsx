@@ -16,12 +16,18 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { authSchema } from "@/lib/validation";
 import { Eye, EyeOff, Lock, Mail, Sparkles, Phone, Send, Facebook, Instagram } from "lucide-react";
 import { FaXTwitter } from "react-icons/fa6";
 
 const Auth = () => {
   const { t } = useLanguage();
+  usePageMeta({
+    title: "Tizimga kirish — Optika CRM",
+    description: "Optika CRM hisobingizga kiring — optika klinikasini boshqarish tizimi.",
+    canonicalPath: "/auth",
+  });
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -124,7 +130,7 @@ const Auth = () => {
               </div>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {t("auth.welcome")}
+              {t("auth.welcome")} — Optika CRM
             </h1>
             <p className="text-sm text-muted-foreground">
               {t("auth.welcomeDesc")}

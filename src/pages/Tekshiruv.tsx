@@ -34,6 +34,7 @@ import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
 import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Pagination,
   PaginationContent,
@@ -56,6 +57,7 @@ interface Tekshiruv {
 
 const Tekshiruv = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Tekshiruvlar — Optika CRM', description: "Mijozlarning ko'z tekshiruv natijalarini saqlash: refraksiyametriya, tanometriya va tartib raqam.", canonicalPath: '/tekshiruv' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
@@ -577,7 +579,7 @@ const Tekshiruv = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("exam.title")}</h2>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("exam.title")}</h1>
         <p className="text-muted-foreground">{t("exam.subtitle")}</p>
       </div>
 

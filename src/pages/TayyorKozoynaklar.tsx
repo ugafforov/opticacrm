@@ -28,6 +28,7 @@ import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
 import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Pagination,
   PaginationContent,
@@ -49,6 +50,7 @@ interface TayyorKozoynak {
 
 const TayyorKozoynaklar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: "Tayyor ko'zoynaklar — Optika CRM", description: "Tayyor ko'zoynaklar sotuvini boshqarish — kliyent, ko'zoynak turi va summa hisoboti.", canonicalPath: '/tayyor-kozoynaklar' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
@@ -568,7 +570,7 @@ const TayyorKozoynaklar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("ready.title")}</h2>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("ready.title")}</h1>
         <p className="text-muted-foreground">{t("ready.subtitle")}</p>
       </div>
 
