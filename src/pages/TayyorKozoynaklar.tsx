@@ -50,6 +50,7 @@ interface TayyorKozoynak {
 
 const TayyorKozoynaklar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: "Tayyor ko'zoynaklar — Optika CRM", description: "Tayyor ko'zoynaklar sotuvini boshqarish — kliyent, ko'zoynak turi va summa hisoboti.", canonicalPath: '/tayyor-kozoynaklar' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();

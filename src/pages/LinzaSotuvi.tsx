@@ -50,6 +50,7 @@ interface LinzaSotish {
 
 const LinzaSotuvi = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Linza sotuvi — Optika CRM', description: "Linza sotuv operatsiyalari ro'yxati, sotilgan linzalar va daromad hisoboti.", canonicalPath: '/linza-sotuvi' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();

@@ -36,6 +36,7 @@ interface Profile {
 }
 
 const AdminTelegram = () => {
+  usePageMeta({ title: 'Telegram boshqaruvi — Optika CRM', description: 'Telegram bot foydalanuvchilari, obunachilar va avtomatik kunlik hisobot sozlamalari.', canonicalPath: '/admin/telegram' });
   const [allowed, setAllowed] = useState<AllowedUser[]>([]);
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);

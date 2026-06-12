@@ -67,6 +67,7 @@ interface PaymentTrendData {
 
 const Hisobotlar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Hisobotlar — Optika CRM', description: 'Kunlik, haftalik va oylik tushum, xarajat va foyda hisobotlari diagrammalar bilan.', canonicalPath: '/hisobotlar' });
   const { user, isAdmin } = useAuth();
   const [sendingTelegram, setSendingTelegram] = useState(false);
   const [confirmTelegram, setConfirmTelegram] = useState(false);

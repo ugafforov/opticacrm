@@ -60,6 +60,7 @@ interface LinzaRoyxat {
 
 const LinzaRoyxati = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: "Linza ro'yxati — Optika CRM", description: "Klinikadagi linzalar ombori va mijozlar bo'yicha linza tayinlash ro'yxati.", canonicalPath: '/linza-royxati' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();

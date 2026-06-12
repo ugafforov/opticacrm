@@ -57,6 +57,7 @@ interface Tekshiruv {
 
 const Tekshiruv = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Tekshiruvlar — Optika CRM', description: "Mijozlarning ko'z tekshiruv natijalarini saqlash: refraksiyametriya, tanometriya va tartib raqam.", canonicalPath: '/tekshiruv' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();

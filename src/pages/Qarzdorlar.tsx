@@ -63,6 +63,7 @@ type SortOption = "date" | "amount" | "name";
 
 const Qarzdorlar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Qarzdorlar — Optika CRM', description: "Qarzdor mijozlar ro'yxati, to'lov tarixi va qarz holatlarini kuzatish.", canonicalPath: '/qarzdorlar' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -87,6 +88,7 @@ interface ImportResult {
 
 const AdminImport = () => {
   const { t } = useLanguage();
+  usePageMeta({ title: "Ma'lumotlarni import — Optika CRM", description: "Admin paneli: CSV fayllaridan ma'lumotlarni jadvallarga import qilish.", canonicalPath: '/admin/import' });
   const { isAdmin, user } = useAuth();
   const navigate = useNavigate();
   

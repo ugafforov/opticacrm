@@ -39,6 +39,7 @@ import {
 
 const Xarajatlar = () => {
   const { t, script } = useLanguage();
+  usePageMeta({ title: 'Xarajatlar — Optika CRM', description: "Klinikaning kunlik xarajatlarini kategoriyalar bo'yicha hisobga olish va eksport qilish.", canonicalPath: '/xarajatlar' });
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const { xarajatlar, loading, isSubmitting: hookSubmitting, isOnline, addXarajat, updateXarajat, deleteXarajat } = useXarajatlar();

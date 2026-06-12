@@ -24,6 +24,7 @@ interface TrashItem {
 
 const Chiqindilar = () => {
   const { t } = useLanguage();
+  usePageMeta({ title: 'Chiqindi quti — Optika CRM', description: "O'chirilgan yozuvlarni qayta tiklash yoki butunlay o'chirish uchun chiqindi quti.", canonicalPath: '/chiqindilar' });
   const { user } = useAuth();
   const { withDuplicatePrevention, isOperationPending } = useDataIntegrity();
   const { isOnline, guardOperation } = useOnlineGuard();
