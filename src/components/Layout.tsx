@@ -59,6 +59,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               size="icon"
               onClick={toggleSidebar}
               className="h-10 w-10 shrink-0"
+              aria-label={sidebarOpen ? "Menyuni yopish" : "Menyuni ochish"}
             >
               <Menu className="h-5 w-5" />
             </Button>

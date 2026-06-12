@@ -77,9 +77,10 @@ const Footer = () => {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={link.label}
                   className={`text-white/90 transition-all duration-300 hover:scale-110 ${link.color}`}
                 >
-                  <Icon className="w-5 h-5" />
+                  <Icon className="w-5 h-5" aria-hidden="true" />
                 </a>
               );
             })}
