@@ -25,6 +25,7 @@ import { withRetry } from "@/lib/retryUtils";
 import { useDebounce } from "@/hooks/useDebounce";
 import { logger } from "@/lib/logger";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface ReportData {
   name: string;
@@ -1085,7 +1086,7 @@ const Hisobotlar = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h2>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("reports.title")}</h1>
           <p className="text-muted-foreground">{t("reports.subtitle")}</p>
         </div>
         {isAdmin && (

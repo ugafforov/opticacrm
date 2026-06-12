@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatUzbekistanTimestamp } from "@/lib/utils";
 import { logger } from "@/lib/logger";
 import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { usePageMeta } from "@/hooks/usePageMeta";
 
 interface TrashItem {
   id: string;
@@ -314,7 +315,7 @@ const Chiqindilar = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">{t("trash.title")}</h2>
+          <h1 className="text-2xl font-bold text-foreground mb-2">{t("trash.title")}</h1>
           <p className="text-muted-foreground">{t("trash.subtitle")}</p>
         </div>
         {trashItems.length > 0 && (

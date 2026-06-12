@@ -34,6 +34,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { logger } from "@/lib/logger";
 import { fetchAllRows } from "@/lib/supabaseHelpers";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Pagination,
   PaginationContent,
@@ -723,7 +724,7 @@ const LinzaRoyxati = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">{t("lens.title")}</h2>
+        <h1 className="text-2xl font-bold text-foreground mb-2">{t("lens.title")}</h1>
         <p className="text-muted-foreground">{t("lens.subtitle")}</p>
       </div>
 

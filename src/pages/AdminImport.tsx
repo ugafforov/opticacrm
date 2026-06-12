@@ -376,9 +376,9 @@ const AdminImport = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground">
             {t("import.title")}
-          </h2>
+          </h1>
           <p className="text-muted-foreground">
             {t("import.subtitle")}
           </p>

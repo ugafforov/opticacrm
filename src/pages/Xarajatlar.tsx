@@ -27,6 +27,7 @@ import { useDataIntegrity } from "@/hooks/useDataIntegrity";
 import { useOnlineGuard } from "@/hooks/useNetworkStatus";
 import { safeSum } from "@/lib/safeCalculations";
 import { logger } from "@/lib/logger";
+import { usePageMeta } from "@/hooks/usePageMeta";
 import {
   Pagination,
   PaginationContent,
@@ -340,10 +341,10 @@ const Xarajatlar = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
           <Wallet className="w-6 h-6" />
           {t("expenses.title")}
-        </h2>
+        </h1>
         <p className="text-muted-foreground">{t("expenses.subtitle")}</p>
       </div>
 
