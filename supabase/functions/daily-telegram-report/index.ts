@@ -351,10 +351,18 @@ function resolvePeriod(period: string, customDate?: string, customFrom?: string,
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Note: This function only sends pre-configured Telegram reports to known
-  // subscribers and does not accept sensitive input. Called from pg_cron (anon key)
-  // and telegram-poll (service role). No request-body data is trusted.
+  // Auth: accept only anon key (pg_cron) or service role key (telegram-poll).
   const SB_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const SB_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  const isService = !!SB_SERVICE_KEY && token === SB_SERVICE_KEY;
+  const isAnon = !!SB_ANON_KEY && token === SB_ANON_KEY;
+  if (!isService && !isAnon) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   try {
     const supabase = createClient(
@@ -364,7 +372,27 @@ Deno.serve(async (req) => {
 
     let body: any = {};
     try { body = await req.json(); } catch {}
-    const { chat_id, period = "today", date, from, to } = body;
+    const { chat_id: rawChatId, period = "today", date, from, to } = body;
+
+    // Only service-role callers may target a specific chat_id, and it must
+    // belong to a known subscriber/allowed user. Anon (pg_cron) always broadcasts.
+    let chat_id: number | null = null;
+    if (rawChatId && isService) {
+      const cid = Number(rawChatId);
+      if (Number.isFinite(cid)) {
+        const sbCheck = createClient(Deno.env.get("SUPABASE_URL")!, SB_SERVICE_KEY);
+        const [{ data: sub }, { data: allowed }] = await Promise.all([
+          sbCheck.from("telegram_subscribers").select("chat_id").eq("chat_id", cid).maybeSingle(),
+          sbCheck.from("telegram_allowed_users").select("id").eq("telegram_chat_id", cid).maybeSingle(),
+        ]);
+        if (sub || allowed) chat_id = cid;
+      }
+      if (!chat_id) {
+        return new Response(JSON.stringify({ error: "Unknown chat_id" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Source user
     const { data: settings, error: setErr } = await supabase
