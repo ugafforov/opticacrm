@@ -367,8 +367,19 @@ let commandsSet = false;
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  // Auth: accept only anon key (pg_cron) or service role key (internal callers).
+  const SB_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const auth = req.headers.get("Authorization") ?? "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (token !== SB_KEY && !(SB_ANON_KEY && token === SB_ANON_KEY)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const start = Date.now();
   const supabase = createClient(SB_URL, SB_KEY);
+
 
   // Bot komandalarini bir marta o'rnatish
   if (!commandsSet) {
