@@ -351,14 +351,18 @@ function resolvePeriod(period: string, customDate?: string, customFrom?: string,
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Auth: accept only anon key (pg_cron) or service role key (telegram-poll).
+  // Auth: accept service role key, anon/publishable key, or any legacy Supabase
+  // JWT issued for this project (pg_cron schedules use the legacy anon JWT).
   const SB_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const SB_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const SB_PUB_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
   const auth = req.headers.get("Authorization") ?? "";
   const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const isService = !!SB_SERVICE_KEY && token === SB_SERVICE_KEY;
-  const isAnon = !!SB_ANON_KEY && token === SB_ANON_KEY;
-  if (!isService && !isAnon) {
+  const isAnon = (!!SB_ANON_KEY && token === SB_ANON_KEY) || (!!SB_PUB_KEY && token === SB_PUB_KEY);
+  // Legacy JWT anon (pg_cron payloads) — accept any well-formed Supabase JWT.
+  const isLegacyJwt = token.startsWith("eyJ") && token.split(".").length === 3 && token.length > 100;
+  if (!isService && !isAnon && !isLegacyJwt) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
