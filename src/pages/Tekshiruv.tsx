@@ -626,7 +626,7 @@ const Tekshiruv = () => {
                     checked={form.refraksiyametriya}
                     onCheckedChange={(checked) => {
                       const newRefrak = checked as boolean;
-                      const newSum = (newRefrak ? 50000 : 0) + (form.tanometriya ? 15000 : 0);
+                      const newSum = (newRefrak ? 50000 : 0) + (form.tanometriya ? 25000 : 0);
                       setForm({ ...form, refraksiyametriya: newRefrak, narx: newSum.toString() });
                     }}
                   />
@@ -643,7 +643,7 @@ const Tekshiruv = () => {
                     checked={form.tanometriya}
                     onCheckedChange={(checked) => {
                       const newTano = checked as boolean;
-                      const newSum = (form.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
+                      const newSum = (form.refraksiyametriya ? 50000 : 0) + (newTano ? 25000 : 0);
                       setForm({ ...form, tanometriya: newTano, narx: newSum.toString() });
                     }}
                   />
@@ -651,7 +651,7 @@ const Tekshiruv = () => {
                     htmlFor="tanometriya"
                     className="text-sm font-medium leading-none cursor-pointer"
                   >
-                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
+                    {t("exam.tonometry")} — 25,000 {t("common.currency")}
                   </label>
                 </div>
               </div>
@@ -1026,7 +1026,7 @@ const Tekshiruv = () => {
                     onCheckedChange={(checked) => {
                       if (editingItem) {
                         const newRefrak = checked as boolean;
-                        const newSum = (newRefrak ? 50000 : 0) + (editingItem.tanometriya ? 15000 : 0);
+                        const newSum = (newRefrak ? 50000 : 0) + (editingItem.tanometriya ? 25000 : 0);
                         setEditingItem({
                           ...editingItem,
                           refraksiyametriya: newRefrak,
@@ -1049,7 +1049,7 @@ const Tekshiruv = () => {
                     onCheckedChange={(checked) => {
                       if (editingItem) {
                         const newTano = checked as boolean;
-                        const newSum = (editingItem.refraksiyametriya ? 50000 : 0) + (newTano ? 15000 : 0);
+                        const newSum = (editingItem.refraksiyametriya ? 50000 : 0) + (newTano ? 25000 : 0);
                         setEditingItem({
                           ...editingItem,
                           tanometriya: newTano,
@@ -1062,7 +1062,7 @@ const Tekshiruv = () => {
                     htmlFor="edit-tanometriya"
                     className="text-xs font-medium leading-none cursor-pointer"
                   >
-                    {t("exam.tonometry")} — 15,000 {t("common.currency")}
+                    {t("exam.tonometry")} — 25,000 {t("common.currency")}
                   </label>
                 </div>
               </div>
